@@ -26,9 +26,6 @@
     <ClCompile Include="..\..\tests\test_fft.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\tests\test_filter.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\tests\test_matrix.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -41,13 +38,16 @@
     <ClCompile Include="..\..\tests\test_fft_matlab.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\tests\test_filter_matlab.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\tests\test_matlab.cpp">
+    <ClCompile Include="..\..\tests\test_signal.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\tests\test_filter_design.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\test_filter.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\test_interp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

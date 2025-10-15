@@ -16,12 +16,12 @@
 #ifndef MSL_INTERP_1D_AKIMA
 #define MSL_INTERP_1D_AKIMA
 
-#include "interp_1d.hpp"
+#include "interp_1d_base.hpp"
 
 namespace msl::interp
 {
 // Akima Spline (smoother than cubic, no overshoot)
-class AkimaSpline : public Interpolator1D
+class AkimaSpline : public InterpolatorBase
 {
 private:
     std::vector<double> b_, c_, d_;
@@ -91,7 +91,7 @@ public:
         compute_coefficients();
     }
 
-    void set_data(std::span<const double> x, std::span<const double> y)
+    void set_data(std::span<const double> x, std::span<const double> y) override
     {
         x_.assign(x.begin(), x.end());
         y_.assign(y.begin(), y.end());
@@ -103,21 +103,11 @@ public:
         compute_coefficients();
     }
 
-    double operator()(double x) const override
+    double interpolate(double x) const override
     {
         size_t i = find_interval(x);
         double dx = x - x_[i];
         return y_[i] + b_[i] * dx + c_[i] * dx * dx + d_[i] * dx * dx * dx;
-    }
-
-    std::vector<double> operator()(std::span<const double> x_new) const override
-    {
-        std::vector<double> result(x_new.size());
-        for (size_t i = 0; i < x_new.size(); ++i)
-        {
-            result[i] = (*this)(x_new[i]);
-        }
-        return result;
     }
 };
 

@@ -20,6 +20,7 @@
 
 #include <cmath>
 #include <complex>
+#include <numbers>
 
 namespace msl::signal
 {

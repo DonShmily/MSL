@@ -8,8 +8,10 @@
 #include <numbers>
 
 #include "fft/fft.hpp" // For frequency analysis
+#include "signal/butterworth_filter.hpp"
 #include "signal/filter_apply.hpp"
 #include "signal/filter_design.hpp"
+
 
 #include "helper.hpp"
 

@@ -136,26 +136,15 @@
     <ClInclude Include="..\..\tests\test.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\tests\test_filter.cpp" />
     <ClCompile Include="..\..\tests\test_filter_design.cpp" />
     <ClCompile Include="..\..\tests\helper.cpp" />
     <ClCompile Include="..\..\tests\test.cpp" />
     <ClCompile Include="..\..\tests\test_fft.cpp" />
     <ClCompile Include="..\..\tests\test_fft_matlab.cpp" />
-    <ClCompile Include="..\..\tests\test_filter.cpp" />
-    <ClCompile Include="..\..\tests\test_filter_matlab.cpp" />
-    <ClCompile Include="..\..\tests\test_matlab.cpp" />
+    <ClCompile Include="..\..\tests\test_interp.cpp" />
+    <ClCompile Include="..\..\tests\test_signal.cpp" />
     <ClCompile Include="..\..\tests\test_matrix.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\fft\fft.vcxproj">
-      <Project>{ae74a2fc-e309-4f76-9c89-93774f09e5ca}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\matrix\matrix.vcxproj">
-      <Project>{4a57d179-faf5-40c2-8bda-752a7ca6104e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\signal\signal.vcxproj">
-      <Project>{efe5908e-b8af-41da-abcf-214316ebfdde}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

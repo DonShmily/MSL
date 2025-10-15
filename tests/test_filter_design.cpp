@@ -13,6 +13,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#include "signal/butterworth_filter.hpp"
 #include "signal/filter_design.hpp"
 
 namespace fs = std::filesystem;

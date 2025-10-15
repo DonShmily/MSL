@@ -15,13 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\signal\filter_apply.hpp">
+    <ClInclude Include="..\..\include\interp\interp_1d.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\signal\filter_design.hpp">
+    <ClInclude Include="..\..\include\interp\interp_1d_akima.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\signal\butterworth_filter.hpp">
+    <ClInclude Include="..\..\include\interp\interp_1d_linear.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\interp\interp_1d_spline.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

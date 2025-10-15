@@ -19,11 +19,11 @@
 
 #include <cassert>
 #include "complex_matrix_base.hpp"
-#include "complex_matrix_owned.hpp"
 
 namespace msl
 {
 class const_complex_matrix_view; // Forward declaration
+class complex_matrix_owned;      // Forward declaration
 
 class complex_matrix_view : public complex_matrix_base
 {
@@ -41,9 +41,7 @@ public:
     {}
 
     // Construct from complex_matrix_owned (most common use case)
-    complex_matrix_view(complex_matrix_owned &owner)
-        : Base(owner.rows(), owner.cols(), owner.data_span())
-    {}
+    complex_matrix_view(complex_matrix_owned &owner);
 
     // Construct from span
     complex_matrix_view(std::span<std::complex<double>> data,
@@ -71,10 +69,29 @@ public:
 
     // --- Subview creation ---
     [[nodiscard]] complex_matrix_view
-    subview(size_t row_start, size_t row_end, size_t col_start, size_t col_end);
+    subview(size_t row_start, size_t row_end, size_t col_start, size_t col_end)
+    {
+        assert(row_start < row_end && row_end <= this->rows_);
+        assert(col_start < col_end && col_end <= this->cols_);
+
+        // For column-major layout, creating arbitrary subviews requires
+        // either strided access or copying. Here we document the limitation.
+        // For now, we only support full-column subviews efficiently.
+        assert(
+            row_start == 0 && row_end == this->rows_
+            && "Arbitrary row subviews not supported in column-major layout");
+
+        size_t sub_cols = col_end - col_start;
+        std::complex<double> *sub_data = this->data() + col_start * this->rows_;
+        return complex_matrix_view(sub_data, this->rows_, sub_cols);
+    }
 
     // --- Column subview (efficient) ---
-    [[nodiscard]] complex_matrix_view column_view(size_t j);
+    [[nodiscard]] complex_matrix_view column_view(size_t j)
+    {
+        auto col_span = this->column(j);
+        return complex_matrix_view(col_span.data(), this->rows_, 1);
+    }
     [[nodiscard]] const_complex_matrix_view column_view(size_t j) const;
 
     // --- Fill operations ---
@@ -89,10 +106,40 @@ public:
     }
 
     // --- In-place operations ---
-    complex_matrix_view &operator+=(const complex_matrix_base &other);
-    complex_matrix_view &operator-=(const complex_matrix_base &other);
-    complex_matrix_view &operator*=(const std::complex<double> &scalar);
-    complex_matrix_view &operator/=(const std::complex<double> &scalar);
+    complex_matrix_view &operator+=(const complex_matrix_base &other)
+    {
+        assert(this->rows_ == other.rows() && this->cols_ == other.cols());
+        for (size_t i = 0; i < this->size(); ++i)
+        {
+            this->data_[i] += other.data()[i];
+        }
+        return *this;
+    }
+    complex_matrix_view &operator-=(const complex_matrix_base &other)
+    {
+        assert(this->rows_ == other.rows() && this->cols_ == other.cols());
+        for (size_t i = 0; i < this->size(); ++i)
+        {
+            this->data_[i] -= other.data()[i];
+        }
+        return *this;
+    }
+    complex_matrix_view &operator*=(const std::complex<double> &scalar)
+    {
+        for (size_t i = 0; i < this->size(); ++i)
+        {
+            this->data_[i] *= scalar;
+        }
+        return *this;
+    }
+    complex_matrix_view &operator/=(const std::complex<double> &scalar)
+    {
+        for (size_t i = 0; i < this->size(); ++i)
+        {
+            this->data_[i] /= scalar;
+        }
+        return *this;
+    }
 
     // --- Copy data from another matrix ---
     void copy_from(const complex_matrix_base &src)
@@ -102,10 +149,7 @@ public:
     }
 
     // --- Convert to owned matrix (deep copy) ---
-    [[nodiscard]] complex_matrix_owned to_owned() const
-    {
-        return complex_matrix_owned(this->rows_, this->cols_, this->data_);
-    }
+    [[nodiscard]] complex_matrix_owned to_owned() const;
 
     // --- Swap (swaps the views, not the data) ---
     void swap(complex_matrix_view &other) noexcept
@@ -139,9 +183,7 @@ public:
         : data_(data, rows * cols), rows_(rows), cols_(cols)
     {}
 
-    const_complex_matrix_view(const complex_matrix_owned &owner)
-        : data_(owner.data_span()), rows_(owner.rows()), cols_(owner.cols())
-    {}
+    const_complex_matrix_view(const complex_matrix_owned &owner);
 
     const_complex_matrix_view(const complex_matrix_view &view)
         : data_(view.data_span()), rows_(view.rows()), cols_(view.cols())
@@ -210,24 +252,36 @@ public:
     [[nodiscard]] auto cend() const noexcept { return data_.end(); }
 
     // --- Convert to owned matrix ---
-    [[nodiscard]] complex_matrix_owned to_owned() const
-    {
-        return complex_matrix_owned(
-            this->rows_,
-            this->cols_,
-            std::span<const std::complex<double>>(this->data_));
-    }
+    [[nodiscard]] complex_matrix_owned to_owned() const;
 };
 
 typedef complex_matrix_view matrixc_view;
 typedef const_complex_matrix_view const_matrixc_view;
 
+inline const_complex_matrix_view
+complex_matrix_view::column_view(size_t j) const
+{
+    auto col_span = this->column(j);
+    return const_complex_matrix_view(col_span.data(), this->rows_, 1);
+}
+
 // --- Helper functions ---
-void swap(complex_matrix_view &a, complex_matrix_view &b) noexcept;
+inline void swap(complex_matrix_view &a, complex_matrix_view &b) noexcept
+{
+    a.swap(b);
+}
+
 // Create view from owned matrix
-[[nodiscard]] complex_matrix_view make_view(complex_matrix_owned &mat);
-[[nodiscard]] const_complex_matrix_view
-make_view(const complex_matrix_owned &mat);
+[[nodiscard]] inline complex_matrix_view make_view(complex_matrix_owned &mat)
+{
+    return complex_matrix_view(mat);
+}
+
+[[nodiscard]] inline const_complex_matrix_view
+make_view(const complex_matrix_owned &mat)
+{
+    return const_complex_matrix_view(mat);
+}
 
 } // namespace msl
 

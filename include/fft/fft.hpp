@@ -9,16 +9,10 @@
 #ifndef MSL_FFT_HPP
 #define MSL_FFT_HPP
 
-#define _USE_MATH_DEFINES
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 #include <cassert>
 #include <complex>
 #include <cstddef>
-
+#include <numbers>
 #include <span>
 #include <vector>
 
@@ -407,7 +401,8 @@ inline void apply_hamming_window(std::span<double> signal)
 
     for (size_t i = 0; i < n; ++i)
     {
-        double window = 0.54 - 0.46 * std::cos(2.0 * M_PI * i / (n - 1));
+        double window =
+            0.54 - 0.46 * std::cos(2.0 * std::numbers::pi * i / (n - 1));
         signal[i] *= window;
     }
 }
@@ -423,7 +418,8 @@ inline void apply_hann_window(std::span<double> signal)
 
     for (size_t i = 0; i < n; ++i)
     {
-        double window = 0.5 * (1.0 - std::cos(2.0 * M_PI * i / (n - 1)));
+        double window =
+            0.5 * (1.0 - std::cos(2.0 * std::numbers::pi * i / (n - 1)));
         signal[i] *= window;
     }
 }

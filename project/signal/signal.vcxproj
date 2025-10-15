@@ -132,11 +132,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\signal\butterworth_filter.hpp" />
     <ClInclude Include="..\..\include\signal\filter_apply.hpp" />
     <ClInclude Include="..\..\include\signal\filter_design.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\signal\void.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

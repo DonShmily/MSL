@@ -134,14 +134,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\fft\fft.hpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\matrix\matrix.vcxproj">
-      <Project>{4a57d179-faf5-40c2-8bda-752a7ca6104e}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\fft\void.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

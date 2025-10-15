@@ -6,6 +6,7 @@
 
 
 #include "fft/fft.hpp"
+#include "signal/butterworth_filter.hpp"
 #include "signal/filter_apply.hpp"
 #include "signal/filter_design.hpp"
 
@@ -46,7 +47,7 @@ void save_complex(const std::string &filename,
         fout << c.real() << " " << c.imag() << "\n";
 }
 
-int test_matlab()
+int test_signal()
 {
     // 读取信号
     std::ifstream fin("test_signal.txt");
