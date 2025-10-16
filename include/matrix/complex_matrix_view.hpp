@@ -18,7 +18,9 @@
 #define MSL_complex_MATRIX_VIEW_HPP
 
 #include <cassert>
+
 #include "complex_matrix_base.hpp"
+#include "complex_matrix_owned.hpp"
 
 namespace msl
 {
@@ -159,6 +161,60 @@ public:
         swap(this->rows_, other.rows_);
         swap(this->cols_, other.cols_);
     }
+
+    // --- complex to real
+    // Extract real part as real_matrix_owned
+    [[nodiscard]] real_matrix_owned real() const
+    {
+        real_matrix_owned real_mat(this->rows_, this->cols_);
+        for (size_t i = 0; i < this->rows_; ++i)
+        {
+            for (size_t j = 0; j < this->cols_; ++j)
+            {
+                real_mat(i, j) = std::real((*this)(i, j));
+            }
+        }
+        return real_mat;
+    }
+    // Extract imaginary part as real_matrix_owned
+    [[nodiscard]] real_matrix_owned imag() const
+    {
+        real_matrix_owned imag_mat(this->rows_, this->cols_);
+        for (size_t i = 0; i < this->rows_; ++i)
+        {
+            for (size_t j = 0; j < this->cols_; ++j)
+            {
+                imag_mat(i, j) = std::imag((*this)(i, j));
+            }
+        }
+        return imag_mat;
+    }
+    // Convert to real_matrix_owned by taking magnitude
+    [[nodiscard]] real_matrix_owned magnitude() const
+    {
+        real_matrix_owned mag_mat(this->rows_, this->cols_);
+        for (size_t i = 0; i < this->rows_; ++i)
+        {
+            for (size_t j = 0; j < this->cols_; ++j)
+            {
+                mag_mat(i, j) = std::abs((*this)(i, j));
+            }
+        }
+        return mag_mat;
+    }
+    // Convert to real_matrix_owned by taking phase (angle)
+    [[nodiscard]] real_matrix_owned phase() const
+    {
+        real_matrix_owned phase_mat(this->rows_, this->cols_);
+        for (size_t i = 0; i < this->rows_; ++i)
+        {
+            for (size_t j = 0; j < this->cols_; ++j)
+            {
+                phase_mat(i, j) = std::arg((*this)(i, j));
+            }
+        }
+        return phase_mat;
+    }
 };
 
 /**
@@ -253,6 +309,60 @@ public:
 
     // --- Convert to owned matrix ---
     [[nodiscard]] complex_matrix_owned to_owned() const;
+
+    // --- complex to real
+    // Extract real part as real_matrix_owned
+    [[nodiscard]] real_matrix_owned real() const
+    {
+        real_matrix_owned real_mat(this->rows_, this->cols_);
+        for (size_t i = 0; i < this->rows_; ++i)
+        {
+            for (size_t j = 0; j < this->cols_; ++j)
+            {
+                real_mat(i, j) = std::real((*this)(i, j));
+            }
+        }
+        return real_mat;
+    }
+    // Extract imaginary part as real_matrix_owned
+    [[nodiscard]] real_matrix_owned imag() const
+    {
+        real_matrix_owned imag_mat(this->rows_, this->cols_);
+        for (size_t i = 0; i < this->rows_; ++i)
+        {
+            for (size_t j = 0; j < this->cols_; ++j)
+            {
+                imag_mat(i, j) = std::imag((*this)(i, j));
+            }
+        }
+        return imag_mat;
+    }
+    // Convert to real_matrix_owned by taking magnitude
+    [[nodiscard]] real_matrix_owned magnitude() const
+    {
+        real_matrix_owned mag_mat(this->rows_, this->cols_);
+        for (size_t i = 0; i < this->rows_; ++i)
+        {
+            for (size_t j = 0; j < this->cols_; ++j)
+            {
+                mag_mat(i, j) = std::abs((*this)(i, j));
+            }
+        }
+        return mag_mat;
+    }
+    // Convert to real_matrix_owned by taking phase (angle)
+    [[nodiscard]] real_matrix_owned phase() const
+    {
+        real_matrix_owned phase_mat(this->rows_, this->cols_);
+        for (size_t i = 0; i < this->rows_; ++i)
+        {
+            for (size_t j = 0; j < this->cols_; ++j)
+            {
+                phase_mat(i, j) = std::arg((*this)(i, j));
+            }
+        }
+        return phase_mat;
+    }
 };
 
 typedef complex_matrix_view matrixc_view;
