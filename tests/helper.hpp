@@ -32,4 +32,21 @@ double max_abs_error_complex(const std::vector<std::complex<double>> &a,
 double rms_error(const std::vector<double> &a, const std::vector<double> &b);
 void print_result(const std::string &test_name, double error, double threshold);
 
+// 从文件中读取矩阵数据
+// @param file_name 文件名
+// @return 读取到的矩阵数据
+std::vector<double> ReadData(const std::string &file_name, int col, int row);
+
+// 将矩阵数据写入文件
+// @param file_name 文件名
+// @param data 矩阵数据
+void WriteData(const std::string &file_name,
+               const std::vector<double> &data,
+               int col,
+               int row);
+
+// 读取JSON至字符串
+// @param file_name 文件名
+std::string ReadJson(const std::string &file_name);
+
 #endif // MSL_TEST_HELPER_HPP

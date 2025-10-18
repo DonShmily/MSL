@@ -123,8 +123,10 @@ ifft(const std::vector<std::complex<double>> &input, std::size_t nfft = 0)
  * @warning Input must have proper conjugate symmetry for real output
  */
 inline std::vector<double>
-ifft_real(std::span<const std::complex<double>> input, size_t nfft)
+ifft_real(std::span<const std::complex<double>> input, size_t nfft = 0)
 {
+    nfft = (nfft == 0) ? input.size() : nfft;
+
     Eigen::FFT<double> fft_engine;
     std::vector<double> output(nfft);
 
@@ -137,7 +139,7 @@ ifft_real(std::span<const std::complex<double>> input, size_t nfft)
  * @brief 1D Inverse FFT: complex vector -> real vector (vector overload)
  */
 inline std::vector<double>
-ifft_real(const std::vector<std::complex<double>> &input, size_t nfft)
+ifft_real(const std::vector<std::complex<double>> &input, size_t nfft = 0)
 {
     return ifft_real(std::span<const std::complex<double>>(input), nfft);
 }

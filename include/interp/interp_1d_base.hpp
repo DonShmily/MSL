@@ -90,27 +90,6 @@ protected:
     }
 
     /**
-     * @brief Find interval with automatic clamping for extrapolation
-     */
-    size_t find_interval_with_extrapolation(double x) const
-    {
-        // Clamp to valid range
-        if (x <= x_.front())
-            return 0;
-        if (x >= x_.back())
-            return x_.size() - 2;
-
-        // Binary search
-        auto it = std::lower_bound(x_.begin(), x_.end(), x);
-        size_t idx = it - x_.begin();
-
-        if (idx > 0 && x < x_[idx])
-            --idx;
-
-        return idx;
-    }
-
-    /**
      * @brief Pure virtual interpolation function
      * Must be implemented by derived classes
      */
@@ -138,6 +117,13 @@ public:
      */
     double operator()(double x) const
     {
+        // Check for exact match
+        auto idx = std::find(x_.begin(), x_.end(), x);
+        if (idx != x_.end())
+        {
+            return y_[idx - x_.begin()];
+        }
+
         // Handle extrapolation
         if (x < x_.front())
         {

@@ -5,3 +5,4 @@ int test_fft_matlab();
 int test_signal();
 int test_filter_design();
 int test_interp();
+void test_ifft();

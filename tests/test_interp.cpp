@@ -44,10 +44,11 @@ void test_cubic()
     }
 
     CubicSpline spline(x, y);
+    spline.set_extrapolation(msl::interp::ExtrapolationMode::Linear);
 
     // Interpolate at finer grid
     std::cout << "Interpolating sin(x):\n";
-    for (double xi = 0.0; xi <= 5.0; xi += 1.0)
+    for (double xi = 0; xi <= 6; xi += 1.0)
     {
         double y_interp = spline(xi);
         double y_exact = std::sin(xi);
@@ -58,7 +59,7 @@ void test_cubic()
     std::cout << "\n";
 }
 
-void test_comparison()
+void test_interp_comparison()
 {
     std::cout << "Method Comparison (Runge function)\n";
     std::cout << "-----------------------------------\n";
@@ -91,7 +92,7 @@ void test_comparison()
     std::cout << "  Cubic:  " << cubic(x_test)
               << " (error: " << std::abs(cubic(x_test) - y_exact) << ")\n";
     std::cout << "  Akima:  " << akima(x_test)
-              << " (error: " << std::abs(akima(x_test) - y_exact) << ")\n\n";
+              << " (error: " << std::abs(akima(x_test) - y_exact) << ")\n";
     std::cout << "  Polynomial: " << poly(x_test)
               << " (error: " << std::abs(poly(x_test) - y_exact) << ")\n\n";
 }
@@ -102,7 +103,7 @@ int test_interp()
     {
         test_linear();
         test_cubic();
-        test_comparison();
+        test_interp_comparison();
 
         std::cout << "All tests completed!\n";
     }

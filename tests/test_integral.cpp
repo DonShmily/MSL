@@ -166,7 +166,7 @@ void test_adaptive_quad()
     std::cout << "  Error:  " << std::abs(r2 - exact2) << "\n\n";
 }
 
-void test_comparison()
+void test_integral_comparison()
 {
     std::cout << "Test 7: Method Comparison\n";
     std::cout << "=========================\n";
@@ -234,7 +234,7 @@ int test_integral()
         test_simps();
         test_matrix_integration();
         test_adaptive_quad();
-        test_comparison();
+        test_integral_comparison();
 
         std::cout << "All integration tests completed!\n";
     }

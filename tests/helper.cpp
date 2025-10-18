@@ -147,3 +147,62 @@ void print_result(const std::string &test_name, double error, double threshold)
         std::cout << " ✗ FAIL (threshold: " << threshold << ")\n";
     }
 }
+
+std::vector<double> ReadData(const std::string &file_name, int col, int row)
+{
+    std::ifstream file(file_name);
+    if (!file.is_open())
+    {
+        std::cerr << "Error: file open failed." << std::endl;
+        return {};
+    }
+
+    // 读取矩阵数据(按列)
+    std::vector<double> data(col * row);
+    for (int i = 0; i < row; ++i)
+    {
+        for (int j = 0; j < col; ++j)
+        {
+            file >> data[i + j * row];
+        }
+    }
+
+    return data;
+}
+
+void WriteData(const std::string &file_name,
+               const std::vector<double> &data,
+               int col,
+               int row)
+{
+    std::ofstream file(file_name);
+    if (!file.is_open())
+    {
+        std::cerr << "Error: file open failed." << std::endl;
+        return;
+    }
+
+    // 写入矩阵数据(按列)
+    for (int i = 0; i < row; ++i)
+    {
+        for (int j = 0; j < col; ++j)
+        {
+            file << data[i + j * row] << " ";
+        }
+        file << std::endl;
+    }
+}
+
+std::string ReadJson(const std::string &file_name)
+{
+    std::ifstream file(file_name);
+    if (!file.is_open())
+    {
+        std::cerr << "Error: file open failed." << std::endl;
+        return "";
+    }
+
+    std::string json_str((std::istreambuf_iterator<char>(file)),
+                         std::istreambuf_iterator<char>());
+    return json_str;
+}

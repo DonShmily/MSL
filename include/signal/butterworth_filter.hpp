@@ -214,7 +214,7 @@ private:
     {
         if (type_ == FilterType::bandpass || type_ == FilterType::bandstop)
         {
-            design_bandpass();
+            design_bandpass_bandstop();
         }
         else
         {
@@ -275,7 +275,7 @@ private:
     /**
      * @brief Design bandpass filter
      */
-    void design_bandpass()
+    void design_bandpass_bandstop()
     {
         // Pre-warp digital cutoff freqs (T = 1)
         const double wc1 = 2.0 * std::tan(std::numbers::pi * fc_low_ / 2.0);
@@ -504,7 +504,7 @@ private:
  * @param fc Cutoff frequency (normalized, 0 < fc < 1)
  * @return Filter coefficients
  */
-inline FilterCoefficients butterworth_lowpass(int order, double fc)
+inline FilterCoefficients butterworth_lowpass_design(int order, double fc)
 {
     return ButterworthFilter(order, fc, FilterType::lowpass).coefficients();
 }
@@ -512,7 +512,7 @@ inline FilterCoefficients butterworth_lowpass(int order, double fc)
 /**
  * @brief Design highpass Butterworth filter
  */
-inline FilterCoefficients butterworth_highpass(int order, double fc)
+inline FilterCoefficients butterworth_highpass_design(int order, double fc)
 {
     return ButterworthFilter(order, fc, FilterType::highpass).coefficients();
 }
@@ -521,7 +521,7 @@ inline FilterCoefficients butterworth_highpass(int order, double fc)
  * @brief Design bandpass Butterworth filter
  */
 inline FilterCoefficients
-butterworth_bandpass(int order, double fc_low, double fc_high)
+butterworth_bandpass_design(int order, double fc_low, double fc_high)
 {
     return ButterworthFilter(order, fc_low, fc_high, FilterType::bandpass)
         .coefficients();
@@ -540,64 +540,69 @@ butterworth_bandpass(int order, double fc_low, double fc_high)
  * @param zero_phase Use zero-phase filtering (default: true)
  * @return Filtered signal
  */
-inline std::vector<double> lowpass(std::span<const double> signal,
-                                   int order,
-                                   double fc,
-                                   bool zero_phase = true)
+inline std::vector<double> butterworth_lowpass(std::span<const double> signal,
+                                               int order,
+                                               double fc,
+                                               bool zero_phase = true)
 {
-    auto coeffs = butterworth_lowpass(order, fc);
+    auto coeffs = butterworth_lowpass_design(order, fc);
     return zero_phase ? filtfilt(signal, coeffs) : filter(signal, coeffs);
 }
 
 /**
  * @brief Design and apply highpass filter
  */
-inline std::vector<double> highpass(std::span<const double> signal,
-                                    int order,
-                                    double fc,
-                                    bool zero_phase = true)
+inline std::vector<double> butterworth_highpass(std::span<const double> signal,
+                                                int order,
+                                                double fc,
+                                                bool zero_phase = true)
 {
-    auto coeffs = butterworth_highpass(order, fc);
+    auto coeffs = butterworth_highpass_design(order, fc);
     return zero_phase ? filtfilt(signal, coeffs) : filter(signal, coeffs);
 }
 
 /**
  * @brief Design and apply bandpass filter
  */
-inline std::vector<double> bandpass(std::span<const double> signal,
-                                    int order,
-                                    double fc_low,
-                                    double fc_high,
-                                    bool zero_phase = true)
+inline std::vector<double> butterworth_bandpass(std::span<const double> signal,
+                                                int order,
+                                                double fc_low,
+                                                double fc_high,
+                                                bool zero_phase = true)
 {
-    auto coeffs = butterworth_bandpass(order, fc_low, fc_high);
+    auto coeffs = butterworth_bandpass_design(order, fc_low, fc_high);
     return zero_phase ? filtfilt(signal, coeffs) : filter(signal, coeffs);
 }
 
 // Vector overloads
-inline std::vector<double> lowpass(const std::vector<double> &signal,
-                                   int order,
-                                   double fc,
-                                   bool zero_phase = true)
+inline std::vector<double>
+butterworth_lowpass(const std::vector<double> &signal,
+                    int order,
+                    double fc,
+                    bool zero_phase = true)
 {
-    return lowpass(std::span<const double>(signal), order, fc, zero_phase);
+    return butterworth_lowpass(
+        std::span<const double>(signal), order, fc, zero_phase);
 }
 
-inline std::vector<double> highpass(const std::vector<double> &signal,
-                                    int order,
-                                    double fc,
-                                    bool zero_phase = true)
+inline std::vector<double>
+butterworth_highpass(const std::vector<double> &signal,
+                     int order,
+                     double fc,
+                     bool zero_phase = true)
 {
-    return highpass(std::span<const double>(signal), order, fc, zero_phase);
+    return butterworth_highpass(
+        std::span<const double>(signal), order, fc, zero_phase);
 }
 
-inline std::vector<double> bandpass(const std::vector<double> &signal,
-                                    int order,
-                                    double fc_low,
-                                    double fc_high,
-                                    bool zero_phase = true)
+inline std::vector<double>
+butterworth_bandpass(const std::vector<double> &signal,
+                     int order,
+                     double fc_low,
+                     double fc_high,
+                     bool zero_phase = true)
 {
-    return bandpass(
+    return butterworth_bandpass(
         std::span<const double>(signal), order, fc_low, fc_high, zero_phase);
 }
 
