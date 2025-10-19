@@ -9,7 +9,8 @@ int main()
     // test_filter_design();
     // test_filter_matlab();
     // test_matlab();
-    test_interp();
+    // test_interp();
     // test_ifft();
+    test_fft_filter();
     return 0;
 }

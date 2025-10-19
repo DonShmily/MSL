@@ -273,7 +273,7 @@ private:
     }
 
     /**
-     * @brief Design bandpass filter
+     * @brief Design bandpass or bandstop filter
      */
     void design_bandpass_bandstop()
     {
@@ -319,34 +319,72 @@ private:
         coeffs_.a = poles_to_polynomial(
             digital_poles); // returns [a0,a1,...,aM] for z^{-1} powers
 
-        // Numerator: zeros of analog BP at s=0 (multiplicity N) map to z=1
-        // (multiplicity N), and zeros at s=infty map to z=-1 (multiplicity N)
-        // -> so digital numerator has factor (1 - z^{-2})^N. Build b of length
-        // 2*N + 1 with only even coefficients:
+        // Numerator: depends on filter type
         const int M = 2 * order_;
         coeffs_.b.assign(M + 1, 0.0);
 
-        // binomial coefficients for (1 - t^2)^N where t = z^{-1}
-        // (1 - t^2)^N = sum_{m=0..N} C(N,m) * (-1)^m * t^{2m}
-        auto binom = [](int n, int k) -> double {
-            double r = 1.0;
-            for (int i = 1; i <= k; ++i)
-                r *= double(n - (k - i)) / double(i);
-            return r;
-        };
-
-        for (int m = 0; m <= order_; ++m)
+        if (type_ == FilterType::bandpass)
         {
-            double c = binom(order_, m)
-                       * ((m % 2 == 0) ? 1.0 : -1.0); // (-1)^m * C(N,m)
-            coeffs_.b[2 * m] = c;
-        }
+            // Bandpass: zeros at s=0 and s=∞ map to z=1 and z=-1
+            // Digital numerator has factor (1 - z^{-2})^N
+            // (1 - t^2)^N = sum_{m=0..N} C(N,m) * (-1)^m * t^{2m}
+            auto binom = [](int n, int k) -> double {
+                double r = 1.0;
+                for (int i = 1; i <= k; ++i)
+                    r *= double(n - (k - i)) / double(i);
+                return r;
+            };
 
-        // Normalize gain at center frequency (use normalized digital freq
-        // f_center in 0..1)
-        const double fc_center =
-            0.5 * (fc_low_ + fc_high_); // normalized (0..1)
-        normalize_gain(fc_center);
+            for (int m = 0; m <= order_; ++m)
+            {
+                double c = binom(order_, m)
+                           * ((m % 2 == 0) ? 1.0 : -1.0); // (-1)^m * C(N,m)
+                coeffs_.b[2 * m] = c;
+            }
+
+            // Normalize gain at center frequency
+            const double fc_center = 0.5 * (fc_low_ + fc_high_);
+            normalize_gain(fc_center);
+        }
+        else // FilterType::bandstop
+        {
+            // Bandstop: zeros at s=±jw0 map to complex conjugate pairs on unit
+            // circle For each analog zero at ±jw0, we get digital zeros at
+            // e^{±jω0} where ω0 corresponds to the center frequency
+
+            const double fc_center = 0.5 * (fc_low_ + fc_high_);
+            const double omega0 =
+                std::numbers::pi * fc_center; // digital center freq
+
+            // Zeros come in conjugate pairs: e^{±jω0}
+            // For bandstop of order N, we have N pairs of zeros at center
+            // frequency Digital numerator: ∏(1 - 2cos(ω0)z^{-1} + z^{-2})^N
+
+            // Start with polynomial = 1
+            std::vector<double> poly(1, 1.0);
+
+            // Multiply by (1 - 2cos(ω0)z^{-1} + z^{-2}) N times
+            const double two_cos_omega0 = 2.0 * std::cos(omega0);
+
+            for (int i = 0; i < order_; ++i)
+            {
+                std::vector<double> next(poly.size() + 2, 0.0);
+                for (size_t k = 0; k < poly.size(); ++k)
+                {
+                    next[k] += poly[k]; // 1 * old_coeff
+                    next[k + 1] -=
+                        two_cos_omega0 * poly[k]; // -2cos(ω0) * old_coeff
+                    next[k + 2] += poly[k];       // 1 * old_coeff
+                }
+                poly.swap(next);
+            }
+
+            coeffs_.b = poly;
+
+            // Normalize gain at DC (stopband should attenuate center, passband
+            // at DC/Nyquist)
+            normalize_gain(0.0);
+        }
     }
 
 
@@ -527,8 +565,18 @@ butterworth_bandpass_design(int order, double fc_low, double fc_high)
         .coefficients();
 }
 
+/**
+ * @brief Design bandstop Butterworth filter
+ */
+inline FilterCoefficients
+butterworth_bandstop_design(int order, double fc_low, double fc_high)
+{
+    return ButterworthFilter(order, fc_low, fc_high, FilterType::bandstop)
+        .coefficients();
+}
+
 // ============================================================================
-// Convenience functions
+// Convenience functions - Apply filters
 // ============================================================================
 
 /**
@@ -574,6 +622,19 @@ inline std::vector<double> butterworth_bandpass(std::span<const double> signal,
     return zero_phase ? filtfilt(signal, coeffs) : filter(signal, coeffs);
 }
 
+/**
+ * @brief Design and apply bandstop filter
+ */
+inline std::vector<double> butterworth_bandstop(std::span<const double> signal,
+                                                int order,
+                                                double fc_low,
+                                                double fc_high,
+                                                bool zero_phase = true)
+{
+    auto coeffs = butterworth_bandstop_design(order, fc_low, fc_high);
+    return zero_phase ? filtfilt(signal, coeffs) : filter(signal, coeffs);
+}
+
 // Vector overloads
 inline std::vector<double>
 butterworth_lowpass(const std::vector<double> &signal,
@@ -603,6 +664,17 @@ butterworth_bandpass(const std::vector<double> &signal,
                      bool zero_phase = true)
 {
     return butterworth_bandpass(
+        std::span<const double>(signal), order, fc_low, fc_high, zero_phase);
+}
+
+inline std::vector<double>
+butterworth_bandstop(const std::vector<double> &signal,
+                     int order,
+                     double fc_low,
+                     double fc_high,
+                     bool zero_phase = true)
+{
+    return butterworth_bandstop(
         std::span<const double>(signal), order, fc_low, fc_high, zero_phase);
 }
 

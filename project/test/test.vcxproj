@@ -142,6 +142,7 @@
     <ClCompile Include="..\..\tests\test.cpp" />
     <ClCompile Include="..\..\tests\test_fft.cpp" />
     <ClCompile Include="..\..\tests\test_fft_matlab.cpp" />
+    <ClCompile Include="..\..\tests\test_fourier_filter.cpp" />
     <ClCompile Include="..\..\tests\test_ifft.cpp" />
     <ClCompile Include="..\..\tests\test_integral.cpp" />
     <ClCompile Include="..\..\tests\test_interp.cpp" />

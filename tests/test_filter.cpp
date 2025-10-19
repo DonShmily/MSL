@@ -35,11 +35,11 @@ void test_butterworth_design()
     print_coefficients(filter.coefficients(), "4th Order Lowpass (fc=0.2)");
 
     // Design highpass
-    auto hp_coeffs = butterworth_highpass(4, 0.3);
+    auto hp_coeffs = butterworth_highpass_design(4, 0.3);
     print_coefficients(hp_coeffs, "4th Order Highpass (fc=0.3)");
 
     // Design bandpass
-    auto bp_coeffs = butterworth_bandpass(2, 0.1, 0.4);
+    auto bp_coeffs = butterworth_bandpass_design(2, 0.1, 0.4);
     print_coefficients(bp_coeffs, "2nd Order Bandpass (0.1-0.4)");
 }
 
@@ -73,7 +73,7 @@ void test_lowpass_filter()
     double fc_norm = 30.0 / (fs / 2.0);
 
     // Apply zero-phase lowpass filter
-    auto filtered = lowpass(signal, 4, fc_norm, true);
+    auto filtered = butterworth_lowpass(signal, 4, fc_norm, true);
     print_vector(filtered, "Filtered signal (first 10)", 10);
 
     // Compute RMS before and after filtering
@@ -122,7 +122,7 @@ void test_highpass_filter()
     std::cout << "Signal mean before: " << mean_before << "\n";
 
     // Highpass filter: cutoff at 1 Hz (normalized: 1 / 50 = 0.02)
-    auto filtered = highpass(signal, 4, 0.02, true);
+    auto filtered = butterworth_highpass(signal, 4, 0.02, true);
 
     // Mean after filtering
     double mean_after = 0.0;
@@ -161,7 +161,7 @@ void test_bandpass_filter()
     std::cout << "Original signal contains: 10 Hz, 50 Hz, 200 Hz\n";
 
     // Bandpass filter: 30-100 Hz (normalized: 0.06-0.2)
-    auto filtered = bandpass(signal, 4, 0.06, 0.2, true);
+    auto filtered = butterworth_bandpass(signal, 4, 0.06, 0.2, true);
 
     // Analyze frequency content using FFT
     auto analyze = [&](const std::vector<double> &sig,
@@ -209,7 +209,7 @@ void test_phase_distortion()
     }
 
     // Design lowpass filter
-    auto coeffs = butterworth_lowpass(4, 0.1);
+    auto coeffs = butterworth_lowpass_design(4, 0.1);
 
     // Forward filtering only (has phase lag)
     auto forward = filter(signal, coeffs);
@@ -268,7 +268,7 @@ void test_matrix_filtering()
     std::cout << "Input: " << n_signals << " signals at 5, 10, 15, 20, 25 Hz\n";
 
     // Apply lowpass filter: cutoff at 12 Hz (0.24 normalized)
-    auto coeffs = butterworth_lowpass(4, 0.24);
+    auto coeffs = butterworth_lowpass_design(4, 0.24);
     auto filtered = filtfilt_columns(signals, coeffs);
 
     std::cout << "Applied lowpass filter (fc = 12 Hz)\n";
@@ -306,7 +306,7 @@ void test_frequency_response()
     std::cout << "========================================\n\n";
 
     // Design filter
-    auto coeffs = butterworth_lowpass(4, 0.2);
+    auto coeffs = butterworth_lowpass_design(4, 0.2);
 
     std::cout << "Testing frequency response at various frequencies:\n";
     std::cout << std::setw(15) << "Freq (norm)" << std::setw(15) << "Magnitude"
@@ -386,16 +386,16 @@ void test_ecg_filtering()
 
     // Step 1: Remove baseline wander (highpass at 0.5 Hz)
     // Normalized: 0.5 / 180 = 0.0028
-    auto step1 = highpass(ecg, 2, 0.0028, true);
+    auto step1 = butterworth_highpass(ecg, 2, 0.0028, true);
     std::cout << "Step 1: Baseline wander removed (highpass 0.5 Hz)\n";
 
     // Step 2: Remove 60 Hz noise (lowpass at 40 Hz)
     // Normalized: 40 / 180 = 0.222
-    auto step2 = lowpass(step1, 4, 0.222, true);
+    auto step2 = butterworth_lowpass(step1, 4, 0.222, true);
     std::cout << "Step 2: 60 Hz noise removed (lowpass 40 Hz)\n";
 
     // Alternatively: use bandpass directly (0.5 - 40 Hz)
-    auto direct = bandpass(ecg, 4, 0.0028, 0.222, true);
+    auto direct = butterworth_bandpass(ecg, 4, 0.0028, 0.222, true);
     std::cout << "Direct: Bandpass filter (0.5 - 40 Hz)\n\n";
 
     // Compare SNR

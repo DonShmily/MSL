@@ -378,3 +378,4 @@ build/
 test_result/
 output/
 dll/
+*.txt
