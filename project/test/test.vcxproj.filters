@@ -59,5 +59,8 @@
     <ClCompile Include="..\..\tests\test_fourier_filter.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\tests\test_differ.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

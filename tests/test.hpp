@@ -7,3 +7,4 @@ int test_filter_design();
 int test_interp();
 void test_ifft();
 void test_fft_filter();
+int test_differ();

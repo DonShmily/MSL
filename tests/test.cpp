@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include <iostream>
 
 int main()
 {
@@ -11,6 +12,10 @@ int main()
     // test_matlab();
     // test_interp();
     // test_ifft();
-    test_fft_filter();
+    // test_fft_filter();
+    test_differ();
+
+    std::cout << "All tests passed!" << std::endl;
+
     return 0;
 }
