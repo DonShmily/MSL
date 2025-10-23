@@ -24,11 +24,12 @@ namespace msl::interp
  */
 enum class ExtrapolationMode
 {
-    None,     // Throw exception (default)
-    Constant, // Use boundary values
-    Linear,   // Linear extrapolation using boundary slopes
-    Nearest,  // Use nearest boundary point
-    Periodic  // Periodic extension
+    None,      // Throw exception (default)
+    Constant,  // Use boundary values
+    Linear,    // Linear extrapolation using boundary slopes
+    Nearest,   // Use nearest boundary point
+    Periodic,  // Periodic extension
+    Polynomial // Use boundary polynomial (MATLAB-style for spline/Akima)
 };
 
 /**
@@ -39,7 +40,7 @@ class InterpolatorBase
 protected:
     std::vector<double> x_;
     std::vector<double> y_;
-    ExtrapolationMode extrap_mode_ = ExtrapolationMode::None;
+    ExtrapolationMode extrap_mode_ = ExtrapolationMode::Polynomial;
 
     void validate_input() const
     {
@@ -69,12 +70,25 @@ protected:
      */
     size_t find_interval(double x) const
     {
-        if (x < x_.front() || x > x_.back())
+        if (x < x_.front())
         {
             if (extrap_mode_ == ExtrapolationMode::None)
             {
                 throw std::out_of_range("x out of interpolation range");
             }
+            // Handle extrapolation
+            if (extrap_mode_ == ExtrapolationMode::Polynomial)
+                return 0;
+        }
+        if (x > x_.back())
+        {
+            if (extrap_mode_ == ExtrapolationMode::None)
+            {
+                throw std::out_of_range("x out of interpolation range");
+            }
+            // Handle extrapolation
+            if (extrap_mode_ == ExtrapolationMode::Polynomial)
+                return x_.size() - 2;
         }
 
         // Binary search
@@ -151,6 +165,11 @@ public:
                         x + period * std::ceil((x_.front() - x) / period);
                     return interpolate(x_wrapped);
                 }
+
+                case ExtrapolationMode::Polynomial: {
+                    break;
+                    ; // Let derived class handle polynomial extrapolation
+                }
             }
         }
 
@@ -181,6 +200,11 @@ public:
                     double x_wrapped =
                         x - period * std::floor((x - x_.front()) / period);
                     return interpolate(x_wrapped);
+                }
+
+                case ExtrapolationMode::Polynomial: {
+                    break;
+                    ; // Let derived class handle polynomial extrapolation
                 }
             }
         }

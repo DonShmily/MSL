@@ -1,0 +1,97 @@
+clc;clear;close all
+
+%% 生成插值测试数据
+x = linspace(0, 10, 11);
+y1 = sin(x);
+y2 = exp(-0.2*x).*cos(2*x);
+y3 = x.^2 + 3*x + 2;
+data = [x; y1; y2; y3]';
+
+x_exact = linspace(-1, 12, 1000);
+y1_exact = sin(x_exact);
+y2_exact = exp(-0.2*x_exact).*cos(2*x_exact);
+y3_exact = x_exact.^2 + 3*x_exact + 2;
+
+x_new = [-1, 0, 0.5, 2, 2.2, 5, 5.6, 8, 8.7,9.1, 10, 11.5];
+
+save('..\resource\test_result\interp\test_interp_data.txt', 'data', '-ascii');
+
+%%
+y1_interp = interp1(x, y1, x_new,"linear","extrap");
+y2_interp = interp1(x, y2, x_new,"linear","extrap");
+y3_interp = interp1(x, y3, x_new,"linear","extrap");
+lin_interp = [x_new; y1_interp; y2_interp; y3_interp]';
+
+y1_interp = interp1(x, y1, x_new,"spline","extrap");
+y2_interp = interp1(x, y2, x_new,"spline","extrap");
+y3_interp = interp1(x, y3, x_new,"spline","extrap");
+spline_interp = [x_new; y1_interp; y2_interp; y3_interp]';
+
+y1_interp = interp1(x, y1, x_new,"makima","extrap");
+y2_interp = interp1(x, y2, x_new,"makima","extrap");
+y3_interp = interp1(x, y3, x_new,"makima","extrap");
+makima_interp = [x_new; y1_interp; y2_interp; y3_interp]';
+
+lin_interp_cpp = importdata("..\resource\test_result\interp\linear_interp_all.txt");
+spline_interp_cpp = importdata("..\resource\test_result\interp\spline_interp_all.txt");
+makima_interp_cpp = importdata("..\resource\test_result\interp\akima_interp_all.txt");
+
+figure
+subplot(3,1,1);
+hold on;
+plot(x_exact, y1_exact, 'k-', 'DisplayName', 'Exact y1');
+plot(x_new, lin_interp(:,2), 'ro-', 'DisplayName', 'MATLAB Linear y1');
+plot(x_new, lin_interp_cpp(:,2), 'bx--', 'DisplayName', 'C++ Linear y1');
+legend; grid on; title('Linear Interpolation Comparison for y1');
+subplot(3,1,2);
+hold on;
+plot(x_exact, y1_exact, 'k-', 'DisplayName', 'Exact y1');
+plot(x_new, spline_interp(:,2), 'ro-', 'DisplayName', 'MATLAB Spline y1');
+plot(x_new, spline_interp_cpp(:,2), 'bx--', 'DisplayName', 'C++ Spline y1');
+legend; grid on; title('Spline Interpolation Comparison for y1');
+subplot(3,1,3);
+hold on;
+plot(x_exact, y1_exact, 'k-', 'DisplayName', 'Exact y1');
+plot(x_new, makima_interp(:,2), 'ro-', 'DisplayName', 'MATLAB Makima y1');
+plot(x_new, makima_interp_cpp(:,2), 'bx--', 'DisplayName', 'C++ Akima y1');
+legend; grid on; title('Akima Interpolation Comparison for y1');
+
+figure
+subplot(3,1,1);
+hold on;
+plot(x_exact, y2_exact, 'k-', 'DisplayName', 'Exact y2');
+plot(x_new, lin_interp(:,3), 'ro-', 'DisplayName', 'MATLAB Linear y2');
+plot(x_new, lin_interp_cpp(:,3), 'bx--', 'DisplayName', 'C++ Linear y2');
+legend; grid on; title('Linear Interpolation Comparison for y2');
+subplot(3,1,2);
+hold on;
+plot(x_exact, y2_exact, 'k-', 'DisplayName', 'Exact y2');
+plot(x_new, spline_interp(:,3), 'ro-', 'DisplayName', 'MATLAB Spline y2');
+plot(x_new, spline_interp_cpp(:,3), 'bx--', 'DisplayName', 'C++ Spline y2');
+legend; grid on; title('Spline Interpolation Comparison for y2');
+subplot(3,1,3);
+hold on;
+plot(x_exact, y2_exact, 'k-', 'DisplayName', 'Exact y2');
+plot(x_new, makima_interp(:,3), 'ro-', 'DisplayName', 'MATLAB Makima y2');
+plot(x_new, makima_interp_cpp(:,3), 'bx--', 'DisplayName', 'C++ Akima y2');
+legend; grid on; title('Akima Interpolation Comparison for y2');
+
+figure
+subplot(3,1,1);
+hold on;
+plot(x_exact, y3_exact, 'k-', 'DisplayName', 'Exact y3');
+plot(x_new, lin_interp(:,4), 'ro-', 'DisplayName', 'MATLAB Linear y3');
+plot(x_new, lin_interp_cpp(:,4), 'bx--', 'DisplayName', 'C++ Linear y3');
+legend; grid on; title('Linear Interpolation Comparison for y3');
+subplot(3,1,2);
+hold on;
+plot(x_exact, y3_exact, 'k-', 'DisplayName', 'Exact y3');
+plot(x_new, spline_interp(:,4), 'ro-', 'DisplayName', 'MATLAB Spline y3');
+plot(x_new, spline_interp_cpp(:,4), 'bx--', 'DisplayName', 'C++ Spline y3');
+legend; grid on; title('Spline Interpolation Comparison for y3');
+subplot(3,1,3);
+hold on;
+plot(x_exact, y3_exact, 'k-', 'DisplayName', 'Exact y3');
+plot(x_new, makima_interp(:,4), 'ro-', 'DisplayName', 'MATLAB Makima y3');
+plot(x_new, makima_interp_cpp(:,4), 'bx--', 'DisplayName', 'C++ Akima y3');
+legend; grid on; title('Akima Interpolation Comparison for y3');

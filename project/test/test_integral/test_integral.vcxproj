@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a3a0e90d-b2f7-46bf-98df-170549534958}</ProjectGuid>
-    <RootNamespace>test</RootNamespace>
+    <ProjectGuid>{85f59f8b-8a82-479b-86ee-6971b2757801}</ProjectGuid>
+    <RootNamespace>testintegral</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -108,7 +108,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -124,7 +124,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,23 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\tests\helper.hpp" />
-    <ClInclude Include="..\..\tests\test.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\tests\test_differ.cpp" />
-    <ClCompile Include="..\..\tests\test_filter.cpp" />
-    <ClCompile Include="..\..\tests\test_filter_design.cpp" />
-    <ClCompile Include="..\..\tests\helper.cpp" />
-    <ClCompile Include="..\..\tests\test.cpp" />
-    <ClCompile Include="..\..\tests\test_fft.cpp" />
-    <ClCompile Include="..\..\tests\test_fft_matlab.cpp" />
-    <ClCompile Include="..\..\tests\test_fourier_filter.cpp" />
-    <ClCompile Include="..\..\tests\test_ifft.cpp" />
-    <ClCompile Include="..\..\tests\test_integral.cpp" />
-    <ClCompile Include="..\..\tests\test_interp.cpp" />
-    <ClCompile Include="..\..\tests\test_signal.cpp" />
-    <ClCompile Include="..\..\tests\test_matrix.cpp" />
+    <ClCompile Include="..\..\..\tests\test_integral\test_integral.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

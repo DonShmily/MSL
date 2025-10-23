@@ -78,7 +78,7 @@ public:
                         std::size_t nfft = 0,
                         FilterType type = FilterType::bandpass,
                         WindowType window_type = WindowType::rectangular,
-                        double transition_band = 0.01)
+                        double transition_band = 0.00)
         : fc_low_(fc_low),
           fc_high_(fc_high),
           nfft_(nfft),
