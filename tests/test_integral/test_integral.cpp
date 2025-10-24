@@ -1,7 +1,6 @@
 #include <vector>
 
 #include "integral.hpp"
-#include "integral/cumtrapz.hpp"
 #include "matrix.hpp"
 #include "utils/data_io.hpp"
 

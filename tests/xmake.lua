@@ -1,0 +1,6 @@
+includes("test_differ")
+includes("test_fft")
+includes("test_integral")
+includes("test_interp")
+includes("test_matrix")
+includes("test_signal")

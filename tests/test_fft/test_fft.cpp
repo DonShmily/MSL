@@ -1,7 +1,6 @@
 #include <vector>
 
 #include "fft.hpp"
-#include "fft/fft.hpp"
 #include "matrix.hpp"
 #include "utils/data_io.hpp"
 

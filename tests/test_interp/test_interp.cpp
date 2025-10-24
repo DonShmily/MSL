@@ -1,9 +1,6 @@
 #include <vector>
 
 #include "interp.hpp"
-#include "interp/interp_1d_akima.hpp"
-#include "interp/interp_1d_linear.hpp"
-#include "interp/interp_1d_spline.hpp"
 #include "matrix.hpp"
 #include "utils/data_io.hpp"
 
