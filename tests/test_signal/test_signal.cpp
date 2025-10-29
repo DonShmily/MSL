@@ -48,5 +48,55 @@ int test_signal()
     return 0;
 }
 
+int test_fft()
+{
+    auto ori_data = utils::ReadData("KunmingSSJY.txt", 6, 3e4);
+    auto data_1d =
+        std::vector<double>(ori_data.begin(), ori_data.begin() + 3e4);
+    matrixd ori_matrix(3e4, 6, std::span<const double>(ori_data));
 
-int main() { return test_signal(); }
+    try
+    {
+
+        // test r2c fft
+        auto fft_result = fft::fft(data_1d);
+        utils::WriteComplexData(
+            "test_result/fft/fft_result.txt", fft_result, 1, 3e4);
+
+        // test c2c fft
+        auto fft_result_c2c = fft::fft(fft_result);
+        utils::WriteComplexData(
+            "test_result/fft/fft_result_c2c.txt", fft_result_c2c, 1, 3e4);
+
+        // test c2r ifft
+        auto ifft_result = fft::ifft_real(fft_result, 3e4);
+        utils::WriteData(
+            "test_result/fft/ifft_result.txt", ifft_result, 1, 3e4);
+
+        // test c2c ifft
+        auto ifft_result_c2c = fft::ifft(fft_result_c2c, 3e4);
+        utils::WriteComplexData(
+            "test_result/fft/ifft_result_c2c.txt", ifft_result_c2c, 1, 3e4);
+
+        // test matrix fft
+        auto fft_matrix_result = fft::fft_columns(ori_matrix);
+        auto res_vec = std::vector<std::complex<double>>(
+            fft_matrix_result.data(),
+            fft_matrix_result.data() + fft_matrix_result.size());
+        utils::WriteComplexData("test_result/fft/fft_matrix_result.txt",
+                                res_vec,
+                                fft_matrix_result.cols(),
+                                fft_matrix_result.rows());
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "FFT test failed: " << e.what() << std::endl;
+        return -1;
+    }
+
+    std::cout << "FFT test completed successfully." << std::endl;
+    return 0;
+}
+
+
+int main() { return test_signal() + test_fft(); }

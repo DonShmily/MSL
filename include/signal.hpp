@@ -3,3 +3,5 @@
 
 #include "signal/butterworth_filter.hpp"
 #include "signal/fourier_domain_filter.hpp"
+
+#include "signal/fft.hpp"

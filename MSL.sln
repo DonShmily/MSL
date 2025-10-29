@@ -5,8 +5,6 @@ VisualStudioVersion = 18.0.11109.219
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "matrix", "project\matrix\matrix.vcxproj", "{4A57D179-FAF5-40C2-8BDA-752A7CA6104E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fft", "project\fft\fft.vcxproj", "{AE74A2FC-E309-4F76-9C89-93774F09E5CA}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "signal", "project\signal\signal.vcxproj", "{EFE5908E-B8AF-41DA-ABCF-214316EBFDDE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interp", "project\interp\interp.vcxproj", "{EA08AC0E-8A8A-4D55-B75C-CBECD54AA389}"
@@ -17,8 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{ABF4CAFE-A
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_differ", "project\test\test_differ\test_differ.vcxproj", "{FB6AE64D-2628-434A-B324-B64533E06795}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_fft", "project\test\test_fft\test_fft.vcxproj", "{85EB4A6B-AF44-4363-BFA5-96DFD47D27F6}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_integral", "project\test\test_integral\test_integral.vcxproj", "{85F59F8B-8A82-479B-86EE-6971B2757801}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_interp", "project\test\test_interp\test_interp.vcxproj", "{4A094E2C-8641-40D5-A352-1F125EAE6D54}"
@@ -26,6 +22,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_matrix", "project\test\test_matrix\test_matrix.vcxproj", "{E487B748-8407-4D20-B9A2-93AC55A18389}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_signal", "project\test\test_signal\test_signal.vcxproj", "{70D46674-BAB8-464A-9C4A-DBCEBE1C3DD6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "integral", "project\integral\integral.vcxproj", "{96A9E5EC-CCBF-4B67-9F89-AC7332949E14}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utils", "project\utils\utils.vcxproj", "{531E8DAC-7710-4165-8167-02CCF01A912A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,14 +43,6 @@ Global
 		{4A57D179-FAF5-40C2-8BDA-752A7CA6104E}.Release|x64.Build.0 = Release|x64
 		{4A57D179-FAF5-40C2-8BDA-752A7CA6104E}.Release|x86.ActiveCfg = Release|Win32
 		{4A57D179-FAF5-40C2-8BDA-752A7CA6104E}.Release|x86.Build.0 = Release|Win32
-		{AE74A2FC-E309-4F76-9C89-93774F09E5CA}.Debug|x64.ActiveCfg = Debug|x64
-		{AE74A2FC-E309-4F76-9C89-93774F09E5CA}.Debug|x64.Build.0 = Debug|x64
-		{AE74A2FC-E309-4F76-9C89-93774F09E5CA}.Debug|x86.ActiveCfg = Debug|Win32
-		{AE74A2FC-E309-4F76-9C89-93774F09E5CA}.Debug|x86.Build.0 = Debug|Win32
-		{AE74A2FC-E309-4F76-9C89-93774F09E5CA}.Release|x64.ActiveCfg = Release|x64
-		{AE74A2FC-E309-4F76-9C89-93774F09E5CA}.Release|x64.Build.0 = Release|x64
-		{AE74A2FC-E309-4F76-9C89-93774F09E5CA}.Release|x86.ActiveCfg = Release|Win32
-		{AE74A2FC-E309-4F76-9C89-93774F09E5CA}.Release|x86.Build.0 = Release|Win32
 		{EFE5908E-B8AF-41DA-ABCF-214316EBFDDE}.Debug|x64.ActiveCfg = Debug|x64
 		{EFE5908E-B8AF-41DA-ABCF-214316EBFDDE}.Debug|x64.Build.0 = Debug|x64
 		{EFE5908E-B8AF-41DA-ABCF-214316EBFDDE}.Debug|x86.ActiveCfg = Debug|Win32
@@ -83,14 +75,6 @@ Global
 		{FB6AE64D-2628-434A-B324-B64533E06795}.Release|x64.Build.0 = Release|x64
 		{FB6AE64D-2628-434A-B324-B64533E06795}.Release|x86.ActiveCfg = Release|Win32
 		{FB6AE64D-2628-434A-B324-B64533E06795}.Release|x86.Build.0 = Release|Win32
-		{85EB4A6B-AF44-4363-BFA5-96DFD47D27F6}.Debug|x64.ActiveCfg = Debug|x64
-		{85EB4A6B-AF44-4363-BFA5-96DFD47D27F6}.Debug|x64.Build.0 = Debug|x64
-		{85EB4A6B-AF44-4363-BFA5-96DFD47D27F6}.Debug|x86.ActiveCfg = Debug|Win32
-		{85EB4A6B-AF44-4363-BFA5-96DFD47D27F6}.Debug|x86.Build.0 = Debug|Win32
-		{85EB4A6B-AF44-4363-BFA5-96DFD47D27F6}.Release|x64.ActiveCfg = Release|x64
-		{85EB4A6B-AF44-4363-BFA5-96DFD47D27F6}.Release|x64.Build.0 = Release|x64
-		{85EB4A6B-AF44-4363-BFA5-96DFD47D27F6}.Release|x86.ActiveCfg = Release|Win32
-		{85EB4A6B-AF44-4363-BFA5-96DFD47D27F6}.Release|x86.Build.0 = Release|Win32
 		{85F59F8B-8A82-479B-86EE-6971B2757801}.Debug|x64.ActiveCfg = Debug|x64
 		{85F59F8B-8A82-479B-86EE-6971B2757801}.Debug|x64.Build.0 = Debug|x64
 		{85F59F8B-8A82-479B-86EE-6971B2757801}.Debug|x86.ActiveCfg = Debug|Win32
@@ -123,13 +107,28 @@ Global
 		{70D46674-BAB8-464A-9C4A-DBCEBE1C3DD6}.Release|x64.Build.0 = Release|x64
 		{70D46674-BAB8-464A-9C4A-DBCEBE1C3DD6}.Release|x86.ActiveCfg = Release|Win32
 		{70D46674-BAB8-464A-9C4A-DBCEBE1C3DD6}.Release|x86.Build.0 = Release|Win32
+		{96A9E5EC-CCBF-4B67-9F89-AC7332949E14}.Debug|x64.ActiveCfg = Debug|x64
+		{96A9E5EC-CCBF-4B67-9F89-AC7332949E14}.Debug|x64.Build.0 = Debug|x64
+		{96A9E5EC-CCBF-4B67-9F89-AC7332949E14}.Debug|x86.ActiveCfg = Debug|Win32
+		{96A9E5EC-CCBF-4B67-9F89-AC7332949E14}.Debug|x86.Build.0 = Debug|Win32
+		{96A9E5EC-CCBF-4B67-9F89-AC7332949E14}.Release|x64.ActiveCfg = Release|x64
+		{96A9E5EC-CCBF-4B67-9F89-AC7332949E14}.Release|x64.Build.0 = Release|x64
+		{96A9E5EC-CCBF-4B67-9F89-AC7332949E14}.Release|x86.ActiveCfg = Release|Win32
+		{96A9E5EC-CCBF-4B67-9F89-AC7332949E14}.Release|x86.Build.0 = Release|Win32
+		{531E8DAC-7710-4165-8167-02CCF01A912A}.Debug|x64.ActiveCfg = Debug|x64
+		{531E8DAC-7710-4165-8167-02CCF01A912A}.Debug|x64.Build.0 = Debug|x64
+		{531E8DAC-7710-4165-8167-02CCF01A912A}.Debug|x86.ActiveCfg = Debug|Win32
+		{531E8DAC-7710-4165-8167-02CCF01A912A}.Debug|x86.Build.0 = Debug|Win32
+		{531E8DAC-7710-4165-8167-02CCF01A912A}.Release|x64.ActiveCfg = Release|x64
+		{531E8DAC-7710-4165-8167-02CCF01A912A}.Release|x64.Build.0 = Release|x64
+		{531E8DAC-7710-4165-8167-02CCF01A912A}.Release|x86.ActiveCfg = Release|Win32
+		{531E8DAC-7710-4165-8167-02CCF01A912A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{FB6AE64D-2628-434A-B324-B64533E06795} = {ABF4CAFE-AAA7-4FCF-B0EE-58B438E6784F}
-		{85EB4A6B-AF44-4363-BFA5-96DFD47D27F6} = {ABF4CAFE-AAA7-4FCF-B0EE-58B438E6784F}
 		{85F59F8B-8A82-479B-86EE-6971B2757801} = {ABF4CAFE-AAA7-4FCF-B0EE-58B438E6784F}
 		{4A094E2C-8641-40D5-A352-1F125EAE6D54} = {ABF4CAFE-AAA7-4FCF-B0EE-58B438E6784F}
 		{E487B748-8407-4D20-B9A2-93AC55A18389} = {ABF4CAFE-AAA7-4FCF-B0EE-58B438E6784F}
