@@ -20,7 +20,7 @@
 #include <span>
 #include <utility>
 
-namespace msl
+namespace msl::matrix
 {
 class real_matrix_base
 {
@@ -118,6 +118,6 @@ protected:
     }
 };
 
-} // namespace msl
+} // namespace msl::matrix
 
 #endif // MSL_REAL_MATRIX_BASE_HPP

@@ -13,7 +13,7 @@
 #include "matrix/real_matrix_owned.hpp"
 #include "matrix/real_matrix_view.hpp"
 
-namespace msl::eigen_interface
+namespace msl::matrix::eigen_interface
 {
 
 // ============================================================================
@@ -55,6 +55,16 @@ inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const matrixd_view &view)
 {
     return Eigen::Map<const Eigen::MatrixXd>(
         view.data(), view.rows(), view.cols());
+}
+
+/**
+ * @brief Create Eigen::Map from matrixd_base
+ * @warning The view must point to contiguous column-major data
+ */
+inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const real_matrix_base &base)
+{
+    return Eigen::Map<const Eigen::MatrixXd>(
+        base.data(), base.rows(), base.cols());
 }
 
 /**
@@ -350,6 +360,6 @@ inline std::vector<double> solve(const matrixd &A, const std::vector<double> &b)
     return std::vector<double>(x.data(), x.data() + x.size());
 }
 
-} // namespace msl::eigen_interface
+} // namespace msl::matrix::eigen_interface
 
 #endif // MSL_EIGEN_INTERFACE_HPP

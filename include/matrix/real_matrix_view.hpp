@@ -21,7 +21,7 @@
 
 #include "real_matrix_base.hpp"
 
-namespace msl
+namespace msl::matrix
 {
 class const_real_matrix_view; // Forward declaration
 class real_matrix_owned;      // Forward declaration
@@ -268,6 +268,6 @@ make_view(const real_matrix_owned &mat)
     return const_real_matrix_view(mat);
 }
 
-} // namespace msl
+} // namespace msl::matrix
 
 #endif // MSL_MATRIX_VIEW_HPP

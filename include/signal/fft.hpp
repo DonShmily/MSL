@@ -21,7 +21,7 @@
 #include "matrix/complex_matrix_owned.hpp"
 #include "matrix/real_matrix_owned.hpp"
 
-namespace msl::fft
+namespace msl::signal
 {
 
 // ============================================================================
@@ -426,6 +426,6 @@ inline void apply_hann_window(std::span<double> signal)
     }
 }
 
-} // namespace msl::fft
+} // namespace msl::signal
 
 #endif // MSL_FFT_HPP

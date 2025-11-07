@@ -23,7 +23,7 @@
 #include "complex_matrix_base.hpp"
 #include "real_matrix_owned.hpp"
 
-namespace msl
+namespace msl::matrix
 {
 class complex_matrix_view; // Forward declaration
 
@@ -400,6 +400,6 @@ operator/(const complex_matrix_owned &mat, const double &scalar)
     return result;
 }
 
-} // namespace msl
+} // namespace msl::matrix
 
 #endif // MSL_complex_MATRIX_OWNED_HPP

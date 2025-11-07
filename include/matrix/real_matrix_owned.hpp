@@ -22,7 +22,7 @@
 
 #include "real_matrix_base.hpp"
 
-namespace msl
+namespace msl::matrix
 {
 class real_matrix_view; // Forward declaration
 
@@ -348,6 +348,6 @@ inline void swap(real_matrix_owned &a, real_matrix_owned &b) noexcept
     result /= scalar;
     return result;
 }
-} // namespace msl
+} // namespace msl::matrix
 
 #endif // MSL_REAL_MATRIX_OWNED_HPP

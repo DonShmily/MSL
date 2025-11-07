@@ -21,7 +21,7 @@
 #include "real_matrix_owned.hpp"
 #include "real_matrix_view.hpp"
 
-namespace msl
+namespace msl::matrix
 {
 // - Function of real_matrix_owned
 // Construct from real_matrix_view (deep copy)
@@ -151,6 +151,6 @@ inline complex_matrix_owned const_complex_matrix_view::to_owned() const
         std::span<const std::complex<double>>(this->data_));
 }
 
-} // namespace msl
+} // namespace msl::matrix
 
 #endif // MSL_REAL_MATRIX_CONVERSION_HPP

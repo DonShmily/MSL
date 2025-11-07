@@ -32,7 +32,7 @@ for (size_t i = 0; i < 128; ++i) {
 }
 
 // 计算 FFT
-auto fft_result = msl::fft::fft(signal);
+auto fft_result = msl::signal::fft(signal);
 
 // fft_result.size() = 65 (N/2 + 1，利用共轭对称性)
 ```
@@ -48,7 +48,7 @@ auto fft_result = msl::fft::fft(signal);
 std::vector<std::complex<double>> complex_signal(64);
 // ... 初始化 ...
 
-auto fft_result = msl::fft::fft(complex_signal);
+auto fft_result = msl::signal::fft(complex_signal);
 // fft_result.size() = 64 (完整的复数 FFT)
 ```
 
@@ -59,7 +59,7 @@ double data[256];
 // ... 填充数据 ...
 
 // 使用 span 避免拷贝
-auto result = msl::fft::fft(std::span<const double>(data, 256));
+auto result = msl::signal::fft(std::span<const double>(data, 256));
 ```
 
 ---
@@ -69,8 +69,8 @@ auto result = msl::fft::fft(std::span<const double>(data, 256));
 ### 复数 → 复数
 
 ```cpp
-auto fft_result = msl::fft::fft(signal);
-auto reconstructed = msl::fft::ifft(fft_result);
+auto fft_result = msl::signal::fft(signal);
+auto reconstructed = msl::signal::ifft(fft_result);
 
 // reconstructed 应该接近原始信号
 ```
@@ -81,10 +81,10 @@ auto reconstructed = msl::fft::ifft(fft_result);
 std::vector<double> signal(128);
 // ... 初始化 ...
 
-auto fft_result = msl::fft::fft(signal);  // 128 → 65 复数值
+auto fft_result = msl::signal::fft(signal);  // 128 → 65 复数值
 
 // 逆变换回实数
-auto reconstructed = msl::fft::ifft_real(fft_result, 128);
+auto reconstructed = msl::signal::ifft_real(fft_result, 128);
 // 必须指定原始长度！
 ```
 
@@ -102,11 +102,11 @@ matrixd signals(256, 10);  // 10个信号，每个256点
 // ... 填充数据 ...
 
 // 对每一列独立做 FFT
-auto fft_result = msl::fft::fft_columns(signals);
+auto fft_result = msl::signal::fft_columns(signals);
 // 结果: (129 x 10) 复数矩阵
 
 // 逆变换
-auto reconstructed = msl::fft::ifft_columns_real(fft_result, 256);
+auto reconstructed = msl::signal::ifft_columns_real(fft_result, 256);
 ```
 
 **用途**：批量处理多个信号（如音频多声道、传感器阵列）
@@ -116,10 +116,10 @@ auto reconstructed = msl::fft::ifft_columns_real(fft_result, 256);
 ```cpp
 matrixd signals(10, 256);  // 10个信号，每个256点（按行排列）
 
-auto fft_result = msl::fft::fft_rows(signals);
+auto fft_result = msl::signal::fft_rows(signals);
 // 结果: (10 x 129) 复数矩阵
 
-auto reconstructed = msl::fft::ifft_rows_real(fft_result, 256);
+auto reconstructed = msl::signal::ifft_rows_real(fft_result, 256);
 ```
 
 **注意**：行访问在列主序矩阵中效率较低，优先使用 `fft_columns`。
@@ -132,10 +132,10 @@ matrixd image(512, 512);
 // ... 填充图像数据 ...
 
 // 完整 2D FFT（在两个维度上都做变换）
-auto fft_2d = msl::fft::fft2(image);
+auto fft_2d = msl::signal::fft2(image);
 
 // 逆变换
-auto reconstructed = msl::fft::ifft2_real(fft_2d, 512, 512);
+auto reconstructed = msl::signal::ifft2_real(fft_2d, 512, 512);
 ```
 
 **用途**：图像处理、2D 信号分析
@@ -150,7 +150,7 @@ auto reconstructed = msl::fft::ifft2_real(fft_2d, 512, 512);
 size_t n = 256;
 double sampling_rate = 1000.0;  // Hz
 
-auto freqs = msl::fft::fft_frequencies(n, sampling_rate);
+auto freqs = msl::signal::fft_frequencies(n, sampling_rate);
 // freqs[i] = i * (sampling_rate / n)
 // 从 0 到 Nyquist 频率
 ```
@@ -158,10 +158,10 @@ auto freqs = msl::fft::fft_frequencies(n, sampling_rate);
 ### 功率谱
 
 ```cpp
-auto fft_result = msl::fft::fft(signal);
+auto fft_result = msl::signal::fft(signal);
 
 // 功率谱 = |FFT|²
-auto power = msl::fft::power_spectrum(fft_result);
+auto power = msl::signal::power_spectrum(fft_result);
 
 // 找到最大功率的频率
 size_t peak_idx = std::max_element(power.begin() + 1, power.end()) 
@@ -172,8 +172,8 @@ double peak_freq = freqs[peak_idx];
 ### 幅度谱和相位谱
 
 ```cpp
-auto magnitude = msl::fft::magnitude_spectrum(fft_result);  // |FFT|
-auto phase = msl::fft::phase_spectrum(fft_result);          // arg(FFT)
+auto magnitude = msl::signal::magnitude_spectrum(fft_result);  // |FFT|
+auto phase = msl::signal::phase_spectrum(fft_result);          // arg(FFT)
 ```
 
 ---
@@ -191,15 +191,15 @@ std::vector<double> signal(256);
 // ... 初始化信号 ...
 
 // 应用 Hamming 窗（修改 signal）
-msl::fft::apply_hamming_window(signal);
+msl::signal::apply_hamming_window(signal);
 
-auto fft_result = msl::fft::fft(signal);
+auto fft_result = msl::signal::fft(signal);
 ```
 
 ### Hann 窗
 
 ```cpp
-msl::fft::apply_hann_window(signal);
+msl::signal::apply_hann_window(signal);
 ```
 
 ### 选择窗函数
@@ -234,12 +234,12 @@ int main() {
     }
     
     // 应用窗函数
-    msl::fft::apply_hamming_window(signal);
+    msl::signal::apply_hamming_window(signal);
     
     // 计算 FFT
-    auto fft_result = msl::fft::fft(signal);
-    auto magnitude = msl::fft::magnitude_spectrum(fft_result);
-    auto freqs = msl::fft::fft_frequencies(n, fs);
+    auto fft_result = msl::signal::fft(signal);
+    auto magnitude = msl::signal::magnitude_spectrum(fft_result);
+    auto freqs = msl::signal::fft_frequencies(n, fs);
     
     // 找峰值
     size_t peak_idx = 0;

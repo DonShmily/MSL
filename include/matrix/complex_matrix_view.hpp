@@ -22,7 +22,7 @@
 #include "complex_matrix_base.hpp"
 #include "complex_matrix_owned.hpp"
 
-namespace msl
+namespace msl::matrix
 {
 class const_complex_matrix_view; // Forward declaration
 class complex_matrix_owned;      // Forward declaration
@@ -393,6 +393,6 @@ make_view(const complex_matrix_owned &mat)
     return const_complex_matrix_view(mat);
 }
 
-} // namespace msl
+} // namespace msl::matrix
 
 #endif // MSL_MATRIX_VIEW_HPP

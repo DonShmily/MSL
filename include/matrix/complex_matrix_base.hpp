@@ -21,7 +21,7 @@
 #include <span>
 #include <utility>
 
-namespace msl
+namespace msl::matrix
 {
 class complex_matrix_base
 {
@@ -134,6 +134,6 @@ protected:
     }
 };
 
-} // namespace msl
+} // namespace msl::matrix
 
 #endif // MSL_COMPLEX_MATRIX_BASE_HPP
