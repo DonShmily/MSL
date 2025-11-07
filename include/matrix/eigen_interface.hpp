@@ -9,7 +9,11 @@
 #ifndef MSL_EIGEN_INTERFACE_HPP
 #define MSL_EIGEN_INTERFACE_HPP
 
+#include <complex>
+#include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
+
+#include "matrix/complex_matrix_base.hpp"
 #include "matrix/real_matrix_owned.hpp"
 #include "matrix/real_matrix_view.hpp"
 
@@ -64,6 +68,20 @@ inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const matrixd_view &view)
 inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const real_matrix_base &base)
 {
     return Eigen::Map<const Eigen::MatrixXd>(
+        base.data(), base.rows(), base.cols());
+}
+
+/**
+ * @brief Create Eigen::Map from matrixc_base
+ * @warning The view must point to contiguous column-major data
+ */
+inline Eigen::Map<
+    const Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>>
+as_eigen(const complex_matrix_base &base)
+{
+    return Eigen::Map<const Eigen::Matrix<std::complex<double>,
+                                          Eigen::Dynamic,
+                                          Eigen::Dynamic>>(
         base.data(), base.rows(), base.cols());
 }
 

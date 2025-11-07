@@ -83,7 +83,7 @@ inline double trapz(std::span<const double> x, std::span<const double> y)
 /**
  * @brief Integrate each column of matrix and return vector of results
  */
-inline std::vector<double> trapz(const matrixd &mat, double dx)
+inline std::vector<double> trapz(const matrix::matrixd &mat, double dx)
 {
     if (mat.rows() < 2)
     {

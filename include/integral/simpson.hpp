@@ -126,7 +126,7 @@ inline std::vector<double> cumsimpson(std::span<const double> y, double dx)
 /**
  * @brief Simpson's rule for each column of matrix
  */
-inline std::vector<double> simpson(const matrixd &mat, double dx)
+inline std::vector<double> simpson(const matrix::matrixd &mat, double dx)
 {
     if (mat.rows() < 3)
     {

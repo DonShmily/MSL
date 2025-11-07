@@ -23,6 +23,7 @@
     <ClInclude Include="..\..\include\matrix\complex_matrix_owned.hpp" />
     <ClInclude Include="..\..\include\matrix\complex_matrix_view.hpp" />
     <ClInclude Include="..\..\include\matrix\eigen_interface.hpp" />
+    <ClInclude Include="..\..\include\matrix\martrix_decompose.hpp" />
     <ClInclude Include="..\..\include\matrix\matrix_conversion.hpp" />
     <ClInclude Include="..\..\include\matrix\real_matrix_base.hpp" />
     <ClInclude Include="..\..\include\matrix\real_matrix_owned.hpp" />

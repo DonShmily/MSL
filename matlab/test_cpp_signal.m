@@ -1,4 +1,5 @@
 clc;clear;close all
+% 2025.10.23测试通过
 
 ori_data = importdata("..\resource\KunmingSSJY.txt");
 

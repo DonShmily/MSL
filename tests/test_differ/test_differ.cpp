@@ -11,7 +11,7 @@ int test_differ()
     auto ori_data = utils::ReadData("KunmingSSJY.txt", 6, 3e4);
     auto data_1d =
         std::vector<double>(ori_data.begin(), ori_data.begin() + 3e4);
-    matrixd ori_matrix(3e4, 6, std::span<const double>(ori_data));
+    matrix::matrixd ori_matrix(3e4, 6, std::span<const double>(ori_data));
     try
     {
         // 1d differentiation

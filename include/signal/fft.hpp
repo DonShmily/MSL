@@ -154,14 +154,15 @@ ifft_real(const std::vector<std::complex<double>> &input, size_t nfft = 0)
  * Applies 1D FFT to each column of the matrix independently.
  * Useful for processing multiple signals simultaneously.
  */
-inline matrixc fft_columns(const matrixd &input, size_t nfft = 0)
+inline matrix::matrixc fft_columns(const matrix::matrixd &input,
+                                   size_t nfft = 0)
 {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_rows : nfft;
 
-    matrixc output(nfft, n_cols);
+    matrix::matrixc output(nfft, n_cols);
 
     Eigen::FFT<double> fft_engine;
 
@@ -182,14 +183,15 @@ inline matrixc fft_columns(const matrixd &input, size_t nfft = 0)
  *
  * Full complex FFT for each column
  */
-inline matrixc fft_columns(const matrixc &input, size_t nfft = 0)
+inline matrix::matrixc fft_columns(const matrix::matrixc &input,
+                                   size_t nfft = 0)
 {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_rows : nfft;
 
-    matrixc output(nfft, n_cols);
+    matrix::matrixc output(nfft, n_cols);
 
     Eigen::FFT<double> fft_engine;
 
@@ -210,14 +212,15 @@ inline matrixc fft_columns(const matrixc &input, size_t nfft = 0)
 /**
  * @brief 2D Inverse FFT: complex matrix -> complex matrix (column-wise)
  */
-inline matrixc ifft_columns(const matrixc &input, size_t nfft = 0)
+inline matrix::matrixc ifft_columns(const matrix::matrixc &input,
+                                    size_t nfft = 0)
 {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_rows : nfft;
 
-    matrixc output(nfft, n_cols);
+    matrix::matrixc output(nfft, n_cols);
 
     Eigen::FFT<double> fft_engine;
 
@@ -237,13 +240,14 @@ inline matrixc ifft_columns(const matrixc &input, size_t nfft = 0)
  * @param input Complex frequency domain matrix
  * @param output_rows Expected number of rows in output (original signal length)
  */
-inline matrixd ifft_columns_real(const matrixc &input, size_t nfft)
+inline matrix::matrixd ifft_columns_real(const matrix::matrixc &input,
+                                         size_t nfft)
 {
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_cols : nfft;
 
-    matrixd output(nfft, n_cols);
+    matrix::matrixd output(nfft, n_cols);
 
     Eigen::FFT<double> fft_engine;
 
@@ -269,14 +273,14 @@ inline matrixd ifft_columns_real(const matrixc &input, size_t nfft)
  * @param input Real-valued matrix (each row is a signal)
  * @return Complex matrix with FFT of each row
  */
-inline matrixc fft_rows(const matrixd &input, size_t nfft = 0)
+inline matrix::matrixc fft_rows(const matrix::matrixd &input, size_t nfft = 0)
 {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_cols : nfft;
 
-    matrixc output(n_rows, nfft);
+    matrix::matrixc output(n_rows, nfft);
 
     Eigen::FFT<double> fft_engine;
 
@@ -293,11 +297,11 @@ inline matrixc fft_rows(const matrixd &input, size_t nfft = 0)
 /**
  * @brief 2D Inverse FFT: complex matrix -> real matrix (row-wise)
  */
-inline matrixd ifft_rows_real(const matrixc &input, size_t nfft)
+inline matrix::matrixd ifft_rows_real(const matrix::matrixc &input, size_t nfft)
 {
     size_t n_rows = input.rows();
 
-    matrixd output(n_rows, nfft);
+    matrix::matrixd output(n_rows, nfft);
 
     Eigen::FFT<double> fft_engine;
 

@@ -133,8 +133,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\signal\butterworth_filter.hpp" />
+    <ClInclude Include="..\..\include\signal\fft.hpp" />
     <ClInclude Include="..\..\include\signal\filter_apply.hpp" />
     <ClInclude Include="..\..\include\signal\filter_design.hpp" />
+    <ClInclude Include="..\..\include\signal\fourier_domain_filter.hpp" />
+    <ClInclude Include="..\..\include\signal\power_spectral_density.hpp" />
+    <ClInclude Include="..\..\include\signal\window.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

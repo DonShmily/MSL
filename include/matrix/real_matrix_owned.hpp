@@ -327,6 +327,36 @@ inline void swap(real_matrix_owned &a, real_matrix_owned &b) noexcept
     return result;
 }
 
+[[nodiscard]] inline real_matrix_owned operator*(const real_matrix_owned &a,
+                                                 const real_matrix_owned &b)
+{
+    assert(a.cols() == b.rows());
+    real_matrix_owned result(a.rows(), b.cols(), 0.0);
+    for (size_t j = 0; j < b.cols(); ++j)
+    {
+        for (size_t i = 0; i < a.rows(); ++i)
+        {
+            double sum = 0.0;
+            for (size_t k = 0; k < a.cols(); ++k)
+            {
+                sum += a(i, k) * b(k, j);
+            }
+            result(i, j) = sum;
+        }
+    }
+    return result;
+}
+
+[[nodiscard]] inline real_matrix_owned operator-(const real_matrix_owned &mat)
+{
+    real_matrix_owned result(mat);
+    for (auto &val : result)
+    {
+        val = -val;
+    }
+    return result;
+}
+
 [[nodiscard]] inline real_matrix_owned operator*(const real_matrix_owned &mat,
                                                  const double &scalar)
 {

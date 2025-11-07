@@ -100,14 +100,14 @@ inline std::vector<double> cumtrapz(std::span<const double> x,
  * @param dx Spacing between rows
  * @return Matrix of cumulative integrals
  */
-inline matrixd cumtrapz(const matrixd &mat, double dx)
+inline matrix::matrixd cumtrapz(const matrix::matrixd &mat, double dx)
 {
     if (mat.rows() < 2)
     {
         throw std::invalid_argument("Need at least 2 rows for integration");
     }
 
-    matrixd result(mat.rows(), mat.cols(), 0.0);
+    matrix::matrixd result(mat.rows(), mat.cols(), 0.0);
 
     for (size_t j = 0; j < mat.cols(); ++j)
     {
@@ -129,7 +129,8 @@ inline matrixd cumtrapz(const matrixd &mat, double dx)
  * @param mat Input matrix
  * @return Matrix of cumulative integrals
  */
-inline matrixd cumtrapz(std::span<const double> x, const matrixd &mat)
+inline matrix::matrixd cumtrapz(std::span<const double> x,
+                                const matrix::matrixd &mat)
 {
     if (x.size() != mat.rows())
     {
@@ -140,7 +141,7 @@ inline matrixd cumtrapz(std::span<const double> x, const matrixd &mat)
         throw std::invalid_argument("Need at least 2 rows for integration");
     }
 
-    matrixd result(mat.rows(), mat.cols(), 0.0);
+    matrix::matrixd result(mat.rows(), mat.cols(), 0.0);
 
     for (size_t j = 0; j < mat.cols(); ++j)
     {

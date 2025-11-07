@@ -89,8 +89,8 @@ inline std::vector<double> apply_window(std::span<const double> signal,
     return windowed_signal;
 }
 // Apply window to 2-D matrix (column-wise)
-inline matrixd apply_window_columns(const matrixd &input,
-                                    const std::vector<double> &window)
+inline matrix::matrixd apply_window_columns(const matrix::matrixd &input,
+                                            const std::vector<double> &window)
 {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
@@ -101,7 +101,7 @@ inline matrixd apply_window_columns(const matrixd &input,
             "Number of rows in input must match window length");
     }
 
-    matrixd output(n_rows, n_cols);
+    matrix::matrixd output(n_rows, n_cols);
 
     for (size_t j = 0; j < n_cols; ++j)
     {

@@ -349,6 +349,19 @@ public:
         }
         return phase_mat;
     }
+    // Adjoint (conjugate transpose)
+    [[nodiscard]] complex_matrix_owned adjoint() const
+    {
+        complex_matrix_owned adj_mat(this->cols_, this->rows_);
+        for (size_t i = 0; i < this->rows_; ++i)
+        {
+            for (size_t j = 0; j < this->cols_; ++j)
+            {
+                adj_mat(j, i) = std::conj((*this)(i, j));
+            }
+        }
+        return adj_mat;
+    }
 };
 
 typedef complex_matrix_owned matrixc;
@@ -375,6 +388,37 @@ operator-(const complex_matrix_owned &a, const complex_matrix_owned &b)
     assert(a.rows() == b.rows() && a.cols() == b.cols());
     complex_matrix_owned result(a);
     result -= b;
+    return result;
+}
+
+[[nodiscard]] inline complex_matrix_owned
+operator*(const complex_matrix_owned &a, const complex_matrix_owned &b)
+{
+    assert(a.cols() == b.rows());
+    complex_matrix_owned result(a.rows(), b.cols(), std::complex<double>{});
+    for (size_t j = 0; j < b.cols(); ++j)
+    {
+        for (size_t i = 0; i < a.rows(); ++i)
+        {
+            std::complex<double> sum = std::complex<double>{};
+            for (size_t k = 0; k < a.cols(); ++k)
+            {
+                sum += a(i, k) * b(k, j);
+            }
+            result(i, j) = sum;
+        }
+    }
+    return result;
+}
+
+[[nodiscard]] inline complex_matrix_owned
+operator-(const complex_matrix_owned &mat)
+{
+    complex_matrix_owned result(mat);
+    for (auto &val : result)
+    {
+        val = -val;
+    }
     return result;
 }
 

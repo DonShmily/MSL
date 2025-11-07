@@ -140,7 +140,7 @@ public:
     std::vector<double> apply(const std::vector<double> &signal) const
     {
         std::size_t fft_size = (nfft_ == 0) ? signal.size() : nfft_;
-        auto fft_data = fft::fft(signal, fft_size);
+        auto fft_data = signal::fft(signal, fft_size);
         std::vector<std::complex<double>> filtered_fft(fft_data.size());
 
         for (std::size_t i = 0; i < fft_data.size(); ++i)
@@ -157,7 +157,7 @@ public:
             filtered_fft[i] = fft_data[i] * gain;
         }
 
-        return fft::ifft_real(filtered_fft);
+        return signal::ifft_real(filtered_fft);
     }
 
     /**
@@ -166,9 +166,9 @@ public:
      * @param signal_matrix Input signal matrix (time domain)
      * @return Filtered signal matrix (time domain)
      */
-    matrixd apply(const matrixd &signal_matrix) const
+    matrix::matrixd apply(const matrix::matrixd &signal_matrix) const
     {
-        matrixd output(signal_matrix.rows(), signal_matrix.cols());
+        matrix::matrixd output(signal_matrix.rows(), signal_matrix.cols());
 
         for (std::size_t j = 0; j < signal_matrix.cols(); ++j)
         {

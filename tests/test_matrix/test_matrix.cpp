@@ -87,33 +87,32 @@ static bool approx_equal_double_vector(const std::vector<double> &a,
     return true;
 }
 
-// ---------- 测试主体 ----------
-int main()
+int test_base_op()
 {
     std::cout << "MSL matrix unit tests\n";
 
     // 1) 基本构造与 factory
     TEST_CASE("identity / zeros / ones / diagonal")
     {
-        auto I = matrixd::identity(3); // matrixd = matrix_real alias
+        auto I = matrix::matrixd::identity(3); // matrixd = matrix_real alias
         EXPECT_EQ(I.rows(), 3);
         EXPECT_EQ(I.cols(), 3);
         for (size_t i = 0; i < 3; ++i)
             for (size_t j = 0; j < 3; ++j)
                 EXPECT_EQ(I(i, j), (i == j ? 1.0 : 0.0));
 
-        auto Z = matrixd::zeros(2, 3);
+        auto Z = matrix::matrixd::zeros(2, 3);
         EXPECT_EQ(Z.rows(), 2);
         EXPECT_EQ(Z.cols(), 3);
         for (auto v : Z)
             EXPECT_EQ(v, 0.0);
 
-        auto O = matrixd::ones(2, 2);
+        auto O = matrix::matrixd::ones(2, 2);
         for (auto v : O)
             EXPECT_EQ(v, 1.0);
 
         std::vector<double> diag = {1.5, 2.5, 3.5};
-        auto temp = matrixd::ones(3, 3);
+        auto temp = matrix::matrixd::ones(3, 3);
         temp(0, 0) = diag[0];
         temp(1, 1) = diag[1];
         temp(2, 2) = diag[2];
@@ -138,7 +137,7 @@ int main()
     // 2) element access, resize, fill
     TEST_CASE("element access / resize / fill")
     {
-        matrixd A(3, 2);
+        matrix::matrixd A(3, 2);
         EXPECT_EQ(A.rows(), 3);
         EXPECT_EQ(A.cols(), 2);
         A(0, 0) = 1.0;
@@ -165,10 +164,10 @@ int main()
     // 3) copy / move / swap
     TEST_CASE("copy / move / swap")
     {
-        matrixd A(2, 2, 1.0);
-        matrixd B = A; // copy
+        matrix::matrixd A(2, 2, 1.0);
+        matrix::matrixd B = A; // copy
         EXPECT_EQ(B(0, 0), 1.0);
-        matrixd C = std::move(B); // move
+        matrix::matrixd C = std::move(B); // move
         EXPECT_EQ(C(1, 1), 1.0);
         // after move B may be empty (implementation-dependent) but should be
         // safe to resize
@@ -182,9 +181,9 @@ int main()
     // 4) arithmetic operators
     TEST_CASE("operators + - * /")
     {
-        matrixd A(2, 2);
+        matrix::matrixd A(2, 2);
         A.fill(2.0);
-        matrixd B(2, 2);
+        matrix::matrixd B(2, 2);
         B.fill(1.0);
         auto S = A + B; // should be 3's
         for (auto v : S)
@@ -222,7 +221,7 @@ int main()
     // 5) row/column/submatrix/get_row/get_column
     TEST_CASE("row/col/submatrix")
     {
-        matrixd M(3, 4);
+        matrix::matrixd M(3, 4);
         // fill with M(i,j) = i + 10*j  (col-major aware)
         for (size_t j = 0; j < M.cols(); ++j)
             for (size_t i = 0; i < M.rows(); ++i)
@@ -253,7 +252,7 @@ int main()
     // 6) iterators and range-for / operator[] if provided
     TEST_CASE("iterators and operator[]")
     {
-        matrixd A(3, 2);
+        matrix::matrixd A(3, 2);
         double val = 0.0;
         for (size_t j = 0; j < A.cols(); ++j)
             for (size_t i = 0; i < A.rows(); ++i)
@@ -283,7 +282,7 @@ int main()
             for (size_t i = 0; i < R; ++i)
                 raw[j * R + i] = double(j * 10 + i);
 
-        matrixd_view V(raw, R, C);
+        matrix::matrixd_view V(raw, R, C);
         EXPECT_EQ(V.rows(), R);
         EXPECT_EQ(V.cols(), C);
         // modify through view and check raw changed
@@ -291,7 +290,7 @@ int main()
         EXPECT_EQ(raw[1 + 1 * R], 99.0);
 
         // construct owning matrix from view
-        matrixd M = matrixd(V); // should copy data
+        matrix::matrixd M = matrix::matrixd(V); // should copy data
         EXPECT_EQ(M.rows(), R);
         EXPECT_EQ(M.cols(), C);
         for (size_t j = 0; j < C; ++j)
@@ -304,8 +303,8 @@ int main()
     // 8) multiplication (matrix * matrix) and (matrix * vector)
     TEST_CASE("matrix multiplication")
     {
-        matrixd A(2, 3); // 2x3
-        matrixd B(3, 2); // 3x2
+        matrix::matrixd A(2, 3); // 2x3
+        matrix::matrixd B(3, 2); // 3x2
         // A = [1 2 3; 4 5 6] in column-major -> careful filling
         // We'll set A(i,j) = i + j*10 for clarity
         for (size_t j = 0; j < A.cols(); ++j)
@@ -314,11 +313,11 @@ int main()
         for (size_t j = 0; j < B.cols(); ++j)
             for (size_t i = 0; i < B.rows(); ++i)
                 B(i, j) = double(1 + i + j * 10);
-        auto A_eigen = msl::eigen_interface::as_eigen(A);
-        auto B_eigen = msl::eigen_interface::as_eigen(B);
+        auto A_eigen = msl::matrix::eigen_interface::as_eigen(A);
+        auto B_eigen = msl::matrix::eigen_interface::as_eigen(B);
 
         auto C_eigen = A_eigen * B_eigen; // should be 2x2
-        auto C = msl::eigen_interface::from_eigen(C_eigen);
+        auto C = msl::matrix::eigen_interface::from_eigen(C_eigen);
         EXPECT_EQ(C.rows(), 2);
         EXPECT_EQ(C.cols(), 2);
 
@@ -337,7 +336,7 @@ int main()
         std::vector<double> x(B.cols(), 1.0); // length 2
         Eigen::VectorXd y_eigen =
             B_eigen * Eigen::Map<Eigen::VectorXd>(x.data(), x.size()).eval();
-        auto y = msl::eigen_interface::from_eigen(y_eigen);
+        auto y = msl::matrix::eigen_interface::from_eigen(y_eigen);
         EXPECT_EQ(y.size(), B.rows());
         // y_i = sum_j B(i,j) * x[j]
         for (size_t i = 0; i < B.rows(); ++i)
@@ -354,7 +353,7 @@ int main()
     // 9) complex matrix basic use
     TEST_CASE("complex matrix basics")
     {
-        matrixc C(2, 2);
+        matrix::matrixc C(2, 2);
         C(0, 0) = std::complex<double>(1.0, 2.0);
         C(1, 0) = std::complex<double>(3.0, -1.0);
         EXPECT_CPLX_NEAR(C(0, 0), std::complex<double>(1.0, 2.0), 1e-12);
@@ -378,4 +377,86 @@ int main()
         std::cerr << "Some tests failed\n";
         return 1;
     }
+}
+
+// ---------- decomposition tests (SVD, Eigen, etc.) ----------
+int test_decompositions()
+{
+    // Real matrix SVD test
+    TEST_CASE("Real matrix SVD")
+    {
+        matrix::matrixd A(3, 2);
+        A(0, 0) = 3.0;
+        A(1, 0) = 2.0;
+        A(2, 0) = 1.0;
+        A(0, 1) = 4.0;
+        A(1, 1) = 5.0;
+        A(2, 1) = 6.0;
+
+        auto svd = matrix::svd(A);
+        auto U = svd[0];
+        auto S = svd[1];
+        auto Vt = svd[2];
+
+        // Reconstruct A from U * S * Vt
+        auto US = U * S;
+        auto A_reconstructed = US * Vt;
+
+        // Check reconstruction
+        for (size_t j = 0; j < A.cols(); ++j)
+            for (size_t i = 0; i < A.rows(); ++i)
+                EXPECT_NEAR(A(i, j), A_reconstructed(i, j), 1e-10);
+    }
+    while (0)
+        ;
+
+    // Complex matrix SVD test
+    TEST_CASE("Complex matrix SVD")
+    {
+        matrix::matrixc A(3, 2);
+        A(0, 0) = std::complex<double>(3.0, 1.0);
+        A(1, 0) = std::complex<double>(2.0, -1.0);
+        A(2, 0) = std::complex<double>(1.0, 1.0);
+        A(0, 1) = std::complex<double>(4.0, -1.0);
+        A(1, 1) = std::complex<double>(5.0, 1.0);
+        A(2, 1) = std::complex<double>(6.0, -1.0);
+
+        auto svd = matrix::svd(A);
+        auto U = svd[0];
+        auto S = svd[1];
+        auto Vt = svd[2];
+
+        // Reconstruct A from U * S * Vt
+        auto US = U * S;
+        auto A_reconstructed = US * Vt.adjoint();
+
+        // Check reconstruction
+        for (size_t j = 0; j < A.cols(); ++j)
+            for (size_t i = 0; i < A.rows(); ++i)
+                EXPECT_CPLX_NEAR(A(i, j), A_reconstructed(i, j), 1e-10);
+    }
+    while (0)
+        ;
+
+    // 总结
+    std::cout << "Total decomposition checks: " << g_total
+              << ", failures: " << g_failures << "\n";
+    if (g_failures == 0)
+    {
+        std::cout << "All decomposition tests passed\n";
+        return 0;
+    }
+    else
+    {
+        std::cerr << "Some decomposition tests failed\n";
+        return 1;
+    }
+}
+
+// ---------- 主程序 ----------
+int main()
+{
+    int res1 = test_base_op();
+    int res2 = test_decompositions();
+    return res1 + res2;
 }

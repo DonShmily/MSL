@@ -65,7 +65,7 @@ inline std::vector<double> diff(const std::vector<double> &y)
  * @param axis 0 = row-wise (vertical diff), 1 = column-wise (horizontal diff)
  * @return Difference matrix
  */
-inline matrixd diff(const matrixd &mat, int axis = 0)
+inline matrix::matrixd diff(const matrix::matrixd &mat, int axis = 0)
 {
     if (axis == 0)
     {
@@ -76,7 +76,7 @@ inline matrixd diff(const matrixd &mat, int axis = 0)
                 "Need at least 2 rows for row-wise diff");
         }
 
-        matrixd result(mat.rows(), mat.cols());
+        matrix::matrixd result(mat.rows(), mat.cols());
         for (size_t j = 0; j < mat.cols(); ++j)
         {
             for (size_t i = 0; i < result.rows() - 1; ++i)
@@ -95,7 +95,7 @@ inline matrixd diff(const matrixd &mat, int axis = 0)
                 "Need at least 2 cols for column-wise diff");
         }
 
-        matrixd result(mat.rows(), mat.cols());
+        matrix::matrixd result(mat.rows(), mat.cols());
         for (size_t i = 0; i < mat.rows(); ++i)
         {
             for (size_t j = 0; j < result.cols() - 1; ++j)
@@ -188,8 +188,8 @@ inline std::vector<double> forward_gradient(std::span<const double> y,
  * @param axis 0 = gradient along rows, 1 = gradient along columns
  * @return Gradient matrix (same size as input)
  */
-inline matrixd
-forward_gradient(const matrixd &mat, double dx = 1.0, int axis = 0)
+inline matrix::matrixd
+forward_gradient(const matrix::matrixd &mat, double dx = 1.0, int axis = 0)
 {
     if (axis == 0)
     {
@@ -199,7 +199,7 @@ forward_gradient(const matrixd &mat, double dx = 1.0, int axis = 0)
             throw std::invalid_argument("Need at least 2 rows");
         }
 
-        matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows(), mat.cols());
 
         // First row gradient is zero
         for (size_t j = 0; j < mat.cols(); ++j)
@@ -221,7 +221,7 @@ forward_gradient(const matrixd &mat, double dx = 1.0, int axis = 0)
             throw std::invalid_argument("Need at least 2 columns");
         }
 
-        matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows(), mat.cols());
 
         // First column gradient is zero
         for (size_t i = 0; i < mat.rows(); ++i)
@@ -249,8 +249,9 @@ forward_gradient(const matrixd &mat, double dx = 1.0, int axis = 0)
  * @param axis 0 = gradient along rows, 1 = gradient along columns
  * @return Gradient matrix (same size as input)
  */
-inline matrixd
-forward_gradient(const matrixd &mat, std::vector<double> x, int axis = 0)
+inline matrix::matrixd forward_gradient(const matrix::matrixd &mat,
+                                        std::vector<double> x,
+                                        int axis = 0)
 {
     if (axis == 0)
     {
@@ -266,7 +267,7 @@ forward_gradient(const matrixd &mat, std::vector<double> x, int axis = 0)
                 "x size must be number of rows for axis=0");
         }
 
-        matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows(), mat.cols());
 
         for (size_t j = 0; j < mat.cols(); ++j)
         {
@@ -294,7 +295,7 @@ forward_gradient(const matrixd &mat, std::vector<double> x, int axis = 0)
                 "dx size must be number of cols for axis=1");
         }
 
-        matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows(), mat.cols());
 
         for (size_t i = 0; i < mat.rows(); ++i)
         {
@@ -410,8 +411,8 @@ inline std::vector<double> central_gradient(std::span<const double> x,
  * @param axis 0 = gradient along rows, 1 = gradient along columns
  * @return Gradient matrix (same size as input)
  */
-inline matrixd
-central_gradient(const matrixd &mat, double dx = 1.0, int axis = 0)
+inline matrix::matrixd
+central_gradient(const matrix::matrixd &mat, double dx = 1.0, int axis = 0)
 {
     if (axis == 0)
     {
@@ -421,7 +422,7 @@ central_gradient(const matrixd &mat, double dx = 1.0, int axis = 0)
             throw std::invalid_argument("Need at least 2 rows");
         }
 
-        matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows(), mat.cols());
 
         for (size_t j = 0; j < mat.cols(); ++j)
         {
@@ -449,7 +450,7 @@ central_gradient(const matrixd &mat, double dx = 1.0, int axis = 0)
             throw std::invalid_argument("Need at least 2 columns");
         }
 
-        matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows(), mat.cols());
 
         for (size_t i = 0; i < mat.rows(); ++i)
         {
@@ -483,8 +484,9 @@ central_gradient(const matrixd &mat, double dx = 1.0, int axis = 0)
  * @param axis 0 = gradient along rows, 1 = gradient along columns
  * @return Gradient matrix (same size as input)
  */
-inline matrixd
-central_gradient(const matrixd &mat, std::vector<double> x, int axis = 0)
+inline matrix::matrixd central_gradient(const matrix::matrixd &mat,
+                                        std::vector<double> x,
+                                        int axis = 0)
 {
     if (axis == 0)
     {
@@ -500,7 +502,7 @@ central_gradient(const matrixd &mat, std::vector<double> x, int axis = 0)
                 "x size must be number of rows for axis=0");
         }
 
-        matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows(), mat.cols());
 
         for (size_t j = 0; j < mat.cols(); ++j)
         {
@@ -535,7 +537,7 @@ central_gradient(const matrixd &mat, std::vector<double> x, int axis = 0)
                 "dx size must be number of cols for axis=1");
         }
 
-        matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows(), mat.cols());
 
         for (size_t i = 0; i < mat.rows(); ++i)
         {
@@ -576,16 +578,17 @@ central_gradient(const matrixd &mat, std::vector<double> x, int axis = 0)
  * @param dy Vertical spacing
  * @return Pair of gradient matrices {grad_x, grad_y}
  */
-inline std::pair<matrixd, matrixd>
-central_gradient2d(const matrixd &mat, double dx = 1.0, double dy = 1.0)
+inline std::pair<matrix::matrixd, matrix::matrixd>
+central_gradient2d(const matrix::matrixd &mat, double dx = 1.0, double dy = 1.0)
 {
     if (mat.rows() < 2 || mat.cols() < 2)
     {
         throw std::invalid_argument("Need at least 2x2 matrix for 2D gradient");
     }
 
-    matrixd grad_x = central_gradient(mat, dx, 1); // Horizontal gradient
-    matrixd grad_y = central_gradient(mat, dy, 0); // Vertical gradient
+    matrix::matrixd grad_x =
+        central_gradient(mat, dx, 1); // Horizontal gradient
+    matrix::matrixd grad_y = central_gradient(mat, dy, 0); // Vertical gradient
 
     return {grad_x, grad_y};
 }
@@ -649,14 +652,15 @@ inline std::vector<double> central_gradient2(const std::vector<double> &y,
  * @param dy Vertical spacing
  * @return Laplacian matrix (same size, boundaries set to 0)
  */
-inline matrixd laplacian(const matrixd &mat, double dx = 1.0, double dy = 1.0)
+inline matrix::matrixd
+laplacian(const matrix::matrixd &mat, double dx = 1.0, double dy = 1.0)
 {
     if (mat.rows() < 3 || mat.cols() < 3)
     {
         throw std::invalid_argument("Need at least 3x3 matrix for Laplacian");
     }
 
-    matrixd result(mat.rows(), mat.cols(), 0.0);
+    matrix::matrixd result(mat.rows(), mat.cols(), 0.0);
 
     double dx2 = dx * dx;
     double dy2 = dy * dy;
@@ -696,10 +700,10 @@ inline matrixd laplacian(const matrixd &mat, double dx = 1.0, double dy = 1.0)
  * @param dy Vertical spacing
  * @return Divergence (scalar field)
  */
-inline matrixd divergence(const matrixd &Fx,
-                          const matrixd &Fy,
-                          double dx = 1.0,
-                          double dy = 1.0)
+inline matrix::matrixd divergence(const matrix::matrixd &Fx,
+                                  const matrix::matrixd &Fy,
+                                  double dx = 1.0,
+                                  double dy = 1.0)
 {
     if (Fx.rows() != Fy.rows() || Fx.cols() != Fy.cols())
     {
@@ -709,7 +713,7 @@ inline matrixd divergence(const matrixd &Fx,
     auto dFx_dx = central_gradient(Fx, dx, 1); // ∂Fx/∂x
     auto dFy_dy = central_gradient(Fy, dy, 0); // ∂Fy/∂y
 
-    matrixd div(Fx.rows(), Fx.cols());
+    matrix::matrixd div(Fx.rows(), Fx.cols());
     for (size_t i = 0; i < div.rows(); ++i)
     {
         for (size_t j = 0; j < div.cols(); ++j)
@@ -732,8 +736,10 @@ inline matrixd divergence(const matrixd &Fx,
  * @param dy Vertical spacing
  * @return Curl (scalar field, z-component)
  */
-inline matrixd
-curl(const matrixd &Fx, const matrixd &Fy, double dx = 1.0, double dy = 1.0)
+inline matrix::matrixd curl(const matrix::matrixd &Fx,
+                            const matrix::matrixd &Fy,
+                            double dx = 1.0,
+                            double dy = 1.0)
 {
     if (Fx.rows() != Fy.rows() || Fx.cols() != Fy.cols())
     {
@@ -743,7 +749,7 @@ curl(const matrixd &Fx, const matrixd &Fy, double dx = 1.0, double dy = 1.0)
     auto dFy_dx = central_gradient(Fy, dx, 1); // ∂Fy/∂x
     auto dFx_dy = central_gradient(Fx, dy, 0); // ∂Fx/∂y
 
-    matrixd curl_z(Fx.rows(), Fx.cols());
+    matrix::matrixd curl_z(Fx.rows(), Fx.cols());
     for (size_t i = 0; i < curl_z.rows(); ++i)
     {
         for (size_t j = 0; j < curl_z.cols(); ++j)

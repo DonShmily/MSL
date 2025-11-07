@@ -5,3 +5,5 @@
 #include "signal/fourier_domain_filter.hpp"
 
 #include "signal/fft.hpp"
+#include "signal/power_spectral_density.hpp"
+#include "signal/window.hpp"

@@ -4,4 +4,5 @@
 #include "matrix/real_matrix_view.hpp"
 
 #include "matrix/eigen_interface.hpp"
+#include "matrix/martrix_decompose.hpp"
 #include "matrix/matrix_conversion.hpp"

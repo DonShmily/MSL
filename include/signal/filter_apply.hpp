@@ -293,10 +293,10 @@ inline std::vector<double> filtfilt(const std::vector<double> &signal,
  * @param coeffs Filter coefficients
  * @return Filtered matrix
  */
-inline matrixd filter_columns(const matrixd &signals,
-                              const FilterCoefficients &coeffs)
+inline matrix::matrixd filter_columns(const matrix::matrixd &signals,
+                                      const FilterCoefficients &coeffs)
 {
-    matrixd output(signals.rows(), signals.cols());
+    matrix::matrixd output(signals.rows(), signals.cols());
 
     for (size_t j = 0; j < signals.cols(); ++j)
     {
@@ -315,10 +315,10 @@ inline matrixd filter_columns(const matrixd &signals,
 /**
  * @brief Apply zero-phase filter to each column of a matrix
  */
-inline matrixd filtfilt_columns(const matrixd &signals,
-                                const FilterCoefficients &coeffs)
+inline matrix::matrixd filtfilt_columns(const matrix::matrixd &signals,
+                                        const FilterCoefficients &coeffs)
 {
-    matrixd output(signals.rows(), signals.cols());
+    matrix::matrixd output(signals.rows(), signals.cols());
 
     for (size_t j = 0; j < signals.cols(); ++j)
     {

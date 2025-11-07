@@ -9,8 +9,8 @@ fft_ifft_res = ifft(fft_res);
 fft_fft_ifft_res = ifft(fft_ifft_res);
 fft_2d_res = fft(ori_data);
 
-fft_res_cpp = importdata("..\resource\test_result\fft\fft_result.txt");
-fft_fft_res_cpp = importdata("..\resource\test_result\fft\fft_result_c2c.txt");
-fft_ifft_res_cpp = importdata("..\resource\test_result\fft\ifft_result.txt");
-fft_fft_ifft_res_cpp = importdata("..\resource\test_result\fft\ifft_result_c2c.txt");
-fft_2d_res_cpp = importdata("..\resource\test_result\fft\fft_matrix_result.txt");
+fft_res_cpp = importdata("..\resource\test_result\signal\fft_result.txt");
+fft_fft_res_cpp = importdata("..\resource\test_result\signal\fft_result_c2c.txt");
+fft_ifft_res_cpp = importdata("..\resource\test_result\signal\ifft_result.txt");
+fft_fft_ifft_res_cpp = importdata("..\resource\test_result\signal\ifft_result_c2c.txt");
+fft_2d_res_cpp = importdata("..\resource\test_result\signal\fft_matrix_result.txt");
