@@ -14,6 +14,7 @@
 #include <eigen3/Eigen/Dense>
 
 #include "matrix/complex_matrix_base.hpp"
+#include "matrix/complex_matrix_owned.hpp"
 #include "matrix/real_matrix_owned.hpp"
 #include "matrix/real_matrix_view.hpp"
 
@@ -62,7 +63,27 @@ inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const matrixd_view &view)
 }
 
 /**
- * @brief Create Eigen::Map from matrixd_base
+ * @brief Create const Eigen::Map from const_matrixd_view
+ */
+inline Eigen::Map<const Eigen::MatrixXd>
+as_eigen(const const_matrixd_view &view)
+{
+    return Eigen::Map<const Eigen::MatrixXd>(
+        view.data(), view.rows(), view.cols());
+}
+
+/**
+ * @brief Create Eigen::Map from real_matrix_base
+ * @warning The view must point to contiguous column-major data
+ */
+inline Eigen::Map<const Eigen::MatrixXd> as_eigen(real_matrix_base &base)
+{
+    return Eigen::Map<const Eigen::MatrixXd>(
+        base.data(), base.rows(), base.cols());
+}
+
+/**
+ * @brief Create const Eigen::Map from const real_matrix_base
  * @warning The view must point to contiguous column-major data
  */
 inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const real_matrix_base &base)
@@ -72,7 +93,21 @@ inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const real_matrix_base &base)
 }
 
 /**
- * @brief Create Eigen::Map from matrixc_base
+ * @brief Create Eigen::Map from complex_matrix_base
+ * @warning The view must point to contiguous column-major data
+ */
+inline Eigen::Map<
+    const Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>>
+as_eigen(complex_matrix_base &base)
+{
+    return Eigen::Map<const Eigen::Matrix<std::complex<double>,
+                                          Eigen::Dynamic,
+                                          Eigen::Dynamic>>(
+        base.data(), base.rows(), base.cols());
+}
+
+/**
+ * @brief Create Eigen::Map from complex_matrix_base
  * @warning The view must point to contiguous column-major data
  */
 inline Eigen::Map<
@@ -83,16 +118,6 @@ as_eigen(const complex_matrix_base &base)
                                           Eigen::Dynamic,
                                           Eigen::Dynamic>>(
         base.data(), base.rows(), base.cols());
-}
-
-/**
- * @brief Create const Eigen::Map from const_matrixd_view
- */
-inline Eigen::Map<const Eigen::MatrixXd>
-as_eigen(const const_matrixd_view &view)
-{
-    return Eigen::Map<const Eigen::MatrixXd>(
-        view.data(), view.rows(), view.cols());
 }
 
 // ============================================================================
@@ -126,6 +151,19 @@ inline matrixd from_eigen(const Eigen::MatrixXd &eig)
     return result;
 }
 
+/**
+ * @brief Create matrixc from any Eigen complex matrix expression (deep copy)
+ */
+inline matrixc
+from_eigen(const Eigen::Map<
+           Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>>
+               &eig)
+{
+    matrixc result(eig.rows(), eig.cols());
+    std::copy(eig.data(), eig.data() + eig.size(), result.data());
+    return result;
+}
+
 // ============================================================================
 // 3. Eigen -> MSL View (Use with extreme caution!)
 // ============================================================================
@@ -141,8 +179,9 @@ inline matrixd from_eigen(const Eigen::MatrixXd &eig)
  *   auto view = view_from_eigen(A);  // OK: A is a named variable
  *
  * UNSAFE usage:
- *   auto view = view_from_eigen(get_eigen_matrix());  // DELETED by overload
- *   auto view = view_from_eigen(A + B);               // DELETED by overload
+ *   auto view = view_from_eigen(get_eigen_matrix());  // DELETED by
+ * overload auto view = view_from_eigen(A + B);               // DELETED by
+ * overload
  *
  * @param eig Named Eigen matrix (lvalue reference only)
  * @return Non-owning view into Eigen's data
@@ -328,6 +367,7 @@ inline std::vector<double> eigenvalues(const matrixd &A)
  * @brief Compute SVD
  * @return Tuple of (U, S, V) where A = U * S * V^T
  */
+// Standby function, Decompose.hpp has svd implementations
 inline std::tuple<matrixd, std::vector<double>, matrixd> svd(const matrixd &A)
 {
     auto eig_A = as_eigen(A);
