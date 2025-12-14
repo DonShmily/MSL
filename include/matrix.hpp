@@ -1,8 +1,11 @@
+#include "matrix/complex_matrix_base.hpp"
 #include "matrix/complex_matrix_owned.hpp"
 #include "matrix/complex_matrix_view.hpp"
+#include "matrix/real_matrix_base.hpp"
 #include "matrix/real_matrix_owned.hpp"
 #include "matrix/real_matrix_view.hpp"
 
 #include "matrix/eigen_interface.hpp"
 #include "matrix/martrix_decompose.hpp"
 #include "matrix/matrix_conversion.hpp"
+#include "matrix/matrix_operation.hpp"

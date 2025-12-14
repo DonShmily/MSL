@@ -4,14 +4,15 @@
 **  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
-** File: \include\interpolate\interp_1d_spline.hpp
+** File: interp_1d_spline.hpp
 ** -----
 ** File Created: Wednesday, 15th October 2025 14:11:26
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Wednesday, 15th October 2025 14:11:33
+** Last Modified: Sunday, 14th December 2025 17:03:56
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
+
 #ifndef MSL_INTERP_1D_SPLINE
 #define MSL_INTERP_1D_SPLINE
 

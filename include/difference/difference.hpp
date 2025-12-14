@@ -4,25 +4,25 @@
 **  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
-** File: \include\differ\differe.hpp
+** File: difference.hpp
 ** -----
-** File Created: Monday, 20th October 2025 22:37:57
+** File Created: Thursday, 11th December 2025 22:48:17
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Monday, 20th October 2025 22:47:30
+** Last Modified: Sunday, 14th December 2025 17:02:49
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
-#ifndef MSL_DIFFER_HPP
-#define MSL_DIFFER_HPP
+#ifndef MSL_DIFFERENCE_HPP
+#define MSL_DIFFERENCE_HPP
 
 #include <span>
 #include <stdexcept>
 #include <vector>
+
 #include "matrix/real_matrix_owned.hpp"
 
-
-namespace msl::differ
+namespace msl::difference
 {
 
 // ============================================================================
@@ -824,6 +824,6 @@ inline std::vector<double> savgol_gradient(std::span<const double> y,
     return grad;
 }
 
-} // namespace msl::differ
+} // namespace msl::difference
 
-#endif // MSL_DIFFER_HPP
+#endif // MSL_DIFFERENCE_HPP

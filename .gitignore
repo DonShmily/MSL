@@ -373,6 +373,7 @@ vcpkg_installed/
 # xmake build files
 .xmake/
 build/
+*.exe
 
 # calculation result
 test_result/

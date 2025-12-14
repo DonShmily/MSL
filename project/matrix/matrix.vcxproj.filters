@@ -42,5 +42,8 @@
     <ClInclude Include="..\..\include\matrix\martrix_decompose.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\matrix\matrix_operation.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

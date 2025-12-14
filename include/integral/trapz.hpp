@@ -4,12 +4,12 @@
 **  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
-** File: \include\integral\trapz.hpp
+** File: trapz.hpp
 ** -----
 ** File Created: Wednesday, 15th October 2025 22:32:51
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Wednesday, 15th October 2025 22:33:01
+** Last Modified: Sunday, 14th December 2025 17:03:28
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 

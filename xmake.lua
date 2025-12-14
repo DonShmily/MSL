@@ -16,17 +16,21 @@ end
 
 set_languages("c++20")
 
-add_requires("eigen3", {system = true})
+-- add_requires("eigen", {system = true})
 
 add_includedirs("include")
 
-if is_plat("mingw") then
+if is_mode("debug") then
+    set_targetdir("$(projectdir)/resource")
+else
+    if is_plat("mingw") then
         set_targetdir("$(projectdir)/bin/mingw",{ bindir = "bin", libdir = "lib" })
     elseif is_plat("windows") then
         set_targetdir("$(projectdir)/bin/windows",{ bindir = "bin", libdir = "lib" })
     elseif is_plat("linux") then
         set_targetdir("$(projectdir)/bin/linux",{ bindir = "bin", libdir = "lib" })
     end
+end
 
 add_cxflags("-fPIC")
 

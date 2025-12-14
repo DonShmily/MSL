@@ -4,12 +4,12 @@
 **  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
-** File: \include\simple_matrix\real_matrix_base.hpp
+** File: real_matrix_base.hpp
 ** -----
 ** File Created: Saturday, 11th October 2025 21:19:59
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Saturday, 11th October 2025 21:22:33
+** Last Modified: Sunday, 14th December 2025 17:04:45
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -108,6 +108,28 @@ public:
         {
             val = func(val);
         }
+    }
+
+    // --- Common operations ---
+    [[nodiscard]] inline double sum()
+    {
+        double total = 0.0;
+        for (const auto &val : data_)
+        {
+            total += val;
+        }
+        return total;
+    }
+
+    [[nodiscard]] inline double trace()
+    {
+        assert(rows_ == cols_);
+        double tr = 0.0;
+        for (size_t i = 0; i < rows_; ++i)
+        {
+            tr += (*this)(i, i);
+        }
+        return tr;
     }
 
 protected:

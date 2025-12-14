@@ -1,9 +1,16 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025
-**  File: power_spectral_density.hpp
-**  Description: Compute the power spectral density of signals
+**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**
+** Project: MSL
+** File: power_spectral_density.hpp
+** -----
+** File Created: Friday, 7th November 2025 20:44:37
+** Author: Dong Feiyue (FeiyueDong@outlook.com)
+** -----
+** Last Modified: Sunday, 14th December 2025 17:05:38
+** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
 #ifndef MSL_POWER_SPECTRAL_DENSITY_HPP

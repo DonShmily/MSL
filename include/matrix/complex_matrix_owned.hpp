@@ -4,12 +4,12 @@
 **  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
-** File: \include\matrix\complex_matrix_owmed.hpp
+** File: complex_matrix_owned.hpp
 ** -----
 ** File Created: Saturday, 11th October 2025 21:20:57
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Saturday, 11th October 2025 22:53:46
+** Last Modified: Sunday, 14th December 2025 17:04:16
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -349,8 +349,8 @@ public:
         }
         return phase_mat;
     }
-    // Adjoint (conjugate transpose)
-    [[nodiscard]] complex_matrix_owned adjoint() const
+    // conjugate transpose
+    [[nodiscard]] complex_matrix_owned conjugate_transpose() const
     {
         complex_matrix_owned adj_mat(this->cols_, this->rows_);
         for (size_t i = 0; i < this->rows_; ++i)
@@ -361,6 +361,33 @@ public:
             }
         }
         return adj_mat;
+    }
+
+    // --- Sum of elements ---
+    [[nodiscard]] inline complex_matrix_owned sum_columns()
+    {
+        complex_matrix_owned result(1, cols_, std::complex<double>{0.0, 0.0});
+        for (size_t j = 0; j < cols_; ++j)
+        {
+            for (size_t i = 0; i < rows_; ++i)
+            {
+                result(0, j) += (*this)(i, j);
+            }
+        }
+        return result;
+    }
+
+    [[nodiscard]] inline complex_matrix_owned sum_rows()
+    {
+        complex_matrix_owned result(rows_, 1, std::complex<double>{0.0, 0.0});
+        for (size_t i = 0; i < rows_; ++i)
+        {
+            for (size_t j = 0; j < cols_; ++j)
+            {
+                result(i, 0) += (*this)(i, j);
+            }
+        }
+        return result;
     }
 };
 

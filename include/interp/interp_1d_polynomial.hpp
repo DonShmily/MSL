@@ -1,9 +1,16 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025
-**  File: polynomial_interpolator.hpp
-**  Description: Polynomial interpolation (Lagrange & Newton)
+**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**
+** Project: MSL
+** File: interp_1d_polynomial.hpp
+** -----
+** File Created: Wednesday, 15th October 2025 16:51:18
+** Author: Dong Feiyue (FeiyueDong@outlook.com)
+** -----
+** Last Modified: Sunday, 14th December 2025 17:03:49
+** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
 #ifndef MSL_POLYNOMIAL_INTERPOLATOR_HPP

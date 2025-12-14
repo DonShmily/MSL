@@ -1,16 +1,24 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025
-**  File: martrix_decompose.hpp
-**  Description: Matrix Decomposition Functions
+**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**
+** Project: MSL
+** File: martrix_decompose.hpp
+** -----
+** File Created: Friday, 7th November 2025 21:22:35
+** Author: Dong Feiyue (FeiyueDong@outlook.com)
+** -----
+** Last Modified: Sunday, 14th December 2025 17:04:31
+** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
 #ifndef MSL_MATRIX_DECOMPOSE_HPP
 #define MSL_MATRIX_DECOMPOSE_HPP
 
 #include <array>
-#include <vector>
+#include <complex>
+#include <eigen3/Eigen/Core>
 
 #include "complex_matrix_base.hpp"
 #include "complex_matrix_owned.hpp"
@@ -55,6 +63,8 @@ inline std::array<real_matrix_owned, 3> svd(const real_matrix_base &A)
     return result;
 }
 
+// Decompose complex matrix A into U, S, V such that A = U * S * V^T
+// U and V are orthogonal matrices, S is diagonal matrix of singular values
 inline std::array<complex_matrix_owned, 3> svd(const complex_matrix_base &A)
 {
     // Placeholder implementation (to be replaced with actual SVD algorithm)
@@ -86,7 +96,253 @@ inline std::array<complex_matrix_owned, 3> svd(const complex_matrix_base &A)
     return result;
 }
 
-} // namespace msl::matrix
+// ============================================================================
+// 2. Matrix Eigenvalue Functions
+// ============================================================================
+// Decompose real matrix A into V, D such that A * V = V * D;
+// V is matrix of eigenvectors, D is diagonal matrix of eigenvalues
+inline std::array<msl::matrix::matrixc, 2> eig(const real_matrix_base &A)
+{
+    if (A.rows() != A.cols())
+    {
+        throw std::invalid_argument(
+            "Eigenvalue decomposition requires a square matrix");
+    }
 
+    // Placeholder implementation (to be replaced with actual Eigenvalue
+    // algorithm)
+    size_t n = A.rows();
+    std::array<msl::matrix::matrixc, 2> result;
+    auto &V = result[0] = msl::matrix::matrixc(n, n); // Eigenvector matrix
+    auto &D = result[1] =
+        msl::matrix::matrixc(n, n); // Diagonal eigenvalue matrix
+
+    auto eig_A = eigen_interface::as_eigen(A);
+    Eigen::EigenSolver<Eigen::MatrixXd> eig(eig_A);
+
+    auto eig_V = eig.eigenvectors();
+    auto eig_D = eig.eigenvalues();
+
+    // Copy
+    std::copy(eig_V.data(), eig_V.data() + eig_V.size(), V.data());
+    std::fill(D.data(), D.data() + D.size(), 0.0);
+    for (size_t i = 0; i < n; ++i)
+    {
+        D(i, i) = eig_D(i).real(); // Use real part for diagonal
+    }
+
+    return result;
+}
+
+// Decompose real matrix A and B into V, D such that A * V = B * V * D;
+// V is matrix of eigenvectors, D is diagonal matrix of eigenvalues
+inline std::array<msl::matrix::matrixc, 2> eig(const real_matrix_base &A,
+                                               const real_matrix_base &B)
+{
+    if (A.rows() != A.cols() || B.rows() != B.cols() || A.rows() != B.rows())
+    {
+        throw std::invalid_argument(
+            "Generalized eigenvalue decomposition requires square matrices of "
+            "the same size");
+    }
+
+    // Placeholder implementation (to be replaced with actual Eigenvalue
+    // algorithm)
+    size_t n = A.rows();
+    std::array<msl::matrix::matrixc, 2> result;
+    auto &V = result[0] = msl::matrix::matrixc(n, n); // Eigenvector matrix
+    auto &D = result[1] =
+        msl::matrix::matrixc(n, n); // Diagonal eigenvalue matrix
+
+    auto eig_A = eigen_interface::as_eigen(A);
+    auto eig_B = eigen_interface::as_eigen(B);
+    Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> eig(eig_A, eig_B);
+
+    auto eig_V = eig.eigenvectors();
+    auto eig_D = eig.eigenvalues();
+
+    // Copy
+    std::copy(eig_V.data(), eig_V.data() + eig_V.size(), V.data());
+    std::fill(D.data(), D.data() + D.size(), 0.0);
+    for (size_t i = 0; i < n; ++i)
+    {
+        D(i, i) = eig_D(i).real(); // Use real part for diagonal
+    }
+
+    return result;
+}
+
+// ============================================================================
+// 3. Matrix LU Decomposition Functions
+// ============================================================================
+// Decompose real matrix A into L and U such that A = L * U
+// L is lower triangular matrix, U is upper triangular matrix
+inline std::array<real_matrix_owned, 2> lu(const real_matrix_base &A)
+{
+    if (A.rows() != A.cols())
+    {
+        throw std::invalid_argument(
+            "LU decomposition requires a square matrix");
+    }
+
+    size_t n = A.rows();
+    std::array<real_matrix_owned, 2> result;
+    auto &L = result[0] = real_matrix_owned(n, n); // Lower triangular matrix
+    auto &U = result[1] = real_matrix_owned(n, n); // Upper triangular matrix
+
+    auto eig_A = eigen_interface::as_eigen(A);
+    Eigen::PartialPivLU<Eigen::MatrixXd> lu(eig_A);
+
+    Eigen::MatrixXd eig_L = lu.matrixLU().triangularView<Eigen::UnitLower>();
+    Eigen::MatrixXd eig_U = lu.matrixLU().triangularView<Eigen::Upper>();
+
+    // Copy L
+    for (size_t i = 0; i < n; ++i)
+    {
+        for (size_t j = 0; j <= i; ++j)
+        {
+            L(i, j) = eig_L(i, j);
+        }
+    }
+
+    // Copy U
+    for (size_t i = 0; i < n; ++i)
+    {
+        for (size_t j = i; j < n; ++j)
+        {
+            U(i, j) = eig_U(i, j);
+        }
+    }
+
+    return result;
+}
+
+// Decompose complex matrix A into L and U such that A = L * U
+// L is lower triangular matrix, U is upper triangular matrix
+inline std::array<complex_matrix_owned, 2> lu(const complex_matrix_base &A)
+{
+    if (A.rows() != A.cols())
+    {
+        throw std::invalid_argument(
+            "LU decomposition requires a square matrix");
+    }
+
+    size_t n = A.rows();
+    std::array<complex_matrix_owned, 2> result;
+    auto &L = result[0] = complex_matrix_owned(n, n); // Lower triangular matrix
+    auto &U = result[1] = complex_matrix_owned(n, n); // Upper triangular matrix
+
+    auto eig_A = eigen_interface::as_eigen(A);
+    Eigen::PartialPivLU<
+        Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>>
+        lu(eig_A);
+
+    auto &matLU = lu.matrixLU();
+    Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> eig_L =
+        matLU.triangularView<Eigen::UnitLower>();
+    Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> eig_U =
+        matLU.triangularView<Eigen::Upper>();
+
+    // Copy L
+    for (size_t i = 0; i < n; ++i)
+    {
+        for (size_t j = 0; j <= i; ++j)
+        {
+            L(i, j) = eig_L(i, j);
+        }
+    }
+
+    // Copy U
+    for (size_t i = 0; i < n; ++i)
+    {
+        for (size_t j = i; j < n; ++j)
+        {
+            U(i, j) = eig_U(i, j);
+        }
+    }
+
+    return result;
+}
+
+// ============================================================================
+// 4. Matrix QR Decomposition Functions
+// ============================================================================
+// Decompose real matrix A into Q and R such that A = Q * R
+// Q is orthogonal matrix, R is upper triangular matrix
+inline std::array<real_matrix_owned, 2> qr(const real_matrix_base &A,
+                                           bool full = false)
+{
+    size_t m = A.rows();
+    size_t n = A.cols();
+    std::array<real_matrix_owned, 2> result;
+    auto &Q = result[0];
+    auto &R = result[1];
+
+    auto eig_A = eigen_interface::as_eigen(A);
+    Eigen::HouseholderQR<Eigen::MatrixXd> qr(eig_A);
+
+    Eigen::MatrixXd eig_R = qr.matrixQR().triangularView<Eigen::Upper>();
+
+    if (full)
+    {
+        // full QR: Q is m x m
+        Eigen::MatrixXd I = Eigen::MatrixXd::Identity(m, m);
+        Q = eigen_interface::from_eigen(qr.householderQ() * I);
+        R = eigen_interface::from_eigen(eig_R);
+    }
+    else
+    {
+        // thin QR: Q is m x n
+        Eigen::MatrixXd I = Eigen::MatrixXd::Identity(m, n);
+        Q = eigen_interface::from_eigen(qr.householderQ() * I);
+        R = eigen_interface::from_eigen(eig_R.topRows(n));
+    }
+
+    return result;
+}
+
+// Decompose complex matrix A into Q and R such that A = Q * R
+// Q is orthogonal matrix, R is upper triangular matrix
+inline std::array<complex_matrix_owned, 2> qr(const complex_matrix_base &A)
+{
+    size_t m = A.rows();
+    size_t n = A.cols();
+    std::array<complex_matrix_owned, 2> result;
+    auto &Q = result[0] = complex_matrix_owned(m, m); // Orthogonal matrix
+    auto &R = result[1] = complex_matrix_owned(m, n); // Upper triangular matrix
+
+    auto eig_A = eigen_interface::as_eigen(A);
+    Eigen::HouseholderQR<
+        Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>>
+        qr(eig_A);
+
+    Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> eig_Q =
+        qr.householderQ() * Eigen::MatrixXcd::Identity(m, m);
+    Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> eig_R =
+        qr.matrixQR().triangularView<Eigen::Upper>();
+
+    // Copy Q
+    // Note: eig_Q is complete m x m matrix
+    for (size_t i = 0; i < m; ++i)
+    {
+        for (size_t j = 0; j < m; ++j)
+        {
+            Q(i, j) = eig_Q(i, j);
+        }
+    }
+
+    // Copy R
+    for (size_t i = 0; i < m; ++i)
+    {
+        for (size_t j = 0; j < n; ++j)
+        {
+            R(i, j) = eig_R(i, j);
+        }
+    }
+
+    return result;
+}
+
+} // namespace msl::matrix
 
 #endif // MSL_MATRIX_DECOMPOSE_HPP

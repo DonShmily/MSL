@@ -4,12 +4,12 @@
 **  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
-** File: \include\matrix\complex_matrix_base.hpp
+** File: complex_matrix_base.hpp
 ** -----
 ** File Created: Saturday, 11th October 2025 21:20:11
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Saturday, 11th October 2025 22:52:48
+** Last Modified: Sunday, 14th December 2025 17:04:10
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -124,6 +124,27 @@ public:
         {
             val = func(val);
         }
+    }
+
+    [[nodiscard]] inline std::complex<double> sum()
+    {
+        std::complex<double> total = 0.0;
+        for (const auto &val : data_)
+        {
+            total += val;
+        }
+        return total;
+    }
+
+    [[nodiscard]] inline std::complex<double> trace()
+    {
+        assert(rows_ == cols_);
+        std::complex<double> tr = 0.0;
+        for (size_t i = 0; i < rows_; ++i)
+        {
+            tr += (*this)(i, i);
+        }
+        return tr;
     }
 
 protected:

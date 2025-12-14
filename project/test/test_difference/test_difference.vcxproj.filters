@@ -15,8 +15,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\differ\differ.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
+    <ClCompile Include="..\..\..\tests\test_difference\test_difference.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

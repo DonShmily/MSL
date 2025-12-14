@@ -1,9 +1,16 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025
-**  File: window.hpp
-**  Description: Apply window functions to signals
+**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**
+** Project: MSL
+** File: window.hpp
+** -----
+** File Created: Friday, 7th November 2025 17:53:39
+** Author: Dong Feiyue (FeiyueDong@outlook.com)
+** -----
+** Last Modified: Sunday, 14th December 2025 17:05:44
+** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
 #ifndef MSL_WINDOW_HPP

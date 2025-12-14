@@ -9,11 +9,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "signal", "project\signal\si
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interp", "project\interp\interp.vcxproj", "{EA08AC0E-8A8A-4D55-B75C-CBECD54AA389}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "differ", "project\differ\differ.vcxproj", "{D2CC551C-F5FD-40A4-BB42-870084ACE755}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "difference", "project\difference\difference.vcxproj", "{D2CC551C-F5FD-40A4-BB42-870084ACE755}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{ABF4CAFE-AAA7-4FCF-B0EE-58B438E6784F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_differ", "project\test\test_differ\test_differ.vcxproj", "{FB6AE64D-2628-434A-B324-B64533E06795}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_difference", "project\test\test_difference\test_difference.vcxproj", "{FB6AE64D-2628-434A-B324-B64533E06795}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_integral", "project\test\test_integral\test_integral.vcxproj", "{85F59F8B-8A82-479B-86EE-6971B2757801}"
 EndProject
@@ -26,6 +26,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "integral", "project\integral\integral.vcxproj", "{96A9E5EC-CCBF-4B67-9F89-AC7332949E14}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utils", "project\utils\utils.vcxproj", "{531E8DAC-7710-4165-8167-02CCF01A912A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_polynomial", "project\test\test_polynomial\test_polynomial.vcxproj", "{D31830D6-2746-4DBF-BDA2-4DCC771DF207}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -123,6 +125,14 @@ Global
 		{531E8DAC-7710-4165-8167-02CCF01A912A}.Release|x64.Build.0 = Release|x64
 		{531E8DAC-7710-4165-8167-02CCF01A912A}.Release|x86.ActiveCfg = Release|Win32
 		{531E8DAC-7710-4165-8167-02CCF01A912A}.Release|x86.Build.0 = Release|Win32
+		{D31830D6-2746-4DBF-BDA2-4DCC771DF207}.Debug|x64.ActiveCfg = Debug|x64
+		{D31830D6-2746-4DBF-BDA2-4DCC771DF207}.Debug|x64.Build.0 = Debug|x64
+		{D31830D6-2746-4DBF-BDA2-4DCC771DF207}.Debug|x86.ActiveCfg = Debug|Win32
+		{D31830D6-2746-4DBF-BDA2-4DCC771DF207}.Debug|x86.Build.0 = Debug|Win32
+		{D31830D6-2746-4DBF-BDA2-4DCC771DF207}.Release|x64.ActiveCfg = Release|x64
+		{D31830D6-2746-4DBF-BDA2-4DCC771DF207}.Release|x64.Build.0 = Release|x64
+		{D31830D6-2746-4DBF-BDA2-4DCC771DF207}.Release|x86.ActiveCfg = Release|Win32
+		{D31830D6-2746-4DBF-BDA2-4DCC771DF207}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -133,6 +143,7 @@ Global
 		{4A094E2C-8641-40D5-A352-1F125EAE6D54} = {ABF4CAFE-AAA7-4FCF-B0EE-58B438E6784F}
 		{E487B748-8407-4D20-B9A2-93AC55A18389} = {ABF4CAFE-AAA7-4FCF-B0EE-58B438E6784F}
 		{70D46674-BAB8-464A-9C4A-DBCEBE1C3DD6} = {ABF4CAFE-AAA7-4FCF-B0EE-58B438E6784F}
+		{D31830D6-2746-4DBF-BDA2-4DCC771DF207} = {ABF4CAFE-AAA7-4FCF-B0EE-58B438E6784F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F884CC7-E333-449A-B36D-790AE6F3DA01}

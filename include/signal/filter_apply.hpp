@@ -1,9 +1,16 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025
-**  File: filter_apply.hpp
-**  Description: Apply digital filters to signals
+**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**
+** Project: MSL
+** File: filter_apply.hpp
+** -----
+** File Created: Tuesday, 14th October 2025 11:12:27
+** Author: Dong Feiyue (FeiyueDong@outlook.com)
+** -----
+** Last Modified: Sunday, 14th December 2025 17:05:23
+** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
 #ifndef MSL_FILTER_APPLY_HPP

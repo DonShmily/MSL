@@ -1,9 +1,16 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025
-**  File: fft.hpp
-**  Description: FFT interface using Eigen's unsupported FFT module
+**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**
+** Project: MSL
+** File: fft.hpp
+** -----
+** File Created: Wednesday, 29th October 2025 20:34:32
+** Author: Dong Feiyue (FeiyueDong@outlook.com)
+** -----
+** Last Modified: Sunday, 14th December 2025 17:05:17
+** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
 #ifndef MSL_FFT_HPP

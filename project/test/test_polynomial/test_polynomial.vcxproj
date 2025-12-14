@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{fb6ae64d-2628-434a-b324-b64533e06795}</ProjectGuid>
-    <RootNamespace>testdiffer</RootNamespace>
+    <ProjectGuid>{d31830d6-2746-4dbf-bda2-4dcc771df207}</ProjectGuid>
+    <RootNamespace>testpolynomial</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -132,7 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\tests\test_differ\test_differ.cpp" />
+    <ClCompile Include="..\..\..\tests\test_polynomial\test_polynomial.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

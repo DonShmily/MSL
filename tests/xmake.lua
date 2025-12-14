@@ -1,5 +1,4 @@
-includes("test_differ")
-includes("test_fft")
+includes("test_difference")
 includes("test_integral")
 includes("test_interp")
 includes("test_matrix")

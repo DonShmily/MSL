@@ -20,7 +20,7 @@
         ],
         [
             "srcpath",
-            "src/${fileDirname}"
+            "${fileDirname}"
         ],
         [
             "author",
@@ -44,7 +44,7 @@
                 " Copyright <<projectCreationYear>> - <<year>>, <<author>>, All Rights Reserved.",
                 "",
                 "Project: <<projectname>>",
-                "File: <<filerelativepath>>",
+                "File: <<filename>>",
                 "-----",
                 "File Created: <<filecreated('dddd, Do MMMM YYYY HH:mm:ss')>>",
                 "Author: <<author>> (<<authoremail>>)",

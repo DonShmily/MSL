@@ -428,7 +428,7 @@ int test_decompositions()
 
         // Reconstruct A from U * S * Vt
         auto US = U * S;
-        auto A_reconstructed = US * Vt.adjoint();
+        auto A_reconstructed = US * Vt.conjugate_transpose();
 
         // Check reconstruction
         for (size_t j = 0; j < A.cols(); ++j)
@@ -458,5 +458,9 @@ int main()
 {
     int res1 = test_base_op();
     int res2 = test_decompositions();
+
+    std::cout << "Test results: base operations = " << res1
+              << ", decompositions = " << res2 << "\n";
+
     return res1 + res2;
 }

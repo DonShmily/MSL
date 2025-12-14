@@ -2,9 +2,11 @@
 
 #include "matrix.hpp"
 #include "signal.hpp"
+#include "signal/detrend.hpp"
 #include "utils/data_io.hpp"
 
 using namespace msl;
+
 int test_filter()
 {
     auto ori_data = utils::ReadData("KunmingSSJY.txt", 6, 3e4);
@@ -136,4 +138,31 @@ int test_psd()
     return 0;
 }
 
-int main() { return test_filter() + test_fft() + test_psd(); }
+int test_detrend()
+{
+
+    auto ori_data = utils::ReadData("err_data.txt", 1, 3e4);
+    auto detrended = signal::detrend(ori_data, 2);
+
+    try
+    {
+        utils::WriteData("test_result/signal/detrended_data.txt",
+                         detrended,
+                         1,
+                         detrended.size());
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Detrend test failed: " << e.what() << std::endl;
+        return -1;
+    }
+
+    std::cout << "Detrend test completed successfully." << std::endl;
+    return 0;
+}
+
+int main()
+{
+    // return test_filter() + test_fft() + test_psd();
+    return test_detrend();
+}

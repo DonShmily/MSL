@@ -4,12 +4,12 @@
 **  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
-** File: \include\integral\adaptive_simpson_quadrature.hpp
+** File: adaptive_simpson_quadrature.hpp
 ** -----
 ** File Created: Wednesday, 15th October 2025 22:37:18
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Wednesday, 15th October 2025 22:38:42
+** Last Modified: Sunday, 14th December 2025 17:03:00
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 

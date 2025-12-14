@@ -4,11 +4,15 @@
 **  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
-** File: \include\signal\fourier_domain_filter.hpp
+** File: fourier_domain_filter.hpp
 ** -----
-** File Created: Saturday, 18th October 2025
+** File Created: Saturday, 18th October 2025 16:30:55
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
+** -----
+** Last Modified: Sunday, 14th December 2025 17:05:33
+** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
+
 #ifndef MSL_FOURIER_DOMAIN_FILTER_HPP
 #define MSL_FOURIER_DOMAIN_FILTER_HPP
 

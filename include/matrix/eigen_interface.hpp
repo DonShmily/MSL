@@ -1,9 +1,16 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025
-**  File: eigen_interface.hpp
-**  Description: Safe and efficient interface between MSL matrix types and Eigen
+**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**
+** Project: MSL
+** File: eigen_interface.hpp
+** -----
+** File Created: Saturday, 11th October 2025 23:14:26
+** Author: Dong Feiyue (FeiyueDong@outlook.com)
+** -----
+** Last Modified: Sunday, 14th December 2025 17:04:27
+** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
 #ifndef MSL_EIGEN_INTERFACE_HPP
@@ -145,6 +152,30 @@ inline matrixd from_eigen(const Eigen::MatrixBase<Derived> &eig)
  * @brief Specialization for Eigen::MatrixXd (may avoid one copy)
  */
 inline matrixd from_eigen(const Eigen::MatrixXd &eig)
+{
+    matrixd result(eig.rows(), eig.cols());
+    std::copy(eig.data(), eig.data() + eig.size(), result.data());
+    return result;
+}
+
+/**
+ * @brief Specialization for Eigen::MatrixXd (may avoid one copy)
+ */
+inline matrixc from_eigen(
+    const Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>
+        &eig)
+{
+    matrixc result(eig.rows(), eig.cols());
+    std::copy(eig.data(), eig.data() + eig.size(), result.data());
+    return result;
+}
+
+/**
+ * @brief Create matrixc from any Eigen complex matrix expression (deep copy)
+ */
+inline matrixd from_eigen(
+    const Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>>
+        &eig)
 {
     matrixd result(eig.rows(), eig.cols());
     std::copy(eig.data(), eig.data() + eig.size(), result.data());
@@ -347,59 +378,6 @@ inline std::vector<double> matvec(const matrixd &A,
     Eigen::VectorXd result = eig_A * eig_x;
 
     return std::vector<double>(result.data(), result.data() + result.size());
-}
-
-/**
- * @brief Compute eigenvalues
- */
-inline std::vector<double> eigenvalues(const matrixd &A)
-{
-    assert(A.rows() == A.cols());
-
-    auto eig_A = as_eigen(A);
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver(eig_A);
-
-    auto evals = solver.eigenvalues();
-    return std::vector<double>(evals.data(), evals.data() + evals.size());
-}
-
-/**
- * @brief Compute SVD
- * @return Tuple of (U, S, V) where A = U * S * V^T
- */
-// Standby function, Decompose.hpp has svd implementations
-inline std::tuple<matrixd, std::vector<double>, matrixd> svd(const matrixd &A)
-{
-    auto eig_A = as_eigen(A);
-    Eigen::JacobiSVD<Eigen::MatrixXd> svd(
-        eig_A, Eigen::ComputeFullU | Eigen::ComputeFullV);
-
-    auto U = from_eigen(svd.matrixU());
-    auto V = from_eigen(svd.matrixV());
-
-    auto S_vec = svd.singularValues();
-    std::vector<double> S(S_vec.data(), S_vec.data() + S_vec.size());
-
-    return {std::move(U), std::move(S), std::move(V)};
-}
-
-/**
- * @brief Matrix inverse (for square matrices)
- */
-inline matrixd inverse(const matrixd &A)
-{
-    assert(A.rows() == A.cols());
-    auto eig_A = as_eigen(A);
-    return from_eigen(eig_A.inverse());
-}
-
-/**
- * @brief Matrix transpose
- */
-inline matrixd transpose(const matrixd &A)
-{
-    auto eig_A = as_eigen(A);
-    return from_eigen(eig_A.transpose());
 }
 
 /**

@@ -4,12 +4,12 @@
 **  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
-** File: \include\matrix\real_matrix_owned.hpp
+** File: real_matrix_owned.hpp
 ** -----
 ** File Created: Saturday, 11th October 2025 21:20:14
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Saturday, 11th October 2025 22:42:59
+** Last Modified: Sunday, 14th December 2025 17:04:52
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -295,6 +295,33 @@ public:
         for (size_t i = 0; i < n; ++i)
         {
             result(i, i) = diag[i];
+        }
+        return result;
+    }
+
+    // --- Sum of elements ---
+    [[nodiscard]] inline real_matrix_owned sum_columns()
+    {
+        real_matrix_owned result(1, cols_, 0.0);
+        for (size_t j = 0; j < cols_; ++j)
+        {
+            for (size_t i = 0; i < rows_; ++i)
+            {
+                result(0, j) += (*this)(i, j);
+            }
+        }
+        return result;
+    }
+
+    [[nodiscard]] inline real_matrix_owned sum_rows()
+    {
+        real_matrix_owned result(rows_, 1, 0.0);
+        for (size_t i = 0; i < rows_; ++i)
+        {
+            for (size_t j = 0; j < cols_; ++j)
+            {
+                result(i, 0) += (*this)(i, j);
+            }
         }
         return result;
     }
