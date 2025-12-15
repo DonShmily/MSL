@@ -35,6 +35,19 @@ inline std::vector<double> detrend(std::span<const double> data,
             "Data size must be greater than polynomial degree");
     }
 
+    std::vector<double> detrended(data.size());
+
+    if (n == 0)
+    {
+        auto mean_val = std::accumulate(data.begin(), data.end(), 0.0)
+                        / static_cast<double>(data.size());
+        for (std::size_t i = 0; i < data.size(); ++i)
+        {
+            detrended[i] = data[i] - mean_val;
+        }
+        return detrended;
+    }
+
     // Generate x values
     std::vector<double> x(data.size());
     std::iota(x.begin(), x.end(), 0.0);
@@ -43,7 +56,6 @@ inline std::vector<double> detrend(std::span<const double> data,
     msl::polynomial::Polynomial poly(x, data, n);
 
     // Subtract trend
-    std::vector<double> detrended(data.size());
     for (std::size_t i = 0; i < data.size(); ++i)
     {
         detrended[i] = data[i] - poly(x[i]);
@@ -68,11 +80,23 @@ inline std::vector<double> detrend(std::span<const double> x,
             "Data size must be greater than polynomial degree for detrending");
     }
 
+    std::vector<double> detrended(data.size());
+
+    if (n == 0)
+    {
+        auto mean_val = std::accumulate(data.begin(), data.end(), 0.0)
+                        / static_cast<double>(data.size());
+        for (std::size_t i = 0; i < data.size(); ++i)
+        {
+            detrended[i] = data[i] - mean_val;
+        }
+        return detrended;
+    }
+
     // Fit polynomial to data
     msl::polynomial::Polynomial poly(x, data, n);
 
     // Subtract trend
-    std::vector<double> detrended(data.size());
     for (std::size_t i = 0; i < data.size(); ++i)
     {
         detrended[i] = data[i] - poly(x[i]);

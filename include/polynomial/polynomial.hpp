@@ -145,6 +145,29 @@ private:
         std::copy(c.data(), c.data() + c.size(), coeffs_.begin());
     }
 };
+
+// --- Free functions ---
+
+// Polynomial fitting
+inline std::vector<double>
+polyfit(std::span<const double> x, std::span<const double> y, std::size_t n = 0)
+{
+    return Polynomial(x, y, n).coefficients();
+}
+
+// Evaluate polynomial at given x value
+inline double polyval(const std::span<const double> &coeffs, double x)
+{
+    return Polynomial(coeffs)(x);
+}
+
+// Evaluate polynomial at given x values
+inline std::vector<double> polyval(const std::span<const double> &coeffs,
+                                   const std::span<const double> &x_values)
+{
+    return Polynomial(coeffs)(x_values);
+}
+
 }; // namespace msl::polynomial
 
 #endif // MSL_POLYNOMIAL_HPP
