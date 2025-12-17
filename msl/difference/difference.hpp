@@ -44,10 +44,10 @@ inline std::vector<double> diff(std::span<const double> y)
         throw std::invalid_argument("Need at least 2 points for diff");
     }
 
-    std::vector<double> result(y.size());
+    std::vector<double> result(y.size() - 1);
     for (size_t i = 0; i < result.size() - 1; ++i)
     {
-        result[i + 1] = y[i + 1] - y[i];
+        result[i] = y[i + 1] - y[i];
     }
 
     return result;
@@ -76,12 +76,12 @@ inline matrix::matrixd diff(const matrix::matrixd &mat, int axis = 0)
                 "Need at least 2 rows for row-wise diff");
         }
 
-        matrix::matrixd result(mat.rows(), mat.cols());
+        matrix::matrixd result(mat.rows() - 1, mat.cols());
         for (size_t j = 0; j < mat.cols(); ++j)
         {
             for (size_t i = 0; i < result.rows() - 1; ++i)
             {
-                result(i + 1, j) = mat(i + 1, j) - mat(i, j);
+                result(i, j) = mat(i + 1, j) - mat(i, j);
             }
         }
         return result;
@@ -95,12 +95,12 @@ inline matrix::matrixd diff(const matrix::matrixd &mat, int axis = 0)
                 "Need at least 2 cols for column-wise diff");
         }
 
-        matrix::matrixd result(mat.rows(), mat.cols());
+        matrix::matrixd result(mat.rows(), mat.cols() - 1);
         for (size_t i = 0; i < mat.rows(); ++i)
         {
             for (size_t j = 0; j < result.cols() - 1; ++j)
             {
-                result(i, j + 1) = mat(i, j + 1) - mat(i, j);
+                result(i, j) = mat(i, j + 1) - mat(i, j);
             }
         }
         return result;
@@ -133,11 +133,11 @@ inline std::vector<double> forward_gradient(std::span<const double> y,
         throw std::invalid_argument("Need at least 2 points for gradient");
     }
 
-    std::vector<double> grad(y.size());
+    std::vector<double> grad(y.size() - 1);
     // Forward difference, the first point is 0
     for (size_t i = 0; i < y.size() - 1; ++i)
     {
-        grad[i + 1] = (y[i + 1] - y[i]) / dx;
+        grad[i] = (y[i + 1] - y[i]) / dx;
     }
 
     return grad;
@@ -169,12 +169,12 @@ inline std::vector<double> forward_gradient(std::span<const double> y,
     {
         throw std::invalid_argument("Need at least 2 points for gradient");
     }
-    std::vector<double> grad(y.size());
+    std::vector<double> grad(y.size() - 1);
     // Forward difference, the first point is 0
     for (size_t i = 0; i < y.size() - 1; ++i)
     {
         double dx_local = x[i + 1] - x[i];
-        grad[i + 1] = (y[i + 1] - y[i]) / dx_local;
+        grad[i] = (y[i + 1] - y[i]) / dx_local;
     }
 
     return grad;
@@ -199,7 +199,7 @@ forward_gradient(const matrix::matrixd &mat, double dx = 1.0, int axis = 0)
             throw std::invalid_argument("Need at least 2 rows");
         }
 
-        matrix::matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows() - 1, mat.cols());
 
         // First row gradient is zero
         for (size_t j = 0; j < mat.cols(); ++j)
@@ -207,7 +207,7 @@ forward_gradient(const matrix::matrixd &mat, double dx = 1.0, int axis = 0)
             // Forward difference
             for (size_t i = 0; i < mat.rows() - 1; ++i)
             {
-                grad(i + 1, j) = (mat(i + 1, j) - mat(i, j)) / dx;
+                grad(i, j) = (mat(i + 1, j) - mat(i, j)) / dx;
             }
         }
 
@@ -221,7 +221,7 @@ forward_gradient(const matrix::matrixd &mat, double dx = 1.0, int axis = 0)
             throw std::invalid_argument("Need at least 2 columns");
         }
 
-        matrix::matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows(), mat.cols() - 1);
 
         // First column gradient is zero
         for (size_t i = 0; i < mat.rows(); ++i)
@@ -229,7 +229,7 @@ forward_gradient(const matrix::matrixd &mat, double dx = 1.0, int axis = 0)
             // Central at interior columns
             for (size_t j = 0; j < mat.cols() - 1; ++j)
             {
-                grad(i, j + 1) = (mat(i, j + 1) - mat(i, j)) / dx;
+                grad(i, j) = (mat(i, j + 1) - mat(i, j)) / dx;
             }
         }
 
@@ -267,7 +267,7 @@ inline matrix::matrixd forward_gradient(const matrix::matrixd &mat,
                 "x size must be number of rows for axis=0");
         }
 
-        matrix::matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows() - 1, mat.cols());
 
         for (size_t j = 0; j < mat.cols(); ++j)
         {
@@ -275,7 +275,7 @@ inline matrix::matrixd forward_gradient(const matrix::matrixd &mat,
             for (size_t i = 0; i < mat.rows() - 1; ++i)
             {
                 double dx_local = x[i + 1] - x[i];
-                grad(i + 1, j) = (mat(i + 1, j) - mat(i, j)) / dx_local;
+                grad(i, j) = (mat(i + 1, j) - mat(i, j)) / dx_local;
             }
         }
 
@@ -295,7 +295,7 @@ inline matrix::matrixd forward_gradient(const matrix::matrixd &mat,
                 "dx size must be number of cols for axis=1");
         }
 
-        matrix::matrixd grad(mat.rows(), mat.cols());
+        matrix::matrixd grad(mat.rows(), mat.cols() - 1);
 
         for (size_t i = 0; i < mat.rows(); ++i)
         {
@@ -303,7 +303,7 @@ inline matrix::matrixd forward_gradient(const matrix::matrixd &mat,
             for (size_t j = 0; j < mat.cols() - 1; ++j)
             {
                 double dx_local = x[j + 1] - x[j];
-                grad(i, j + 1) = (mat(i, j + 1) - mat(i, j)) / dx_local;
+                grad(i, j) = (mat(i, j + 1) - mat(i, j)) / dx_local;
             }
         }
 
