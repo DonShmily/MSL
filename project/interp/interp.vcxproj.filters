@@ -15,19 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\interp\interp_1d_akima.hpp">
+    <ClInclude Include="..\..\msl\interp\interp_1d_akima.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\interp\interp_1d_linear.hpp">
+    <ClInclude Include="..\..\msl\interp\interp_1d_base.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\interp\interp_1d_spline.hpp">
+    <ClInclude Include="..\..\msl\interp\interp_1d_linear.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\interp\interp_1d_base.hpp">
+    <ClInclude Include="..\..\msl\interp\interp_1d_polynomial.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\interp\interp_1d_polynomial.hpp">
+    <ClInclude Include="..\..\msl\interp\interp_1d_spline.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

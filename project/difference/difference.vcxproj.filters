@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\difference\difference.hpp">
+    <ClInclude Include="..\..\msl\difference\difference.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

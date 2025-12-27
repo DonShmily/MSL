@@ -18,6 +18,13 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\msl\interp\interp_1d_akima.hpp" />
+    <ClInclude Include="..\..\msl\interp\interp_1d_base.hpp" />
+    <ClInclude Include="..\..\msl\interp\interp_1d_linear.hpp" />
+    <ClInclude Include="..\..\msl\interp\interp_1d_polynomial.hpp" />
+    <ClInclude Include="..\..\msl\interp\interp_1d_spline.hpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -105,6 +112,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>..\..\..\msl;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,19 +128,13 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>..\..\..\msl;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\include\interp\interp_1d_akima.hpp" />
-    <ClInclude Include="..\..\include\interp\interp_1d_base.hpp" />
-    <ClInclude Include="..\..\include\interp\interp_1d_linear.hpp" />
-    <ClInclude Include="..\..\include\interp\interp_1d_polynomial.hpp" />
-    <ClInclude Include="..\..\include\interp\interp_1d_spline.hpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

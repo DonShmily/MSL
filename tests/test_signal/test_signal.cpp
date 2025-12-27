@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 
 #include "matrix.hpp"
@@ -163,6 +164,6 @@ int test_detrend()
 
 int main()
 {
-    // return test_filter() + test_fft() + test_psd();
+    return test_filter() + test_fft() + test_psd();
     return test_detrend();
 }

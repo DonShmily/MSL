@@ -47,9 +47,9 @@ inline std::array<real_matrix_owned, 3> svd(const real_matrix_base &A)
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(
         eig_A, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
-    auto eig_U = svd.matrixU();
-    auto eig_V = svd.matrixV();
-    auto eig_S = svd.singularValues();
+    Eigen::MatrixXd eig_U = svd.matrixU();
+    Eigen::MatrixXd eig_V = svd.matrixV();
+    Eigen::MatrixXd eig_S = svd.singularValues();
 
     // Copy
     std::copy(eig_U.data(), eig_U.data() + eig_U.size(), U.data());
@@ -80,9 +80,12 @@ inline std::array<complex_matrix_owned, 3> svd(const complex_matrix_base &A)
         Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>>
         svd(eig_A, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
-    auto eig_U = svd.matrixU();
-    auto eig_V = svd.matrixV();
-    auto eig_S = svd.singularValues();
+    Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> eig_U =
+        svd.matrixU();
+    Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> eig_V =
+        svd.matrixV();
+    Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> eig_S =
+        svd.singularValues();
 
     // Copy
     std::copy(eig_U.data(), eig_U.data() + eig_U.size(), U.data());
@@ -121,7 +124,7 @@ inline std::array<msl::matrix::matrixc, 2> eig(const real_matrix_base &A)
     Eigen::EigenSolver<Eigen::MatrixXd> eig(eig_A);
 
     auto eig_V = eig.eigenvectors();
-    auto eig_D = eig.eigenvalues();
+    auto &eig_D = eig.eigenvalues();
 
     // Copy
     std::copy(eig_V.data(), eig_V.data() + eig_V.size(), V.data());
@@ -237,7 +240,8 @@ inline std::array<complex_matrix_owned, 2> lu(const complex_matrix_base &A)
         Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>>
         lu(eig_A);
 
-    auto &matLU = lu.matrixLU();
+    const Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>
+        &matLU = lu.matrixLU();
     Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> eig_L =
         matLU.triangularView<Eigen::UnitLower>();
     Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> eig_U =

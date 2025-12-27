@@ -18,6 +18,16 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\msl\signal\butterworth_filter.hpp" />
+    <ClInclude Include="..\..\msl\signal\detrend.hpp" />
+    <ClInclude Include="..\..\msl\signal\fft.hpp" />
+    <ClInclude Include="..\..\msl\signal\filter_apply.hpp" />
+    <ClInclude Include="..\..\msl\signal\filter_design.hpp" />
+    <ClInclude Include="..\..\msl\signal\fourier_domain_filter.hpp" />
+    <ClInclude Include="..\..\msl\signal\power_spectral_density.hpp" />
+    <ClInclude Include="..\..\msl\signal\window.hpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -108,7 +118,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\msl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -124,22 +134,13 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\msl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\include\signal\butterworth_filter.hpp" />
-    <ClInclude Include="..\..\include\signal\fft.hpp" />
-    <ClInclude Include="..\..\include\signal\filter_apply.hpp" />
-    <ClInclude Include="..\..\include\signal\filter_design.hpp" />
-    <ClInclude Include="..\..\include\signal\fourier_domain_filter.hpp" />
-    <ClInclude Include="..\..\include\signal\power_spectral_density.hpp" />
-    <ClInclude Include="..\..\include\signal\window.hpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
