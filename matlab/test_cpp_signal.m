@@ -3,8 +3,8 @@ clc;clear;close all
 
 ori_data = importdata("..\resource\KunmingSSJY.txt");
 
-fft_filt = FourierBandpassFilter(ori_data(:,1),50,0.25,20);
-[b,a] = butter(4,[0.25,20]/(50/2),'bandpass');
+fft_filt = FourierBandpassFilter(ori_data(:,1),50,0.1,10);
+[b,a] = butter(4,[0.1,10]/(50/2),'bandpass');
 butter_filt = filtfilt(b,a,ori_data(:,1));
 butter_filt_2 = filtfilt(b,a,ori_data);
 

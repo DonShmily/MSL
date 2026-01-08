@@ -1,6 +1,5 @@
 // settings.json
 {
-    "editor.fontSize": 18,
     // Clangd 找不到编译数据库(例如 compile_flags.json 文件)时采用的设置,缺陷是不能直接索引同一项目的不同文件,只能分析系统头文件、当前文件和include的文件
     "clangd.fallbackFlags": [
         "-std=c++23",

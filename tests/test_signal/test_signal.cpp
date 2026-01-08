@@ -16,21 +16,24 @@ int test_filter()
     matrix::matrixd ori_matrix(3e4, 6, std::span<const double>(ori_data));
     try
     {
+        double fs = 50;
+        double low = 0.1 / (fs / 2);
+        double high = 10.0 / (fs / 2);
         // test fourier domain bandpass filter
-        auto fft_filter = signal::FourierDomainFilter(0.01, 0.8, 0);
+        auto fft_filter = signal::FourierDomainFilter(low, high, 0);
         auto fft_filt = fft_filter.apply(data_1d);
         utils::WriteData(
             "test_result/signal/signal_fft_bandpass.txt", fft_filt, 1, 3e4);
 
         // test butterworth bandpass filter
-        auto butter_filt = signal::butterworth_bandpass(data_1d, 4, 0.01, 0.8);
+        auto butter_filt = signal::butterworth_bandpass(data_1d, 4, low, high);
         utils::WriteData("test_result/signal/signal_butterworth_bandpass.txt",
                          butter_filt,
                          1,
                          3e4);
 
         // test matrix input with butterworth filter
-        auto butter = signal::ButterworthFilter(4, 0.01, 0.8);
+        auto butter = signal::ButterworthFilter(4, low, high);
         matrix::matrixd butter_matrix_filt =
             signal::filtfilt_columns(ori_matrix, butter.coefficients());
         utils::WriteData(
