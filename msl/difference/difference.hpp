@@ -1,15 +1,15 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**  Copyright 2025 - 2026, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
 ** File: difference.hpp
 ** -----
-** File Created: Thursday, 11th December 2025 22:48:17
+** File Created: Friday, 9th January 2026 14:58:10
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Sunday, 14th December 2025 17:02:49
+** Last Modified: Thursday, 5th March 2026 14:58:13
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -20,6 +20,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "matrix/real_matrix_base.hpp"
 #include "matrix/real_matrix_owned.hpp"
 
 namespace msl::difference
@@ -32,30 +33,46 @@ namespace msl::difference
 /**
  * @brief First-order difference: diff[i] = y[i+1] - y[i]
  *
+ * Zero-copy operation: directly fills the provided result span.
  * Output size is n-1
  *
  * @param y Input values
- * @return Differences
+ * @param result Output buffer for differences (must have size n-1)
  */
-inline std::vector<double> diff(std::span<const double> y)
+inline void diff(std::span<const double> y, std::span<double> result)
 {
     if (y.size() < 2)
     {
         throw std::invalid_argument("Need at least 2 points for diff");
     }
 
-    std::vector<double> result(y.size() - 1);
-    for (size_t i = 0; i < result.size() - 1; ++i)
+    if (result.size() != y.size() - 1)
+    {
+        throw std::invalid_argument("Result span must have size n-1");
+    }
+
+    for (size_t i = 0; i < result.size(); ++i)
     {
         result[i] = y[i + 1] - y[i];
     }
-
-    return result;
 }
 
-inline std::vector<double> diff(const std::vector<double> &y)
+/**
+ * @brief First-order difference: diff[i] = y[i+1] - y[i]
+ *
+ * Convenience wrapper that allocates and returns a vector.
+ * For zero-copy operations, use the void version with span parameter.
+ *
+ * @param y Input values (can be vector, array, or span)
+ * @return Vector of differences (size n-1)
+ */
+inline std::vector<double> diff(std::span<const double> y)
 {
-    return diff(std::span<const double>(y));
+    std::vector<double> result(y.size() - 1);
+
+    diff(y, result);
+
+    return result;
 }
 
 /**
@@ -65,7 +82,7 @@ inline std::vector<double> diff(const std::vector<double> &y)
  * @param axis 0 = row-wise (vertical diff), 1 = column-wise (horizontal diff)
  * @return Difference matrix
  */
-inline matrix::matrixd diff(const matrix::matrixd &mat, int axis = 0)
+inline matrix::matrixd diff(const matrix::real_matrix_base &mat, int axis = 0)
 {
     if (axis == 0)
     {
@@ -118,48 +135,69 @@ inline matrix::matrixd diff(const matrix::matrixd &mat, int axis = 0)
 /**
  * @brief Numerical gradient using forward differences (uniform spacing)
  *
- * Uses:
- * - Forward difference
+ * Zero-copy operation: directly fills the provided gradient span.
+ * Uses forward difference approximation.
+ * Output size is n-1
  *
  * @param y Function values
- * @param dx Spacing (default: 1.0)
- * @return Gradient values (same size as input)
+ * @param grad Output buffer for gradient values (must have size n-1)
+ * @param dx Spacing between points (default: 1.0)
  */
-inline std::vector<double> forward_gradient(std::span<const double> y,
-                                            double dx = 1.0)
+inline void forward_gradient(std::span<const double> y,
+                             std::span<double> grad,
+                             double dx = 1.0)
 {
     if (y.size() < 2)
     {
         throw std::invalid_argument("Need at least 2 points for gradient");
     }
 
-    std::vector<double> grad(y.size() - 1);
+    if (grad.size() != y.size() - 1)
+    {
+        throw std::invalid_argument("Gradient span must have size n-1");
+    }
+
     // Forward difference, the first point is 0
     for (size_t i = 0; i < y.size() - 1; ++i)
     {
         grad[i] = (y[i + 1] - y[i]) / dx;
     }
+}
+
+/**
+ * @brief Numerical gradient using forward differences (uniform spacing)
+ *
+ * Convenience wrapper that allocates and returns a vector.
+ * For zero-copy operations, use the void version with span parameter.
+ *
+ * @param y Function values
+ * @param dx Spacing between points (default: 1.0)
+ * @return Vector of gradient values (size n-1)
+ */
+inline std::vector<double> forward_gradient(std::span<const double> y,
+                                            double dx = 1.0)
+{
+    std::vector<double> grad(y.size() - 1);
+
+    forward_gradient(y, grad, dx);
 
     return grad;
 }
 
-inline std::vector<double> forward_gradient(const std::vector<double> &y,
-                                            double dx = 1.0)
-{
-    return forward_gradient(std::span<const double>(y), dx);
-}
-
-/** @brief Numerical gradient using forward differences (non-uniform spacing)
+/**
+ * @brief Numerical gradient using forward differences (non-uniform spacing)
  *
- * Uses:
- * - Forward difference
+ * Zero-copy operation: directly fills the provided gradient span.
+ * Uses forward difference with non-uniform spacing.
+ * Output size is n-1
  *
  * @param y Function values
- * @param dx Spacing (default: 1.0)
- * @return Gradient values (same size as input)
+ * @param grad Output buffer for gradient values (must have size n-1)
+ * @param x Independent variable values (must have same size as y)
  */
-inline std::vector<double> forward_gradient(std::span<const double> y,
-                                            std::span<const double> x)
+inline void forward_gradient(std::span<const double> y,
+                             std::span<double> grad,
+                             std::span<const double> x)
 {
     if (x.size() != y.size())
     {
@@ -169,13 +207,35 @@ inline std::vector<double> forward_gradient(std::span<const double> y,
     {
         throw std::invalid_argument("Need at least 2 points for gradient");
     }
-    std::vector<double> grad(y.size() - 1);
+    if (grad.size() != y.size() - 1)
+    {
+        throw std::invalid_argument("Gradient span must have size n-1");
+    }
+
     // Forward difference, the first point is 0
     for (size_t i = 0; i < y.size() - 1; ++i)
     {
         double dx_local = x[i + 1] - x[i];
         grad[i] = (y[i + 1] - y[i]) / dx_local;
     }
+}
+
+/**
+ * @brief Numerical gradient using forward differences (non-uniform spacing)
+ *
+ * Convenience wrapper that allocates and returns a vector.
+ * For zero-copy operations, use the void version with span parameter.
+ *
+ * @param y Function values
+ * @param x Independent variable values (must have same size as y)
+ * @return Vector of gradient values (size n-1)
+ */
+inline std::vector<double> forward_gradient(std::span<const double> y,
+                                            std::span<const double> x)
+{
+    std::vector<double> grad(y.size() - 1);
+
+    forward_gradient(y, grad, x);
 
     return grad;
 }
@@ -185,11 +245,13 @@ inline std::vector<double> forward_gradient(std::span<const double> y,
  *
  * @param mat Input matrix
  * @param dx Spacing
- * @param axis 0 = gradient along rows, 1 = gradient along columns
- * @return Gradient matrix (same size as input)
+ * @param axis 0 = gradient along rows (vertical, size n-1 x m), 1 = gradient
+ * along columns (horizontal, size n x m-1)
+ * @return Gradient matrix
  */
-inline matrix::matrixd
-forward_gradient(const matrix::matrixd &mat, double dx = 1.0, int axis = 0)
+inline matrix::matrixd forward_gradient(const matrix::real_matrix_base &mat,
+                                        double dx = 1.0,
+                                        int axis = 0)
 {
     if (axis == 0)
     {
@@ -242,15 +304,17 @@ forward_gradient(const matrix::matrixd &mat, double dx = 1.0, int axis = 0)
 }
 
 /**
- * @brief Gradient for matrix (along specified axis), uses forward differences
+ * @brief Gradient for matrix with non-uniform spacing (along specified axis),
+ * uses forward differences
  *
  * @param mat Input matrix
- * @param dx Spacing
- * @param axis 0 = gradient along rows, 1 = gradient along columns
- * @return Gradient matrix (same size as input)
+ * @param x Spacing values
+ * @param axis 0 = gradient along rows (vertical, size n-1 x m), 1 = gradient
+ * along columns (horizontal, size n x m-1)
+ * @return Gradient matrix
  */
-inline matrix::matrixd forward_gradient(const matrix::matrixd &mat,
-                                        std::vector<double> x,
+inline matrix::matrixd forward_gradient(const matrix::real_matrix_base &mat,
+                                        std::span<const double> x,
                                         int axis = 0)
 {
     if (axis == 0)
@@ -318,24 +382,31 @@ inline matrix::matrixd forward_gradient(const matrix::matrixd &mat,
 /**
  * @brief Numerical gradient using central differences (uniform spacing)
  *
+ * Zero-copy operation: directly fills the provided gradient span.
  * Uses:
  * - Forward difference at first point
  * - Central difference at interior points
  * - Backward difference at last point
+ * Output size equals input size
  *
  * @param y Function values
- * @param dx Spacing (default: 1.0)
- * @return Gradient values (same size as input)
+ * @param grad Output buffer for gradient values (must have same size as y)
+ * @param dx Spacing between points (default: 1.0)
  */
-inline std::vector<double> central_gradient(std::span<const double> y,
-                                            double dx = 1.0)
+inline void central_gradient(std::span<const double> y,
+                             std::span<double> grad,
+                             double dx = 1.0)
 {
     if (y.size() < 2)
     {
         throw std::invalid_argument("Need at least 2 points for gradient");
     }
 
-    std::vector<double> grad(y.size());
+    if (grad.size() != y.size())
+    {
+        throw std::invalid_argument(
+            "Gradient span must have same size as input");
+    }
 
     // Forward difference at first point
     grad[0] = (y[1] - y[0]) / dx;
@@ -348,25 +419,42 @@ inline std::vector<double> central_gradient(std::span<const double> y,
 
     // Backward difference at last point
     grad[y.size() - 1] = (y[y.size() - 1] - y[y.size() - 2]) / dx;
-
-    return grad;
 }
 
-inline std::vector<double> central_gradient(const std::vector<double> &y,
+/**
+ * @brief Numerical gradient using central differences (uniform spacing)
+ *
+ * Convenience wrapper that allocates and returns a vector.
+ * For zero-copy operations, use the void version with span parameter.
+ *
+ * @param y Function values
+ * @param dx Spacing between points (default: 1.0)
+ * @return Vector of gradient values (same size as input)
+ */
+inline std::vector<double> central_gradient(std::span<const double> y,
                                             double dx = 1.0)
 {
-    return central_gradient(std::span<const double>(y), dx);
+    std::vector<double> grad(y.size());
+
+    central_gradient(y, grad, dx);
+
+    return grad;
 }
 
 /**
  * @brief Numerical gradient with non-uniform spacing
  *
- * @param x Independent variable
- * @param y Dependent variable
- * @return Gradient dy/dx
+ * Zero-copy operation: directly fills the provided gradient span.
+ * Uses weighted central differences to handle non-uniform spacing.
+ * Output size equals input size
+ *
+ * @param x Independent variable values
+ * @param y Dependent variable values (must have same size as x)
+ * @param grad Output buffer for gradient values (must have same size as y)
  */
-inline std::vector<double> central_gradient(std::span<const double> x,
-                                            std::span<const double> y)
+inline void central_gradient(std::span<const double> x,
+                             std::span<const double> y,
+                             std::span<double> grad)
 {
     if (x.size() != y.size())
     {
@@ -376,8 +464,11 @@ inline std::vector<double> central_gradient(std::span<const double> x,
     {
         throw std::invalid_argument("Need at least 2 points for gradient");
     }
-
-    std::vector<double> grad(y.size());
+    if (grad.size() != y.size())
+    {
+        throw std::invalid_argument(
+            "Gradient span must have same size as input");
+    }
 
     // Forward difference at first point
     double dx0 = x[1] - x[0];
@@ -399,6 +490,24 @@ inline std::vector<double> central_gradient(std::span<const double> x,
     size_t n = y.size();
     double dx_last = x[n - 1] - x[n - 2];
     grad[n - 1] = (y[n - 1] - y[n - 2]) / dx_last;
+}
+
+/**
+ * @brief Numerical gradient with non-uniform spacing
+ *
+ * Convenience wrapper that allocates and returns a vector.
+ * For zero-copy operations, use the void version with span parameter.
+ *
+ * @param x Independent variable values
+ * @param y Dependent variable values (must have same size as x)
+ * @return Vector of gradient values (same size as input)
+ */
+inline std::vector<double> central_gradient(std::span<const double> x,
+                                            std::span<const double> y)
+{
+    std::vector<double> grad(y.size());
+
+    central_gradient(x, y, grad);
 
     return grad;
 }
@@ -408,11 +517,13 @@ inline std::vector<double> central_gradient(std::span<const double> x,
  *
  * @param mat Input matrix
  * @param dx Spacing
- * @param axis 0 = gradient along rows, 1 = gradient along columns
+ * @param axis 0 = gradient along rows (vertical, size n x m), 1 = gradient
+ * along columns (horizontal, size n x m)
  * @return Gradient matrix (same size as input)
  */
-inline matrix::matrixd
-central_gradient(const matrix::matrixd &mat, double dx = 1.0, int axis = 0)
+inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
+                                        double dx = 1.0,
+                                        int axis = 0)
 {
     if (axis == 0)
     {
@@ -477,15 +588,16 @@ central_gradient(const matrix::matrixd &mat, double dx = 1.0, int axis = 0)
 }
 
 /**
- * @brief Gradient for matrix (along specified axis)
+ * @brief Gradient for matrix with non-uniform spacing (along specified axis)
  *
  * @param mat Input matrix
- * @param dx Spacing
- * @param axis 0 = gradient along rows, 1 = gradient along columns
+ * @param x Spacing values
+ * @param axis 0 = gradient along rows (vertical, size n x m), 1 = gradient
+ * along columns (horizontal, size n x m)
  * @return Gradient matrix (same size as input)
  */
-inline matrix::matrixd central_gradient(const matrix::matrixd &mat,
-                                        std::vector<double> x,
+inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
+                                        std::span<const double> x,
                                         int axis = 0)
 {
     if (axis == 0)
@@ -534,7 +646,7 @@ inline matrix::matrixd central_gradient(const matrix::matrixd &mat,
         if (x.size() != mat.cols())
         {
             throw std::invalid_argument(
-                "dx size must be number of cols for axis=1");
+                "x size must be number of cols for axis=1");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols());
@@ -579,7 +691,9 @@ inline matrix::matrixd central_gradient(const matrix::matrixd &mat,
  * @return Pair of gradient matrices {grad_x, grad_y}
  */
 inline std::pair<matrix::matrixd, matrix::matrixd>
-central_gradient2d(const matrix::matrixd &mat, double dx = 1.0, double dy = 1.0)
+central_gradient2d(const matrix::real_matrix_base &mat,
+                   double dx = 1.0,
+                   double dy = 1.0)
 {
     if (mat.rows() < 2 || mat.cols() < 2)
     {
@@ -600,14 +714,18 @@ central_gradient2d(const matrix::matrixd &mat, double dx = 1.0, double dy = 1.0)
 /**
  * @brief Second derivative using central differences
  *
+ * Zero-copy operation: directly fills the provided gradient span.
  * d²y/dx² ≈ (y[i+1] - 2*y[i] + y[i-1]) / dx²
+ * Output size equals input size
  *
  * @param y Function values
- * @param dx Spacing
- * @return Second derivative (same size as input)
+ * @param grad2 Output buffer for second derivative values (must have same size
+ * as y)
+ * @param dx Spacing between points (default: 1.0)
  */
-inline std::vector<double> central_gradient2(std::span<const double> y,
-                                             double dx = 1.0)
+inline void central_gradient2(std::span<const double> y,
+                              std::span<double> grad2,
+                              double dx = 1.0)
 {
     if (y.size() < 3)
     {
@@ -615,7 +733,12 @@ inline std::vector<double> central_gradient2(std::span<const double> y,
             "Need at least 3 points for second derivative");
     }
 
-    std::vector<double> grad2(y.size());
+    if (grad2.size() != y.size())
+    {
+        throw std::invalid_argument(
+            "Second derivative span must have same size as input");
+    }
+
     double dx2 = dx * dx;
 
     // Forward difference at first point (less accurate)
@@ -630,14 +753,24 @@ inline std::vector<double> central_gradient2(std::span<const double> y,
     // Backward difference at last point
     size_t n = y.size() - 1;
     grad2[n] = (y[n] - 2.0 * y[n - 1] + y[n - 2]) / dx2;
-
-    return grad2;
 }
 
-inline std::vector<double> central_gradient2(const std::vector<double> &y,
+/**
+ * @brief Second derivative using central differences
+ *
+ * Convenience wrapper that allocates and returns a vector.
+ * For zero-copy operations, use the void version with span parameter.
+ *
+ * @param y Function values
+ * @param dx Spacing between points (default: 1.0)
+ * @return Vector of second derivative values (same size as input)
+ */
+inline std::vector<double> central_gradient2(std::span<const double> y,
                                              double dx = 1.0)
 {
-    return central_gradient2(std::span<const double>(y), dx);
+    std::vector<double> grad2(y.size());
+    central_gradient2(y, grad2, dx);
+    return grad2;
 }
 
 // ============================================================================
@@ -653,7 +786,7 @@ inline std::vector<double> central_gradient2(const std::vector<double> &y,
  * @return Laplacian matrix (same size, boundaries set to 0)
  */
 inline matrix::matrixd
-laplacian(const matrix::matrixd &mat, double dx = 1.0, double dy = 1.0)
+laplacian(const matrix::real_matrix_base &mat, double dx = 1.0, double dy = 1.0)
 {
     if (mat.rows() < 3 || mat.cols() < 3)
     {
@@ -700,8 +833,8 @@ laplacian(const matrix::matrixd &mat, double dx = 1.0, double dy = 1.0)
  * @param dy Vertical spacing
  * @return Divergence (scalar field)
  */
-inline matrix::matrixd divergence(const matrix::matrixd &Fx,
-                                  const matrix::matrixd &Fy,
+inline matrix::matrixd divergence(const matrix::real_matrix_base &Fx,
+                                  const matrix::real_matrix_base &Fy,
                                   double dx = 1.0,
                                   double dy = 1.0)
 {
@@ -736,8 +869,8 @@ inline matrix::matrixd divergence(const matrix::matrixd &Fx,
  * @param dy Vertical spacing
  * @return Curl (scalar field, z-component)
  */
-inline matrix::matrixd curl(const matrix::matrixd &Fx,
-                            const matrix::matrixd &Fy,
+inline matrix::matrixd curl(const matrix::real_matrix_base &Fx,
+                            const matrix::real_matrix_base &Fy,
                             double dx = 1.0,
                             double dy = 1.0)
 {
@@ -768,19 +901,23 @@ inline matrix::matrixd curl(const matrix::matrixd &Fx,
 /**
  * @brief Savitzky-Golay derivative (smoothed, for noisy data)
  *
- * Uses polynomial fitting over local window
- * More robust to noise than raw finite differences
+ * Zero-copy operation: directly fills the provided gradient span.
+ * Uses polynomial fitting over local window.
+ * More robust to noise than raw finite differences.
+ * Output size equals input size
  *
  * @param y Function values
+ * @param grad Output buffer for smoothed gradient values (must have same size
+ * as y)
  * @param window_size Window size (must be odd, >= 5)
  * @param poly_order Polynomial order (< window_size)
  * @param dx Spacing
- * @return Smoothed derivative
  */
-inline std::vector<double> savgol_gradient(std::span<const double> y,
-                                           int window_size = 5,
-                                           int poly_order = 2,
-                                           double dx = 1.0)
+inline void savgol_gradient(std::span<const double> y,
+                            std::span<double> grad,
+                            int window_size = 5,
+                            int poly_order = 2,
+                            double dx = 1.0)
 {
     if (window_size % 2 == 0)
     {
@@ -794,11 +931,15 @@ inline std::vector<double> savgol_gradient(std::span<const double> y,
     {
         throw std::invalid_argument("Signal too short for window_size");
     }
+    if (grad.size() != y.size())
+    {
+        throw std::invalid_argument(
+            "Gradient span must have same size as input");
+    }
 
     // For simplicity, use central differences with averaging
     // Full S-G implementation would require matrix operations
 
-    std::vector<double> grad(y.size());
     int half_window = window_size / 2;
 
     // Central smoothed derivative
@@ -820,6 +961,28 @@ inline std::vector<double> savgol_gradient(std::span<const double> y,
 
         grad[i] = sum_grad / count;
     }
+}
+
+/**
+ * @brief Savitzky-Golay derivative (smoothed, for noisy data)
+ *
+ * Convenience wrapper that allocates and returns a vector.
+ * For zero-copy operations, use the void version with span parameter.
+ *
+ * @param y Function values
+ * @param window_size Window size (must be odd, >= 5)
+ * @param poly_order Polynomial order (< window_size)
+ * @param dx Spacing
+ * @return Vector of smoothed gradient values (same size as input)
+ */
+inline std::vector<double> savgol_gradient(std::span<const double> y,
+                                           int window_size = 5,
+                                           int poly_order = 2,
+                                           double dx = 1.0)
+{
+    std::vector<double> grad(y.size());
+
+    savgol_gradient(y, grad, window_size, poly_order, dx);
 
     return grad;
 }

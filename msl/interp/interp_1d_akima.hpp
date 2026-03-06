@@ -26,6 +26,9 @@ class AkimaSpline : public InterpolatorBase
 private:
     std::vector<double> b_, c_, d_;
 
+    /**
+     * @brief Compute polynomial coefficients
+     */
     void compute_coefficients()
     {
         size_t n = x_.size();
@@ -81,16 +84,15 @@ public:
 
     AkimaSpline(std::span<const double> x, std::span<const double> y)
     {
-        x_.assign(x.begin(), x.end());
-        y_.assign(y.begin(), y.end());
-        validate_input();
-        if (x_.size() < 4)
-        {
-            throw std::invalid_argument("Akima spline needs at least 4 points");
-        }
-        compute_coefficients();
+        set_data(x, y);
     }
 
+    /**
+     * @brief Set data points
+     *
+     * @param x Independent variable values
+     * @param y Dependent variable values (must have same size as x)
+     */
     void set_data(std::span<const double> x, std::span<const double> y) override
     {
         x_.assign(x.begin(), x.end());
@@ -98,11 +100,18 @@ public:
         validate_input();
         if (x_.size() < 4)
         {
-            throw std::invalid_argument("Akima spline needs at least 4 points");
+            throw std::invalid_argument(
+                "interp1_akima: need at least 4 points");
         }
         compute_coefficients();
     }
 
+    /**
+     * @brief Interpolate at a single point
+     *
+     * @param x Evaluation point
+     * @return Interpolated value at x
+     */
     double interpolate(double x) const override
     {
         size_t i = find_interval(x);
@@ -110,6 +119,30 @@ public:
         return y_[i] + b_[i] * dx + c_[i] * dx * dx + d_[i] * dx * dx * dx;
     }
 };
+
+/**
+ * @brief Akima spline interpolation(Zero-copy version)
+ *
+ * @param x Independent variable values
+ * @param y Dependent variable values (must have same size as x)
+ * @param x_new Evaluation points
+ * @param result Output buffer for interpolated values (must have same size as
+ * x_new)
+ */
+inline void interp1_akima(std::span<const double> x,
+                          std::span<const double> y,
+                          std::span<const double> x_new,
+                          std::span<double> result)
+{
+    if (x_new.size() != result.size())
+    {
+        throw std::invalid_argument(
+            "interp1_akima: x_new and result spans must have same size");
+    }
+
+    AkimaSpline spline(x, y);
+    spline(x_new, result);
+}
 
 inline std::vector<double> interp1_akima(std::span<const double> x,
                                          std::span<const double> y,

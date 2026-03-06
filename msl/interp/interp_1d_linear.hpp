@@ -20,7 +20,12 @@
 
 namespace msl::interp
 {
-// Linear Interpolation
+/**
+ * @brief Piecewise linear interpolation.
+ *
+ * Uses the two neighboring samples around the query point to perform
+ * first-order interpolation.
+ */
 class Linear : public InterpolatorBase
 {
 public:
@@ -28,15 +33,15 @@ public:
 
     Linear(std::span<const double> x, std::span<const double> y)
     {
-        x_.assign(x.begin(), x.end());
-        y_.assign(y.begin(), y.end());
-        validate_input();
+        set_data(x, y);
     }
 
-    Linear(const std::vector<double> &x, const std::vector<double> &y)
-        : Linear(std::span<const double>(x), std::span<const double>(y))
-    {}
-
+    /**
+     * @brief Set interpolation data.
+     *
+     * @param x Independent variable samples (strictly increasing)
+     * @param y Dependent variable samples
+     */
     void set_data(std::span<const double> x, std::span<const double> y) override
     {
         x_.assign(x.begin(), x.end());
@@ -44,6 +49,12 @@ public:
         validate_input();
     }
 
+    /**
+     * @brief Interpolate at one point.
+     *
+     * @param x Query point
+     * @return Interpolated value at @p x
+     */
     double interpolate(double x) const override
     {
         size_t i = find_interval(x);
@@ -52,8 +63,51 @@ public:
         double t = (x - x_[i]) / (x_[i + 1] - x_[i]);
         return y_[i] + t * (y_[i + 1] - y_[i]);
     }
+
+    /**
+     * @brief Evaluate first derivative (segment slope) at one point.
+     *
+     * @param x Query point
+     * @return Slope of the active linear segment
+     */
+    [[nodiscard]] double derivative(double x) const
+    {
+        size_t i = find_interval(x);
+        return (y_[i + 1] - y_[i]) / (x_[i + 1] - x_[i]);
+    }
 };
 
+/**
+ * @brief Piecewise linear interpolation (zero-copy output).
+ *
+ * @param x Independent variable samples
+ * @param y Dependent variable samples
+ * @param x_new Query points
+ * @param result Output buffer (must have same size as @p x_new)
+ */
+inline void interp1_linear(std::span<const double> x,
+                           std::span<const double> y,
+                           std::span<const double> x_new,
+                           std::span<double> result)
+{
+    if (x_new.size() != result.size())
+    {
+        throw std::invalid_argument(
+            "interp1_linear: x_new and result spans must have same size");
+    }
+
+    Linear interp(x, y);
+    interp(x_new, result);
+}
+
+/**
+ * @brief Piecewise linear interpolation.
+ *
+ * @param x Independent variable samples
+ * @param y Dependent variable samples
+ * @param x_new Query points
+ * @return Interpolated results at @p x_new
+ */
 inline std::vector<double> interp1_linear(std::span<const double> x,
                                           std::span<const double> y,
                                           std::span<const double> x_new)

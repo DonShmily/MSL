@@ -1,15 +1,15 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**  Copyright 2025 - 2026, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
 ** File: adaptive_simpson_quadrature.hpp
 ** -----
-** File Created: Wednesday, 15th October 2025 22:37:18
+** File Created: Friday, 9th January 2026 14:58:10
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Sunday, 14th December 2025 17:03:00
+** Last Modified: Thursday, 5th March 2026 14:58:32
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -18,6 +18,7 @@
 
 #include <cmath>
 #include <functional>
+#include <stdexcept>
 
 namespace msl::integral
 {
@@ -86,6 +87,27 @@ inline double quad(const std::function<double(double)> &f,
                    double tol = 1e-8,
                    int max_depth = 50)
 {
+    if (a >= b)
+    {
+        throw std::invalid_argument(
+            "Quad: Lower limit must be less than upper limit.");
+    }
+
+    if (tol <= 0)
+    {
+        throw std::invalid_argument("Quad: Tolerance must be positive.");
+    }
+
+    if (max_depth <= 0)
+    {
+        throw std::invalid_argument("Quad: Max depth must be positive.");
+    }
+
+    if (f == nullptr)
+    {
+        throw std::invalid_argument("Quad: Function cannot be null.");
+    }
+
     double fa = f(a);
     double fb = f(b);
     double fc = f(0.5 * (a + b));

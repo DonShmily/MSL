@@ -18,8 +18,6 @@ set_languages("c++20")
 
 -- add_requires("eigen", {system = true})
 
-add_includedirs("include")
-
 if is_mode("debug") then
     set_targetdir("$(projectdir)/resource")
 else

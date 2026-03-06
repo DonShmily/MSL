@@ -1,15 +1,15 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**  Copyright 2025 - 2026, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
 ** File: romberg.hpp
 ** -----
-** File Created: Wednesday, 15th October 2025 22:18:38
+** File Created: Friday, 9th January 2026 14:58:10
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Sunday, 14th December 2025 17:03:14
+** Last Modified: Thursday, 5th March 2026 14:57:54
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "matrix/real_matrix_base.hpp"
 #include "trapz.hpp"
 
 namespace msl::integral
@@ -33,11 +34,12 @@ namespace msl::integral
 /**
  * @brief Romberg integration (adaptive, high accuracy)
  *
- * Uses Richardson extrapolation on trapezoidal rule
+ * Uses Richardson extrapolation on trapezoidal rule for high-precision total
+ * integral computation.
  *
  * @param y Function values (size must be 2^k + 1)
  * @param dx Uniform spacing
- * @param tol Tolerance for convergence
+ * @param tol Tolerance for convergence (default: 1e-10)
  * @return Integral value
  */
 inline double romberg(std::span<const double> y, double dx, double tol = 1e-10)
@@ -54,7 +56,7 @@ inline double romberg(std::span<const double> y, double dx, double tol = 1e-10)
     }
     if (check + 1 != n)
     {
-        throw std::invalid_argument("Romberg needs 2^k + 1 points");
+        throw std::invalid_argument("Romberg: needs 2^k + 1 points");
     }
 
     // Romberg table
@@ -98,6 +100,68 @@ inline double romberg(std::span<const double> y, double dx, double tol = 1e-10)
 
     return R[k][k];
 }
+
+/**
+ * @brief Romberg integration for matrix (column-wise, uniform spacing)
+ *
+ * Zero-copy operation: directly fills the provided result span without
+ * internal allocation. Integrates each column independently using Romberg's
+ * method.
+ *
+ * @param mat Input matrix (each column is a function, rows must be 2^k + 1)
+ * @param result Output buffer for integral values (must have same size as
+ * number of columns)
+ * @param dx Spacing between rows
+ * @param tol Tolerance for convergence (default: 1e-10)
+ */
+inline void romberg(const matrix::real_matrix_base &mat,
+                    std::span<double> result,
+                    double dx,
+                    double tol = 1e-10)
+{
+    if (mat.rows() < 3)
+    {
+        throw std::invalid_argument("Romberg: needs at least 3 rows");
+    }
+
+    if (result.size() != mat.cols())
+    {
+        throw std::invalid_argument(
+            "Romberg: result span must have same size as number of columns");
+    }
+
+    for (size_t j = 0; j < mat.cols(); ++j)
+    {
+        std::vector<double> col(mat.rows());
+        for (size_t i = 0; i < mat.rows(); ++i)
+        {
+            col[i] = mat(i, j);
+        }
+        result[j] = romberg(col, dx, tol);
+    }
+}
+
+/**
+ * @brief Romberg integration for matrix (column-wise, uniform spacing)
+ *
+ * Convenience wrapper that allocates and returns a vector. For zero-copy
+ * operations, use the void version with span parameter.
+ *
+ * Integrates each column independently using Romberg's method.
+ *
+ * @param mat Input matrix (each column is a function, rows must be 2^k + 1)
+ * @param dx Spacing between rows
+ * @param tol Tolerance for convergence (default: 1e-10)
+ * @return Vector of integral values for each column
+ */
+inline std::vector<double>
+romberg(const matrix::real_matrix_base &mat, double dx, double tol = 1e-10)
+{
+    std::vector<double> result(mat.cols());
+    romberg(mat, result, dx, tol);
+    return result;
+}
+
 } // namespace msl::integral
 
 #endif // MSL_ROMBERG_HPP

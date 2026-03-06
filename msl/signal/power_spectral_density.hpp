@@ -1,21 +1,22 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**  Copyright 2025 - 2026, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
 ** File: power_spectral_density.hpp
 ** -----
-** File Created: Friday, 7th November 2025 20:44:37
+** File Created: Friday, 9th January 2026 14:58:10
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Sunday, 14th December 2025 17:05:38
+** Last Modified: Friday, 6th March 2026 09:45:11
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
 #ifndef MSL_POWER_SPECTRAL_DENSITY_HPP
 #define MSL_POWER_SPECTRAL_DENSITY_HPP
 
+#include <algorithm>
 #include <complex>
 #include <span>
 #include <stdexcept>
@@ -29,30 +30,67 @@ namespace msl::signal
 // ========================================================================
 // 1. Cross Power Spectral Density (CPSD) computation
 // ========================================================================
-// Compute Cross Power Spectral Density using Welch's method
-inline std::vector<std::complex<double>>
-cpsd_welch(std::span<const double> x,
-           std::span<const double> y,
-           const std::vector<double> &window = hann_window(1024),
-           size_t noverlap = 512,
-           size_t nperseg = 1024)
+/**
+ * @brief Compute cross power spectral density using Welch's method.
+ *
+ * @param x First input signal.
+ * @param y Second input signal.
+ * @param output Output CPSD spectrum with size `nperseg`.
+ * @param window Segment window coefficients, size must equal `nperseg`.
+ * @param noverlap Overlap samples between adjacent segments.
+ * @param nperseg Segment length and FFT length.
+ */
+inline void cpsd_welch(std::span<const double> x,
+                       std::span<const double> y,
+                       std::span<std::complex<double>> output,
+                       const std::vector<double> &window = hann_window(1024),
+                       size_t noverlap = 512,
+                       size_t nperseg = 1024)
 {
+    if (nperseg == 0)
+    {
+        throw std::invalid_argument(
+            "CPSD Welch: nperseg must be greater than 0");
+    }
+    if (noverlap >= nperseg)
+    {
+        throw std::invalid_argument(
+            "CPSD Welch: noverlap must be less than nperseg");
+    }
+    if (x.size() != y.size())
+    {
+        throw std::invalid_argument("Input signals must have the same length.");
+    }
+    if (window.size() != nperseg)
+    {
+        throw std::invalid_argument(
+            "CPSD Welch: window size must be equal to nperseg");
+    }
+    if (output.size() != nperseg)
+    {
+        throw std::invalid_argument(
+            "CPSD Welch: output buffer size must be equal to nperseg");
+    }
     if (x.size() < nperseg || y.size() < nperseg)
     {
-        throw std::invalid_argument("Input signals must be at least as long "
-                                    "as nperseg.");
+        throw std::invalid_argument(
+            "CPSD Welch: input signals must be at least as long "
+            "as nperseg.");
     }
-
     size_t step = nperseg - noverlap;
     size_t num_segments = (std::min(x.size(), y.size()) - noverlap) / step;
 
     std::vector<std::complex<double>> psd_accum(nperseg,
                                                 std::complex<double>(0.0, 0.0));
     double window_norm = 0.0;
-
     for (double w : window)
     {
         window_norm += w * w;
+    }
+    if (window_norm == 0.0)
+    {
+        throw std::invalid_argument(
+            "CPSD Welch: window energy must be greater than 0");
     }
 
     for (size_t seg = 0; seg < num_segments; ++seg)
@@ -85,81 +123,186 @@ cpsd_welch(std::span<const double> x,
     // Average and normalize
     for (size_t k = 0; k < nperseg; ++k)
     {
-        psd_accum[k] /= static_cast<double>(num_segments * window_norm);
+        output[k] =
+            psd_accum[k] / static_cast<double>(num_segments * window_norm);
     }
-
-    return psd_accum;
 }
 
-// Compute Cross Power Spectral Density without Welch's method
+/**
+ * @brief Return cross power spectral density using Welch's method.
+ *
+ * @param x First input signal.
+ * @param y Second input signal.
+ * @param window Segment window coefficients, size must equal `nperseg`.
+ * @param noverlap Overlap samples between adjacent segments.
+ * @param nperseg Segment length and FFT length.
+ * @return CPSD spectrum with size `nperseg`.
+ */
 inline std::vector<std::complex<double>>
-cpsd(std::span<const double> x, std::span<const double> y, size_t nfft)
+cpsd_welch(std::span<const double> x,
+           std::span<const double> y,
+           const std::vector<double> &window = hann_window(1024),
+           size_t noverlap = 512,
+           size_t nperseg = 1024)
 {
+    std::vector<std::complex<double>> output(nperseg);
+    cpsd_welch(x, y, output, window, noverlap, nperseg);
+    return output;
+}
+
+/**
+ * @brief Compute cross power spectral density from one FFT frame.
+ *
+ * @param x First input signal.
+ * @param y Second input signal.
+ * @param output Output CPSD spectrum with size `nfft`.
+ * @param nfft FFT length.
+ */
+inline void cpsd(std::span<const double> x,
+                 std::span<const double> y,
+                 std::span<std::complex<double>> output,
+                 size_t nfft)
+{
+    if (nfft == 0)
+    {
+        throw std::invalid_argument("CPSD: nfft must be greater than 0");
+    }
     if (x.size() != y.size())
     {
         throw std::invalid_argument("Input signals must have the same length.");
     }
-    std::vector<double> x_padded(nfft, 0.0);
-    std::vector<double> y_padded(nfft, 0.0);
-
-    if (nfft < x.size())
+    if (output.size() != nfft)
     {
-        std::copy(x.begin(), x.begin() + nfft, x_padded.begin());
-        std::copy(y.begin(), y.begin() + nfft, y_padded.begin());
+        throw std::invalid_argument(
+            "CPSD: output buffer size must be equal to nfft");
     }
-    else
+    if (x.size() < nfft || y.size() < nfft)
     {
-        std::copy(x.begin(), x.end(), x_padded.begin());
-        std::copy(y.begin(), y.end(), y_padded.begin());
+        throw std::invalid_argument(
+            "CPSD: input signals must be at least as long as nfft.");
     }
 
     // Compute FFTs
-    auto Xf = signal::fft(x_padded, nfft);
-    auto Yf = signal::fft(y_padded, nfft);
+    auto Xf = signal::fft(x, nfft);
+    auto Yf = signal::fft(y, nfft);
 
     // Compute Cross Power Spectral Density
-    std::vector<std::complex<double>> cpsd(nfft);
     for (size_t k = 0; k < nfft; ++k)
     {
-        cpsd[k] = Xf[k] * std::conj(Yf[k]);
+        output[k] = Xf[k] * std::conj(Yf[k]);
     }
+}
 
-    return cpsd;
+/**
+ * @brief Return cross power spectral density from one FFT frame.
+ *
+ * @param x First input signal.
+ * @param y Second input signal.
+ * @param nfft FFT length.
+ * @return CPSD spectrum with size `nfft`.
+ */
+inline std::vector<std::complex<double>>
+cpsd(std::span<const double> x, std::span<const double> y, size_t nfft)
+{
+    std::vector<std::complex<double>> output(nfft);
+    cpsd(x, y, output, nfft);
+    return output;
 }
 
 // ========================================================================
 // 2. Power Spectral Density (PSD) computation
 // ========================================================================
-// Compute Power Spectral Density
+/**
+ * @brief Compute power spectral density using Welch's method.
+ *
+ * @param x Input signal.
+ * @param output Output PSD spectrum with size `nperseg`.
+ * @param window Segment window coefficients, size must equal `nperseg`.
+ * @param noverlap Overlap samples between adjacent segments.
+ * @param nperseg Segment length and FFT length.
+ */
+inline void psd_welch(std::span<const double> x,
+                      std::span<double> output,
+                      const std::vector<double> &window = hann_window(1024),
+                      size_t noverlap = 512,
+                      size_t nperseg = 1024)
+{
+    if (output.size() != nperseg)
+    {
+        throw std::invalid_argument(
+            "PSD Welch: output buffer size must be equal to nperseg");
+    }
+
+    std::vector<std::complex<double>> cpsd_result(nperseg);
+    cpsd_welch(x, x, cpsd_result, window, noverlap, nperseg);
+
+    for (size_t k = 0; k < nperseg; ++k)
+    {
+        output[k] = std::real(cpsd_result[k]);
+    }
+}
+
+/**
+ * @brief Return power spectral density using Welch's method.
+ *
+ * @param x Input signal.
+ * @param window Segment window coefficients, size must equal `nperseg`.
+ * @param noverlap Overlap samples between adjacent segments.
+ * @param nperseg Segment length and FFT length.
+ * @return PSD spectrum with size `nperseg`.
+ */
 inline std::vector<double>
 psd_welch(std::span<const double> x,
           const std::vector<double> &window = hann_window(1024),
           size_t noverlap = 512,
           size_t nperseg = 1024)
 {
-    auto cpsd_result = cpsd_welch(x, x, window, noverlap, nperseg);
-    std::vector<double> psd_result(cpsd_result.size());
-
-    for (size_t k = 0; k < cpsd_result.size(); ++k)
-    {
-        psd_result[k] = std::real(cpsd_result[k]);
-    }
-
-    return psd_result;
+    std::vector<double> output(nperseg);
+    psd_welch(x, output, window, noverlap, nperseg);
+    return output;
 }
 
-// Compute Power Spectral Density without Welch's method
-inline std::vector<double> psd(std::span<const double> x, size_t nfft)
+/**
+ * @brief Compute power spectral density from one FFT frame.
+ *
+ * @param x Input signal.
+ * @param output Output PSD spectrum with size `nfft`.
+ * @param nfft FFT length.
+ */
+inline void
+psd(std::span<const double> x, std::span<double> output, size_t nfft)
 {
-    auto cpsd_result = cpsd(x, x, nfft);
-    std::vector<double> psd_result(cpsd_result.size());
-
-    for (size_t k = 0; k < cpsd_result.size(); ++k)
+    if (nfft == 0)
     {
-        psd_result[k] = std::real(cpsd_result[k]);
+        throw std::invalid_argument("PSD: nfft must be greater than 0");
+    }
+    if (output.size() != nfft)
+    {
+        throw std::invalid_argument(
+            "PSD: output buffer size must be equal to nfft");
     }
 
-    return psd_result;
+    std::vector<std::complex<double>> cpsd_result(nfft);
+    cpsd(x, x, cpsd_result, nfft);
+
+    for (size_t k = 0; k < nfft; ++k)
+    {
+        output[k] = std::real(cpsd_result[k]);
+    }
+}
+
+/**
+ * @brief Return power spectral density from one FFT frame.
+ *
+ * @param x Input signal.
+ * @param nfft FFT length.
+ * @return PSD spectrum with size `nfft`.
+ */
+inline std::vector<double> psd(std::span<const double> x, size_t nfft)
+{
+    std::vector<double> output(nfft);
+    psd(x, output, nfft);
+    return output;
 }
 
 } // namespace msl::signal

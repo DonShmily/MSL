@@ -20,7 +20,11 @@
 
 namespace msl::interp
 {
-// Cubic Spline Interpolation
+/**
+ * @brief Natural cubic spline interpolation.
+ *
+ * Boundary condition: second derivative is zero at both ends.
+ */
 class CubicSpline : public InterpolatorBase
 {
 private:
@@ -91,16 +95,15 @@ public:
 
     CubicSpline(std::span<const double> x, std::span<const double> y)
     {
-        x_.assign(x.begin(), x.end());
-        y_.assign(y.begin(), y.end());
-        validate_input();
-        compute_coefficients();
+        set_data(x, y);
     }
 
-    CubicSpline(const std::vector<double> &x, const std::vector<double> &y)
-        : CubicSpline(std::span<const double>(x), std::span<const double>(y))
-    {}
-
+    /**
+     * @brief Set data points and precompute spline coefficients.
+     *
+     * @param x Independent variable samples (strictly increasing)
+     * @param y Dependent variable samples
+     */
     void set_data(std::span<const double> x, std::span<const double> y) override
     {
         x_.assign(x.begin(), x.end());
@@ -109,6 +112,12 @@ public:
         compute_coefficients();
     }
 
+    /**
+     * @brief Interpolate at a single point.
+     *
+     * @param x Query point
+     * @return Interpolated value at @p x
+     */
     double interpolate(double x) const override
     {
         size_t i = find_interval(x);
@@ -119,15 +128,64 @@ public:
         return y_[i] + b_[i] * dx + c_[i] * dx * dx + d_[i] * dx * dx * dx;
     }
 
-    // Get derivative at point
-    double derivative(double x) const
+    /**
+     * @brief Evaluate first derivative at a point.
+     *
+     * @param x Query point
+     * @return First derivative value
+     */
+    [[nodiscard]] double derivative(double x) const
     {
         size_t i = find_interval(x);
         double dx = x - x_[i];
         return b_[i] + 2.0 * c_[i] * dx + 3.0 * d_[i] * dx * dx;
     }
+
+    /**
+     * @brief Evaluate second derivative at a point.
+     *
+     * @param x Query point
+     * @return Second derivative value
+     */
+    [[nodiscard]] double second_derivative(double x) const
+    {
+        size_t i = find_interval(x);
+        double dx = x - x_[i];
+        return 2.0 * c_[i] + 6.0 * d_[i] * dx;
+    }
 };
 
+/**
+ * @brief Natural cubic spline interpolation (zero-copy output).
+ *
+ * @param x Independent variable samples
+ * @param y Dependent variable samples
+ * @param x_new Query points
+ * @param result Output buffer (must have same size as @p x_new)
+ */
+inline void interp1_cubic(std::span<const double> x,
+                          std::span<const double> y,
+                          std::span<const double> x_new,
+                          std::span<double> result)
+{
+    if (x_new.size() != result.size())
+    {
+        throw std::invalid_argument(
+            "interp1_cubic: x_new and result spans must have same size");
+    }
+
+    CubicSpline spline(x, y);
+    spline(x_new, result);
+}
+
+/**
+ * @brief Natural cubic spline interpolation.
+ *
+ * @param x Independent variable samples
+ * @param y Dependent variable samples
+ * @param x_new Query points
+ * @return Interpolated results at @p x_new
+ */
 inline std::vector<double> interp1_cubic(std::span<const double> x,
                                          std::span<const double> y,
                                          std::span<const double> x_new)

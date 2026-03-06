@@ -1,15 +1,15 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**  Copyright 2025 - 2026, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
 ** File: filter_design.hpp
 ** -----
-** File Created: Tuesday, 14th October 2025 11:10:11
+** File Created: Friday, 9th January 2026 14:58:10
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Sunday, 14th December 2025 17:05:28
+** Last Modified: Friday, 6th March 2026 09:48:34
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -27,6 +27,11 @@ namespace msl::signal
 
 /**
  * @brief Filter type based on frequency response
+ *
+ * - lowpass: Pass frequencies below cutoff, attenuate above cutoff
+ * - highpass: Pass frequencies above cutoff, attenuate below cutoff
+ * - bandpass: Pass frequencies between low and high cutoff, attenuate outside
+ * - bandstop: Attenuate frequencies between low and high cutoff, pass outside
  */
 enum class FilterType
 {
@@ -38,6 +43,11 @@ enum class FilterType
 
 /**
  * @brief Filter design method
+ *
+ * - butterworth: Maximally flat passband, monotonic stopband
+ * - chebyshev1: Equiripple passband, monotonic stopband (future)
+ * - chebyshev2: Monotonic passband, equiripple stopband (future)
+ * - elliptic: Equiripple in both bands (future)
  */
 enum class FilterMethod
 {
@@ -58,14 +68,17 @@ enum class FilterMethod
  */
 struct FilterCoefficients
 {
-    std::vector<double> b; // Numerator coefficients
-    std::vector<double> a; // Denominator coefficients (a[0] = 1.0)
+    // Numerator coefficients (b[0] corresponds to z^0 term, b[1] to z^-1, etc.)
+    std::vector<double> b{};
+    // Denominator coefficients (a[0] = 1.0, a[1] corresponds to z^-1 term,etc.)
+    std::vector<double> a{};
 
     FilterCoefficients() = default;
     FilterCoefficients(std::vector<double> num, std::vector<double> den)
         : b(std::move(num)), a(std::move(den))
     {}
 
+    // Get filter order (max of numerator and denominator order)
     [[nodiscard]] size_t order() const
     {
         return std::max(a.size(), b.size()) - 1;

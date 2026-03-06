@@ -22,7 +22,6 @@
 #include <stdexcept>
 #include <vector>
 
-
 namespace msl::interp
 {
 
@@ -61,15 +60,16 @@ protected:
     std::vector<double> y_;
     ExtrapolationMode extrap_mode_ = ExtrapolationMode::Polynomial;
 
+    // Validate input data (size, sorting, etc.)
     void validate_input() const
     {
         if (x_.size() != y_.size())
         {
-            throw std::invalid_argument("x and y must have same size");
+            throw std::invalid_argument("Interp: x and y must have same size");
         }
         if (x_.size() < 2)
         {
-            throw std::invalid_argument("Need at least 2 points");
+            throw std::invalid_argument("Interp: need at least 2 points");
         }
 
         // Check sorted
@@ -78,7 +78,7 @@ protected:
             if (x_[i] <= x_[i - 1])
             {
                 throw std::invalid_argument(
-                    "x values must be strictly increasing");
+                    "Interp: x values must be strictly increasing");
             }
         }
     }
@@ -93,7 +93,7 @@ protected:
         {
             if (extrap_mode_ == ExtrapolationMode::None)
             {
-                throw std::out_of_range("x out of interpolation range");
+                throw std::out_of_range("Interp: x out of interpolation range");
             }
             // Handle extrapolation
             if (extrap_mode_ == ExtrapolationMode::Polynomial)
@@ -103,7 +103,7 @@ protected:
         {
             if (extrap_mode_ == ExtrapolationMode::None)
             {
-                throw std::out_of_range("x out of interpolation range");
+                throw std::out_of_range("Interp: x out of interpolation range");
             }
             // Handle extrapolation
             if (extrap_mode_ == ExtrapolationMode::Polynomial)
@@ -134,6 +134,8 @@ public:
 
     /**
      * @brief Set extrapolation mode
+     *
+     * @param mode Extrapolation mode to set
      */
     void set_extrapolation(ExtrapolationMode mode) { extrap_mode_ = mode; }
 
@@ -147,6 +149,9 @@ public:
 
     /**
      * @brief Single point evaluation
+     *
+     * @param x Evaluation point
+     * @return Interpolated (or extrapolated) value at x
      */
     double operator()(double x) const
     {
@@ -164,7 +169,7 @@ public:
             {
                 case ExtrapolationMode::None:
                     throw std::out_of_range(
-                        "x < x_min, extrapolation disabled");
+                        "Interp: x < x_min, extrapolation disabled");
 
                 case ExtrapolationMode::Constant:
                     return y_.front();
@@ -191,14 +196,13 @@ public:
                 }
             }
         }
-
-        if (x > x_.back())
+        else if (x > x_.back())
         {
             switch (extrap_mode_)
             {
                 case ExtrapolationMode::None:
                     throw std::out_of_range(
-                        "x > x_max, extrapolation disabled");
+                        "Interp: x > x_max, extrapolation disabled");
 
                 case ExtrapolationMode::Constant:
                     return y_.back();
@@ -233,25 +237,45 @@ public:
     }
 
     /**
+     * @brief Multiple point evaluation (zero-copy version)
+     *
+     * @param x_new Span of evaluation points
+     * @param result Output buffer for interpolated values (must have same size
+     * as x_new)
+     */
+    void operator()(std::span<const double> x_new,
+                    std::span<double> result) const
+    {
+        if (x_new.size() != result.size())
+        {
+            throw std::invalid_argument(
+                "Interp: x_new and result spans must have same size");
+        }
+
+        for (size_t i = 0; i < x_new.size(); ++i)
+        {
+            result[i] = operator()(x_new[i]);
+        }
+    }
+    /**
      * @brief Multiple point evaluation
+     *
+     * @param x_new Span of evaluation points
+     * @return Vector of interpolated (or extrapolated) values at x_new
      */
     std::vector<double> operator()(std::span<const double> x_new) const
     {
         std::vector<double> result(x_new.size());
-        for (size_t i = 0; i < x_new.size(); ++i)
-        {
-            result[i] = (*this)(x_new[i]);
-        }
+        operator()(x_new, result);
         return result;
-    }
-
-    std::vector<double> operator()(const std::vector<double> &x_new) const
-    {
-        return (*this)(std::span<const double>(x_new));
     }
 
     /**
      * @brief Set data points (pure virtual)
+     *
+     * @param x Independent variable values
+     * @param y Dependent variable values (must have same size as x)
+     *
      */
     virtual void set_data(std::span<const double> x,
                           std::span<const double> y) = 0;
@@ -265,6 +289,9 @@ public:
 
     /**
      * @brief Check if point is within interpolation range
+     *
+     * @param x Evaluation point
+     * @return True if x is within [x_min, x_max], false otherwise
      */
     [[nodiscard]] bool in_range(double x) const
     {
@@ -273,6 +300,8 @@ public:
 
     /**
      * @brief Get interpolation range
+     *
+     * @return Pair of (x_min, x_max)
      */
     [[nodiscard]] std::pair<double, double> range() const
     {

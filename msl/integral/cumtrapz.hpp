@@ -1,15 +1,15 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**  Copyright 2025 - 2026, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
 ** File: cumtrapz.hpp
 ** -----
-** File Created: Wednesday, 15th October 2025 22:26:59
+** File Created: Friday, 9th January 2026 14:58:10
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Sunday, 14th December 2025 17:03:07
+** Last Modified: Thursday, 5th March 2026 14:58:06
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -20,6 +20,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "matrix/real_matrix_base.hpp"
 #include "matrix/real_matrix_owned.hpp"
 
 namespace msl::integral
@@ -28,6 +29,39 @@ namespace msl::integral
 // ============================================================================
 // Cumulative Trapezoidal Integration
 // ============================================================================
+
+/**
+ * @brief Cumulative trapezoidal integration for vector (uniform spacing, with
+ * output buffer)
+ *
+ * Computes cumulative integral: result[i] = ∫[0 to i] y dx
+ * Zero-copy: directly fills the provided result span without internal
+ * allocation.
+ *
+ * @param y Function values at equally spaced points
+ * @param result Output buffer for cumulative integral values
+ * @param dx Spacing between points
+ */
+inline void
+cumtrapz(std::span<const double> y, std::span<double> result, double dx)
+{
+    if (y.size() < 2)
+    {
+        throw std::invalid_argument(
+            "Cumtrapz: needs at least 2 points for integration");
+    }
+    if (result.size() != y.size())
+    {
+        throw std::invalid_argument(
+            "Cumtrapz: result span must have same size as y");
+    }
+
+    result[0] = 0.0;
+    for (size_t i = 1; i < y.size(); ++i)
+    {
+        result[i] = result[i - 1] + 0.5 * (y[i] + y[i - 1]) * dx;
+    }
+}
 
 /**
  * @brief Cumulative trapezoidal integration for vector (uniform spacing)
@@ -40,24 +74,47 @@ namespace msl::integral
  */
 inline std::vector<double> cumtrapz(std::span<const double> y, double dx)
 {
-    if (y.size() < 2)
-    {
-        throw std::invalid_argument("Need at least 2 points for integration");
-    }
-
-    std::vector<double> result(y.size(), 0.0);
-
-    for (size_t i = 1; i < y.size(); ++i)
-    {
-        result[i] = result[i - 1] + 0.5 * (y[i] + y[i - 1]) * dx;
-    }
-
+    std::vector<double> result(y.size());
+    cumtrapz(y, result, dx);
     return result;
 }
 
-inline std::vector<double> cumtrapz(const std::vector<double> &y, double dx)
+/**
+ * @brief Cumulative trapezoidal integration for vector (non-uniform spacing,
+ * with output buffer)
+ *
+ * Zero-copy: directly fills the provided result span without internal
+ * allocation.
+ *
+ * @param x Independent variable values
+ * @param y Function values at x points
+ * @param result Output buffer for cumulative integral values
+ */
+inline void cumtrapz(std::span<const double> x,
+                     std::span<const double> y,
+                     std::span<double> result)
 {
-    return cumtrapz(std::span<const double>(y), dx);
+    if (x.size() != y.size())
+    {
+        throw std::invalid_argument("Cumtrapz: x and y must have same size");
+    }
+    if (x.size() < 2)
+    {
+        throw std::invalid_argument(
+            "Cumtrapz: needs at least 2 points for integration");
+    }
+    if (result.size() != y.size())
+    {
+        throw std::invalid_argument(
+            "Cumtrapz: result span must have same size as y");
+    }
+
+    result[0] = 0.0;
+    for (size_t i = 1; i < y.size(); ++i)
+    {
+        double dx = x[i] - x[i - 1];
+        result[i] = result[i - 1] + 0.5 * (y[i] + y[i - 1]) * dx;
+    }
 }
 
 /**
@@ -70,23 +127,8 @@ inline std::vector<double> cumtrapz(const std::vector<double> &y, double dx)
 inline std::vector<double> cumtrapz(std::span<const double> x,
                                     std::span<const double> y)
 {
-    if (x.size() != y.size())
-    {
-        throw std::invalid_argument("x and y must have same size");
-    }
-    if (x.size() < 2)
-    {
-        throw std::invalid_argument("Need at least 2 points for integration");
-    }
-
-    std::vector<double> result(y.size(), 0.0);
-
-    for (size_t i = 1; i < y.size(); ++i)
-    {
-        double dx = x[i] - x[i - 1];
-        result[i] = result[i - 1] + 0.5 * (y[i] + y[i - 1]) * dx;
-    }
-
+    std::vector<double> result(y.size());
+    cumtrapz(x, y, result);
     return result;
 }
 
@@ -100,11 +142,12 @@ inline std::vector<double> cumtrapz(std::span<const double> x,
  * @param dx Spacing between rows
  * @return Matrix of cumulative integrals
  */
-inline matrix::matrixd cumtrapz(const matrix::matrixd &mat, double dx)
+inline matrix::matrixd cumtrapz(const matrix::real_matrix_base &mat, double dx)
 {
     if (mat.rows() < 2)
     {
-        throw std::invalid_argument("Need at least 2 rows for integration");
+        throw std::invalid_argument(
+            "Cumtrapz: needs at least 2 rows for integration");
     }
 
     matrix::matrixd result(mat.rows(), mat.cols(), 0.0);
@@ -130,15 +173,17 @@ inline matrix::matrixd cumtrapz(const matrix::matrixd &mat, double dx)
  * @return Matrix of cumulative integrals
  */
 inline matrix::matrixd cumtrapz(std::span<const double> x,
-                                const matrix::matrixd &mat)
+                                const matrix::real_matrix_base &mat)
 {
     if (x.size() != mat.rows())
     {
-        throw std::invalid_argument("x size must match number of rows");
+        throw std::invalid_argument(
+            "Cumtrapz: x size must match number of rows");
     }
     if (mat.rows() < 2)
     {
-        throw std::invalid_argument("Need at least 2 rows for integration");
+        throw std::invalid_argument(
+            "Cumtrapz: needs at least 2 rows for integration");
     }
 
     matrix::matrixd result(mat.rows(), mat.cols(), 0.0);

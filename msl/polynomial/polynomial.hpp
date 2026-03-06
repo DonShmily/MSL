@@ -29,7 +29,12 @@
 
 namespace msl::polynomial
 {
-// Polynomial evaluation
+/**
+ * @brief Polynomial model and least-squares fitting utilities.
+ *
+ * Coefficients are stored in ascending power order:
+ * coeffs_[0] + coeffs_[1] * x + coeffs_[2] * x^2 + ...
+ */
 class Polynomial
 {
 private:
@@ -37,68 +42,187 @@ private:
 
 public:
     Polynomial() = default;
+    /**
+     * @brief Construct polynomial directly from coefficients.
+     *
+     * @param coeffs Coefficients in ascending power order
+     */
     Polynomial(const std::vector<double> &coeffs) : coeffs_(coeffs) {}
+    /**
+     * @brief Fit polynomial to y values using implicit x = [0, 1, 2, ...].
+     *
+     * @param y Sample values
+     * @param n Polynomial degree
+     */
     Polynomial(std::span<const double> y, std::size_t n = 0)
     {
         std::vector<double> x(y.size());
         std::iota(x.begin(), x.end(), 0.0);
-        calc_coefficients(x, y, n);
+        fit(x, y, n);
     }
+
+    /**
+     * @brief Fit polynomial to data points.
+     *
+     * @param x Independent variable samples
+     * @param y Dependent variable samples
+     * @param n Polynomial degree
+     */
     Polynomial(std::span<const double> x,
                std::span<const double> y,
                std::size_t n = 0)
     {
-        calc_coefficients(x, y, n);
+        fit(x, y, n);
     }
 
+    /**
+     * @brief Evaluate polynomial at a single point.
+     */
     double operator()(double x) const { return evaluate(x); }
 
-    std::vector<double>
-    operator()(const std::span<const double> &x_values) const
+    /**
+     * @brief Evaluate polynomial at multiple points (zero-copy output).
+     *
+     * @param x_values Query points
+     * @param result Output buffer (must have same size as @p x_values)
+     */
+    void operator()(std::span<const double> x_values,
+                    std::span<double> result) const
     {
-        std::vector<double> results(x_values.size());
+        if (x_values.size() != result.size())
+        {
+            throw std::invalid_argument(
+                "Polynomial: x_values and result spans must have same size");
+        }
+
         for (std::size_t i = 0; i < x_values.size(); ++i)
         {
-            results[i] = evaluate(x_values[i]);
+            result[i] = evaluate(x_values[i]);
         }
+    }
+
+    /**
+     * @brief Evaluate polynomial at multiple points.
+     *
+     * @param x_values Query points
+     * @return Evaluation results
+     */
+    std::vector<double> operator()(std::span<const double> x_values) const
+    {
+        std::vector<double> results(x_values.size());
+        operator()(x_values, results);
         return results;
     }
 
-    std::vector<double> coefficients() const { return coeffs_; }
+    /**
+     * @brief Replace polynomial coefficients.
+     *
+     * @param coeffs Coefficients in ascending power order
+     */
+    void set_coefficients(std::span<const double> coeffs)
+    {
+        if (coeffs.empty())
+        {
+            throw std::invalid_argument(
+                "Polynomial: coefficients cannot be empty");
+        }
+
+        coeffs_.assign(coeffs.begin(), coeffs.end());
+    }
+
+    /**
+     * @brief Fit polynomial coefficients from data points.
+     *
+     * @param x Independent variable samples
+     * @param y Dependent variable samples
+     * @param n Polynomial degree
+     */
+    void
+    fit(std::span<const double> x, std::span<const double> y, std::size_t n = 0)
+    {
+        calc_coefficients(x, y, n);
+    }
+
+    /**
+     * @brief Get polynomial coefficients.
+     */
+    [[nodiscard]] std::vector<double> coefficients() const { return coeffs_; }
+
+    /**
+     * @brief Get polynomial degree.
+     */
+    [[nodiscard]] std::size_t degree() const
+    {
+        if (coeffs_.empty())
+        {
+            throw std::runtime_error("Polynomial: coefficients are not set");
+        }
+        return coeffs_.size() - 1;
+    }
+
+    /**
+     * @brief Evaluate first derivative at a single point.
+     *
+     * @param x Query point
+     * @return Derivative value
+     */
+    [[nodiscard]] double derivative(double x) const
+    {
+        if (coeffs_.empty())
+        {
+            throw std::runtime_error("Polynomial: coefficients are not set");
+        }
+
+        if (coeffs_.size() == 1)
+        {
+            return 0.0;
+        }
+
+        double result = 0.0;
+        for (std::size_t i = coeffs_.size() - 1; i > 0; --i)
+        {
+            result = result * x + static_cast<double>(i) * coeffs_[i];
+        }
+        return result;
+    }
 
 private:
+    /**
+     * @brief Evaluate polynomial using Horner's method.
+     */
     double evaluate(double x) const
     {
         if (coeffs_.empty())
         {
-            throw std::runtime_error("Polynomial coefficients are not set");
+            throw std::runtime_error("Polynomial: coefficients are not set");
         }
 
         double result = 0.0;
-        double x_pow = 1.0; // x^0
-
-        for (const auto &c : coeffs_)
+        for (std::size_t i = coeffs_.size(); i-- > 0;)
         {
-            result += c * x_pow;
-            x_pow *= x;
+            result = result * x + coeffs_[i];
         }
 
         return result;
     }
 
+    /**
+     * @brief Compute coefficients by least-squares fitting.
+     */
     void calc_coefficients(std::span<const double> x,
                            std::span<const double> y,
                            std::size_t n = 0)
     {
         if (x.size() != y.size())
         {
-            throw std::invalid_argument("x and y must have same size");
+            throw std::invalid_argument(
+                "Polynomial: x and y must have same size");
         }
 
         if (x.size() < n + 1)
         {
             throw std::invalid_argument(
-                "Not enough points to fit the polynomial");
+                "Polynomial: not enough points to fit the polynomial");
         }
 
         if (n == 0)
@@ -148,24 +272,73 @@ private:
 
 // --- Free functions ---
 
-// Polynomial fitting
+/**
+ * @brief Polynomial fitting.
+ *
+ * @param x Independent variable samples
+ * @param y Dependent variable samples
+ * @param n Polynomial degree
+ * @return Polynomial coefficients
+ */
 inline std::vector<double>
 polyfit(std::span<const double> x, std::span<const double> y, std::size_t n = 0)
 {
     return Polynomial(x, y, n).coefficients();
 }
 
-// Evaluate polynomial at given x value
+/**
+ * @brief Polynomial fitting (zero-copy output).
+ *
+ * @param x Independent variable samples
+ * @param y Dependent variable samples
+ * @param result Output buffer for coefficients (must have size n+1)
+ * @param n Polynomial degree
+ */
+inline void polyfit(std::span<const double> x,
+                    std::span<const double> y,
+                    std::span<double> result,
+                    std::size_t n = 0)
+{
+    if (result.size() != n + 1)
+    {
+        throw std::invalid_argument(
+            "polyfit: result span size must equal n + 1");
+    }
+
+    auto coeffs = Polynomial(x, y, n).coefficients();
+    std::copy(coeffs.begin(), coeffs.end(), result.begin());
+}
+
+/**
+ * @brief Evaluate polynomial at one point.
+ */
 inline double polyval(const std::span<const double> &coeffs, double x)
 {
     return Polynomial(coeffs)(x);
 }
 
-// Evaluate polynomial at given x values
+/**
+ * @brief Evaluate polynomial at multiple points.
+ */
 inline std::vector<double> polyval(const std::span<const double> &coeffs,
                                    const std::span<const double> &x_values)
 {
     return Polynomial(coeffs)(x_values);
+}
+
+/**
+ * @brief Evaluate polynomial at multiple points (zero-copy output).
+ *
+ * @param coeffs Polynomial coefficients
+ * @param x_values Query points
+ * @param result Output buffer (must have same size as @p x_values)
+ */
+inline void polyval(std::span<const double> coeffs,
+                    std::span<const double> x_values,
+                    std::span<double> result)
+{
+    Polynomial poly(coeffs);
+    poly(x_values, result);
 }
 
 }; // namespace msl::polynomial

@@ -1,15 +1,15 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**  Copyright 2025 - 2026, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
-** File: filter_apply.hpp
+** File: filtfilt.hpp
 ** -----
-** File Created: Tuesday, 14th October 2025 11:12:27
+** File Created: Friday, 9th January 2026 14:58:10
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Sunday, 14th December 2025 17:05:23
+** Last Modified: Friday, 6th March 2026 09:44:47
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -17,11 +17,16 @@
 #define MSL_FILTFILT_HPP
 
 #include <algorithm>
+#include <eigen3/Eigen/Core>
 #include <span>
 #include <stdexcept>
 #include <vector>
 
+#include "matrix/eigen_interface.hpp"
+
 #include "filter_design.hpp"
+#include "matrix/real_matrix_base.hpp"
+#include "matrix/real_matrix_owned.hpp"
 
 namespace msl::signal
 {
@@ -30,90 +35,16 @@ namespace msl::signal
 // Forward-backward filtering (zero-phase)
 // ============================================================================
 
-inline std::vector<std::vector<double>>
-matrix_inverse(const std::vector<std::vector<double>> &mat)
+namespace internal
 {
-    size_t n = mat.size();
-    std::vector<std::vector<double>> A = mat;
-    std::vector<std::vector<double>> inv(n, std::vector<double>(n, 0.0));
-
-    // Initialize inv as identity matrix
-    for (size_t i = 0; i < n; ++i)
-    {
-        inv[i][i] = 1.0;
-    }
-
-    // Gaussian elimination
-    for (size_t i = 0; i < n; ++i)
-    {
-        // Find pivot
-        size_t max_row = i;
-        double max_val = std::abs(A[i][i]);
-        for (size_t k = i + 1; k < n; ++k)
-        {
-            if (std::abs(A[k][i]) > max_val)
-            {
-                max_val = std::abs(A[k][i]);
-                max_row = k;
-            }
-        }
-
-        if (max_row != i)
-        {
-            std::swap(A[i], A[max_row]);
-            std::swap(inv[i], inv[max_row]);
-        }
-
-        // Normalize current row
-        double pivot = A[i][i];
-        for (size_t j = 0; j < n; ++j)
-        {
-            A[i][j] /= pivot;
-            inv[i][j] /= pivot;
-        }
-
-        // Eliminate
-        for (size_t k = 0; k < n; ++k)
-        {
-            if (k != i)
-            {
-                double factor = A[k][i];
-                for (size_t j = 0; j < n; ++j)
-                {
-                    A[k][j] -= factor * A[i][j];
-                    inv[k][j] -= factor * inv[i][j];
-                }
-            }
-        }
-    }
-
-    return inv;
-}
-
-inline std::vector<double>
-matrix_vector_multiply(const std::vector<std::vector<double>> &mat,
-                       const std::vector<double> &vec)
-{
-    size_t rows = mat.size();
-    size_t cols = vec.size();
-    std::vector<double> result(rows, 0.0);
-
-    for (size_t i = 0; i < rows; ++i)
-    {
-        for (size_t j = 0; j < cols; ++j)
-        {
-            result[i] += mat[i][j] * vec[j];
-        }
-    }
-
-    return result;
-}
-
 /**
  * @brief Compute initial conditions for filtfilt
  *
  * Computes initial filter state to minimize startup transients
  * Based on MATLAB's filtfilt implementation
+ *
+ * @param coeffs Filter coefficients
+ * @return Initial conditions for filtfilt
  */
 inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
 {
@@ -172,10 +103,10 @@ inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
     }
 
     //  Build full matrix
-    std::vector<std::vector<double>> sp(n, std::vector<double>(n, 0.0));
+    matrix::matrixd sp(n, n);
     for (size_t k = 0; k < rows.size(); ++k)
     {
-        sp[rows[k]][cols[k]] += data[k];
+        sp(rows[k], cols[k]) += data[k];
     }
 
     // Compute right-hand side vector: b[1:] - b[0] * a[1:]
@@ -186,12 +117,24 @@ inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
     }
 
     // Solve: zi = inv(sp) * rhs
-    auto sp_inv = matrix_inverse(sp);
-    return matrix_vector_multiply(sp_inv, rhs);
+    auto sp_eig = matrix::eigen_interface::as_eigen(sp);
+    Eigen::MatrixXd sp_inv = sp_eig.inverse();
+    auto rhs_eig = Eigen::Map<const Eigen::VectorXd>(rhs.data(), rhs.size());
+    Eigen::VectorXd zi_eig = sp_inv * rhs_eig;
+    std::vector<double> zi(zi_eig.data(), zi_eig.data() + zi_eig.size());
+    return zi;
 }
 
 /**
  * @brief Apply filter with initial conditions
+ *
+ * Applies the filter to the signal using provided initial conditions
+ * Used for both forward and backward filtering in filtfilt
+ *
+ * @param signal Input signal
+ * @param coeffs Filter coefficients
+ * @param zi Initial conditions
+ * @return Filtered signal
  */
 inline std::vector<double> filter_with_zi(std::span<const double> signal,
                                           const FilterCoefficients &coeffs,
@@ -199,7 +142,8 @@ inline std::vector<double> filter_with_zi(std::span<const double> signal,
 {
     if (coeffs.a.empty())
     {
-        throw std::invalid_argument("Feedback filter coefficients are empty");
+        throw std::invalid_argument(
+            "Filtfilt: feedback filter coefficients are empty");
     }
 
     // Normalize coefficients (ensure a[0] = 1.0)
@@ -210,7 +154,7 @@ inline std::vector<double> filter_with_zi(std::span<const double> signal,
     if (a0 == 0.0)
     {
         throw std::invalid_argument(
-            "First feedback coefficient must be non-zero");
+            "Filtfilt: first feedback coefficient must be non-zero");
     }
 
     if (a0 != 1.0)
@@ -249,6 +193,8 @@ inline std::vector<double> filter_with_zi(std::span<const double> signal,
     return output;
 }
 
+} // namespace internal
+
 /**
  * @brief Apply filter forward and backward (zero-phase filtering)
  *
@@ -259,15 +205,22 @@ inline std::vector<double> filter_with_zi(std::span<const double> signal,
  * Uses proper initial conditions and edge handling
  *
  * @param signal Input signal
+ * @param result Output signal (must be same size as input)
  * @param coeffs Filter coefficients
- * @return Zero-phase filtered signal
  *
  * @note Effective filter order is doubled
  * @note Uses reflection padding with initial conditions
  */
-inline std::vector<double> filtfilt(std::span<const double> signal,
-                                    const FilterCoefficients &coeffs)
+inline void filtfilt(std::span<const double> signal,
+                     std::span<double> result,
+                     const FilterCoefficients &coeffs)
 {
+    if (signal.size() != result.size())
+    {
+        throw std::invalid_argument(
+            "FiltFilt: input and output spans must have the same size");
+    }
+
     const int len = static_cast<int>(signal.size());
     const int nfilt =
         static_cast<int>(std::max(coeffs.b.size(), coeffs.a.size()));
@@ -275,12 +228,12 @@ inline std::vector<double> filtfilt(std::span<const double> signal,
 
     if (len <= nfact)
     {
-        throw std::invalid_argument(
-            "Input data too short! Must have length > 3 * filter_order");
+        throw std::invalid_argument("Filtfilt: input data too short! Must have "
+                                    "length > 3 * filter_order");
     }
 
     // Compute initial conditions
-    auto zi_base = compute_filtfilt_zi(coeffs);
+    auto zi_base = internal::compute_filtfilt_zi(coeffs);
 
     //  Left padding: 2*signal[0] - signal[nfact:1:-1]
     std::vector<double> leftpad;
@@ -310,7 +263,7 @@ inline std::vector<double> filtfilt(std::span<const double> signal,
     {
         z *= y0;
     }
-    auto signal2 = filter_with_zi(signal1, coeffs, zi);
+    auto signal2 = internal::filter_with_zi(signal1, coeffs, zi);
 
     // Reverse
     std::reverse(signal2.begin(), signal2.end());
@@ -322,17 +275,61 @@ inline std::vector<double> filtfilt(std::span<const double> signal,
     {
         z *= y0;
     }
-    signal1 = filter_with_zi(signal2, coeffs, zi);
+    signal1 = internal::filter_with_zi(signal2, coeffs, zi);
 
     // Reverse back
-    std::vector<double> result;
-    result.reserve(len);
     for (int i = signal1.size() - nfact - 1; i >= nfact; --i)
     {
-        result.push_back(signal1[i]);
+        result[signal1.size() - nfact - 1 - i] = signal1[i];
+    }
+}
+
+/**
+ * @brief Apply filter forward and backward (zero-phase filtering)
+ *
+ * Convenience overload that returns a new vector
+ * Equivalent to MATLAB's filtfilt() function
+ *
+ * @param signal Input signal
+ * @param coeffs Filter coefficients
+ * @return Filtered signal
+ */
+inline std::vector<double> filtfilt(std::span<const double> signal,
+                                    const FilterCoefficients &coeffs)
+{
+    // Reverse back
+    std::vector<double> result(signal.size());
+    filtfilt(signal, result, coeffs);
+    return result;
+}
+
+/**
+ * @brief Apply zero-phase filter to each column of a matrix
+ *
+ * Convenience function to apply filtfilt to each column of a matrix
+ * Equivalent to applying filtfilt to each column separately
+ *
+ * @param signals Matrix where each column is a signal
+ * @param coeffs Filter coefficients
+ * @return Filtered matrix
+ */
+inline matrix::matrixd filtfilt_columns(const matrix::real_matrix_base &signals,
+                                        const FilterCoefficients &coeffs)
+{
+    matrix::matrixd output(signals.rows(), signals.cols());
+
+    for (size_t j = 0; j < signals.cols(); ++j)
+    {
+        auto col_span = signals.column(j);
+        auto filtered = filtfilt(col_span, coeffs);
+
+        for (size_t i = 0; i < signals.rows(); ++i)
+        {
+            output(i, j) = filtered[i];
+        }
     }
 
-    return result;
+    return output;
 }
 
 } // namespace msl::signal

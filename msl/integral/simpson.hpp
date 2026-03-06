@@ -1,15 +1,15 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**  Copyright 2025 - 2026, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
 ** File: simpson.hpp
 ** -----
-** File Created: Wednesday, 15th October 2025 22:35:15
+** File Created: Friday, 9th January 2026 14:58:10
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Sunday, 14th December 2025 17:03:22
+** Last Modified: Thursday, 5th March 2026 14:58:00
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "matrix/real_matrix_owned.hpp"
+#include "matrix/real_matrix_base.hpp"
 
 namespace msl::integral
 {
@@ -42,7 +42,7 @@ inline double simpson(std::span<const double> y, double dx)
 {
     if (y.size() < 3)
     {
-        throw std::invalid_argument("Simpson's rule needs at least 3 points");
+        throw std::invalid_argument("Simpson: needs at least 3 points");
     }
 
     size_t n = y.size();
@@ -76,22 +76,35 @@ inline double simpson(std::span<const double> y, double dx)
     return result;
 }
 
-inline double simpson(const std::vector<double> &y, double dx)
-{
-    return simpson(std::span<const double>(y), dx);
-}
-
 /**
- * @brief Cumulative Simpson's rule integration
+ * @brief Cumulative Simpson's rule for vector (uniform spacing, with output
+ * buffer)
+ *
+ * Computes cumulative integral: result[i] = ∫[0 to i] y dx using Simpson's
+ * rule. For even indices, uses Simpson's rule; for odd indices, uses linear
+ * interpolation.
+ *
+ * Zero-copy operation: directly fills the provided result span without internal
+ * allocation.
+ *
+ * @param y Function values at equally spaced points
+ * @param result Output buffer for cumulative integral values (must have same
+ * size as y)
+ * @param dx Spacing between points
  */
-inline std::vector<double> cumsimpson(std::span<const double> y, double dx)
+inline void
+cumsimpson(std::span<const double> y, std::span<double> result, double dx)
 {
     if (y.size() < 3)
     {
-        throw std::invalid_argument("Simpson's rule needs at least 3 points");
+        throw std::invalid_argument("Simpson: needs at least 3 points");
     }
 
-    std::vector<double> result(y.size(), 0.0);
+    if (result.size() != y.size())
+    {
+        throw std::invalid_argument(
+            "Simpson: result span must have same size as input");
+    }
 
     // First point
     result[0] = 0.0;
@@ -119,21 +132,48 @@ inline std::vector<double> cumsimpson(std::span<const double> y, double dx)
         size_t n = y.size();
         result[n - 1] = result[n - 2] + 0.5 * (y[n - 2] + y[n - 1]) * dx;
     }
+}
 
+/**
+ * @brief Cumulative Simpson's rule for vector (uniform spacing)
+ *
+ * Computes cumulative integral: output[i] = ∫[0 to i] y dx using Simpson's
+ * rule. For even indices, uses Simpson's rule; for odd indices, uses linear
+ * interpolation.
+ *
+ * @param y Function values at equally spaced points
+ * @param dx Spacing between points
+ * @return Cumulative integral values
+ */
+inline std::vector<double> cumsimpson(std::span<const double> y, double dx)
+{
+    std::vector<double> result(y.size());
+    cumsimpson(y, result, dx);
     return result;
 }
 
 /**
- * @brief Simpson's rule for each column of matrix
+ * @brief Simpson's rule for matrix (column-wise, uniform spacing)
+ *
+ * Integrates each column independently using Simpson's rule.
+ *
+ * @param mat Input matrix (each column is a function)
+ * @param dx Spacing between rows
+ * @return Vector of integral values for each column
  */
-inline std::vector<double> simpson(const matrix::matrixd &mat, double dx)
+inline void simpson(const matrix::real_matrix_base &mat,
+                    std::span<double> result,
+                    double dx)
 {
     if (mat.rows() < 3)
     {
-        throw std::invalid_argument("Simpson's rule needs at least 3 rows");
+        throw std::invalid_argument("Simpson: needs at least 3 rows");
     }
-
-    std::vector<double> result(mat.cols());
+    if (result.size() != mat.cols())
+    {
+        throw std::invalid_argument(
+            "Simpson: result span must have same size as number of columns");
+    }
 
     for (size_t j = 0; j < mat.cols(); ++j)
     {
@@ -144,7 +184,22 @@ inline std::vector<double> simpson(const matrix::matrixd &mat, double dx)
         }
         result[j] = simpson(col, dx);
     }
+}
 
+/**
+ * @brief Simpson's rule for matrix (column-wise, uniform spacing)
+ *
+ * Integrates each column independently using Simpson's rule.
+ *
+ * @param mat Input matrix (each column is a function)
+ * @param dx Spacing between rows
+ * @return Vector of integral values for each column
+ */
+inline std::vector<double> simpson(const matrix::real_matrix_base &mat,
+                                   double dx)
+{
+    std::vector<double> result(mat.cols());
+    simpson(mat, result, dx);
     return result;
 }
 

@@ -1,27 +1,31 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**  Copyright 2025 - 2026, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
 ** File: butterworth_filter.hpp
 ** -----
-** File Created: Wednesday, 15th October 2025 14:16:08
+** File Created: Friday, 9th January 2026 14:58:10
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Sunday, 14th December 2025 17:05:10
+** Last Modified: Friday, 6th March 2026 10:15:55
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
 #ifndef MSL_BUTTERWORTH_FILTER_HPP
 #define MSL_BUTTERWORTH_FILTER_HPP
 
-#include "filter_apply.hpp"
+#include "filter.hpp"
 #include "filter_design.hpp"
+#include "filtfilt.hpp"
 
 #include <cmath>
 #include <complex>
 #include <numbers>
+#include <span>
+#include <stdexcept>
+#include <vector>
 
 namespace msl::signal
 {
@@ -37,10 +41,11 @@ namespace msl::signal
 class ButterworthFilter
 {
 private:
-    int order_;
-    double fc_low_;  // Low cutoff frequency (normalized, 0-1 where 1 = Nyquist)
-    double fc_high_; // High cutoff frequency
-    FilterType type_;
+    int order_ = 0;
+    double fc_low_ =
+        0.0; // Low cutoff frequency (normalized, 0-1 where 1 = Nyquist)
+    double fc_high_ = 0.0; // High cutoff frequency
+    FilterType type_ = FilterType::lowpass;
 
     FilterCoefficients coeffs_;
 
@@ -65,9 +70,6 @@ public:
                       FilterType type = FilterType::lowpass)
         : order_(order), type_(type)
     {
-        validate_order(order);
-        validate_frequency(fc);
-
         if (type == FilterType::lowpass)
         {
             fc_low_ = fc;
@@ -81,7 +83,8 @@ public:
         else
         {
             throw std::invalid_argument(
-                "Single frequency constructor only for lowpass/highpass");
+                "Butterworth: single frequency constructor only for "
+                "lowpass/highpass");
         }
 
         design();
@@ -103,21 +106,20 @@ public:
                       FilterType type = FilterType::bandpass)
         : order_(order), fc_low_(fc_low), fc_high_(fc_high), type_(type)
     {
-        validate_order(order);
-        validate_frequency(fc_low);
-        validate_frequency(fc_high);
-
-        if (fc_low >= fc_high)
+        if (type != FilterType::bandpass && type != FilterType::bandstop)
         {
             throw std::invalid_argument(
-                "Low frequency must be < high frequency");
+                "Butterworth: two-frequency constructor only for "
+                "bandpass/bandstop");
         }
-
         design();
     }
 
     /**
      * @brief Get filter coefficients
+     *
+     * @return FilterCoefficients struct containing numerator (b) and
+     * denominator (a) coefficients
      */
     [[nodiscard]] const FilterCoefficients &coefficients() const
     {
@@ -126,29 +128,43 @@ public:
 
     /**
      * @brief Get numerator coefficients
+     *
+     * @return Vector of numerator coefficients (b)
      */
     [[nodiscard]] const std::vector<double> &b() const { return coeffs_.b; }
 
     /**
      * @brief Get denominator coefficients
+     *
+     * @return Vector of denominator coefficients (a)
      */
     [[nodiscard]] const std::vector<double> &a() const { return coeffs_.a; }
 
-    /**
-     * @brief Get filter specifications
-     */
+    /** @brief Get filter order. */
     [[nodiscard]] int order() const { return order_; }
+    /** @brief Get filter type. */
     [[nodiscard]] FilterType type() const { return type_; }
+    /** @brief Get low cutoff frequency (0.0 for highpass). */
     [[nodiscard]] double fc_low() const { return fc_low_; }
+    /** @brief Get high cutoff frequency (0.0 for lowpass). */
     [[nodiscard]] double fc_high() const { return fc_high_; }
 
     /**
-     * @brief Redesign filter with new parameters
+     * @brief Redesign filter with new parameters, same with constructor
+     *
+     * @param order Filter order (must be positive)
+     * @param fc Cutoff frequency (normalized: 0 < fc < 1, where 1 = Nyquist
+     * frequency)
+     * @param type Filter type (lowpass or highpass)
      */
     void redesign(int order, double fc, FilterType type = FilterType::lowpass)
     {
-        validate_order(order);
-        validate_frequency(fc);
+        if (type != FilterType::lowpass && type != FilterType::highpass)
+        {
+            throw std::invalid_argument(
+                "Butterworth: single frequency redesign only for "
+                "lowpass/highpass");
+        }
 
         order_ = order;
         type_ = type;
@@ -158,7 +174,7 @@ public:
             fc_low_ = fc;
             fc_high_ = 0.0;
         }
-        else
+        else // highpass
         {
             fc_low_ = 0.0;
             fc_high_ = fc;
@@ -167,19 +183,24 @@ public:
         design();
     }
 
+    /**
+     * @brief Redesign filter with new parameters, same with constructor
+     *
+     * @param order Filter order (must be positive)
+     * @param fc_low Low cutoff frequency (normalized)
+     * @param fc_high High cutoff frequency (normalized)
+     * @param type Filter type (bandpass or bandstop)
+     */
     void redesign(int order,
                   double fc_low,
                   double fc_high,
                   FilterType type = FilterType::bandpass)
     {
-        validate_order(order);
-        validate_frequency(fc_low);
-        validate_frequency(fc_high);
-
-        if (fc_low >= fc_high)
+        if (type != FilterType::bandpass && type != FilterType::bandstop)
         {
             throw std::invalid_argument(
-                "Low frequency must be < high frequency");
+                "Butterworth: two-frequency redesign only for "
+                "bandpass/bandstop");
         }
 
         order_ = order;
@@ -191,20 +212,55 @@ public:
     }
 
 private:
-    void validate_order(int order) const
+    // Validate parameters according to filter type.
+    void validate_parameters() const
     {
-        if (order <= 0)
-        {
-            throw std::invalid_argument("Filter order must be positive");
-        }
-    }
-
-    void validate_frequency(double f) const
-    {
-        if (f <= 0.0 || f >= 1.0)
+        if (order_ <= 0)
         {
             throw std::invalid_argument(
-                "Frequency must be normalized (0 < f < 1, where 1 = Nyquist)");
+                "Butterworth: filter order must be positive");
+        }
+
+        switch (type_)
+        {
+            case FilterType::lowpass:
+                if (fc_low_ <= 0.0 || fc_low_ >= 1.0)
+                {
+                    throw std::invalid_argument(
+                        "Butterworth: lowpass cutoff must satisfy 0 < fc < 1");
+                }
+                break;
+
+            case FilterType::highpass:
+                if (fc_high_ <= 0.0 || fc_high_ >= 1.0)
+                {
+                    throw std::invalid_argument(
+                        "Butterworth: highpass cutoff must satisfy 0 < fc < 1");
+                }
+                break;
+
+            case FilterType::bandpass:
+            case FilterType::bandstop:
+                if (fc_low_ <= 0.0 || fc_low_ >= 1.0)
+                {
+                    throw std::invalid_argument(
+                        "Butterworth: low cutoff must satisfy 0 < fc_low < 1");
+                }
+                if (fc_high_ <= 0.0 || fc_high_ >= 1.0)
+                {
+                    throw std::invalid_argument("Butterworth: high cutoff must "
+                                                "satisfy 0 < fc_high < 1");
+                }
+                if (fc_low_ >= fc_high_)
+                {
+                    throw std::invalid_argument(
+                        "Butterworth: fc_low must be less than fc_high");
+                }
+                break;
+
+            default:
+                throw std::invalid_argument(
+                    "Butterworth: unsupported filter type");
         }
     }
 
@@ -213,6 +269,8 @@ private:
      */
     void design()
     {
+        validate_parameters();
+
         if (type_ == FilterType::bandpass || type_ == FilterType::bandstop)
         {
             design_bandpass_bandstop();
@@ -392,7 +450,7 @@ private:
     /**
      * @brief Get analog Butterworth poles
      *
-     * Returns poles of normalized lowpass Butterworth filter (cutoff = 1 rad/s)
+     * @return poles of normalized lowpass Butterworth filter (cutoff = 1s^(-1))
      */
     std::vector<std::complex<double>> get_analog_poles() const
     {
@@ -416,6 +474,8 @@ private:
      *
      * Given poles p1, p2, ..., pN, compute coefficients of:
      * (z - p1)(z - p2)...(z - pN) = a[0] + a[1]*z + ... + a[N]*z^N
+     *
+     * @return Coefficients [a0, a1, ..., aN]
      */
     std::vector<double>
     poles_to_polynomial(const std::vector<std::complex<double>> &poles) const
@@ -450,7 +510,7 @@ private:
         double a0 = result[0];
         if (std::abs(a0) < 1e-300)
             throw std::runtime_error(
-                "numerical instability in poles_to_polynomial");
+                "Butterworth: numerical instability in poles_to_polynomial");
         for (auto &c : result)
             c /= a0;
 
@@ -460,6 +520,8 @@ private:
 
     /**
      * @brief Compute numerator for lowpass filter
+     *
+     * @return Coefficients for (1 + z^{-1})^N expansion (binomial coefficients)
      */
     std::vector<double> compute_lowpass_numerator() const
     {
@@ -477,6 +539,9 @@ private:
 
     /**
      * @brief Compute numerator for highpass filter
+     *
+     * @return Coefficients for (1 - z^{-1})^N expansion (binomial coefficients
+     * with alternating signs)
      */
     std::vector<double> compute_highpass_numerator() const
     {
@@ -496,6 +561,8 @@ private:
 
     /**
      * @brief Normalize filter gain at specified frequency
+     *
+     * @param f Normalized frequency (0 to 1, where 1 corresponds to Nyquist)
      */
     void normalize_gain(double f)
     {
@@ -550,6 +617,10 @@ inline FilterCoefficients butterworth_lowpass_design(int order, double fc)
 
 /**
  * @brief Design highpass Butterworth filter
+ *
+ * @param order Filter order
+ * @param fc Cutoff frequency (normalized, 0 < fc < 1)
+ * @return Filter coefficients
  */
 inline FilterCoefficients butterworth_highpass_design(int order, double fc)
 {
@@ -558,6 +629,11 @@ inline FilterCoefficients butterworth_highpass_design(int order, double fc)
 
 /**
  * @brief Design bandpass Butterworth filter
+ *
+ * @param order Filter order
+ * @param fc_low Low cutoff frequency (normalized, 0 < fc_low < 1)
+ * @param fc_high High cutoff frequency (normalized, 0 < fc_high < 1)
+ * @return Filter coefficients
  */
 inline FilterCoefficients
 butterworth_bandpass_design(int order, double fc_low, double fc_high)
@@ -568,6 +644,11 @@ butterworth_bandpass_design(int order, double fc_low, double fc_high)
 
 /**
  * @brief Design bandstop Butterworth filter
+ *
+ * @param order Filter order
+ * @param fc_low Low cutoff frequency (normalized, 0 < fc_low < 1)
+ * @param fc_high High cutoff frequency (normalized, 0 < fc_high < 1)
+ * @return Filter coefficients
  */
 inline FilterCoefficients
 butterworth_bandstop_design(int order, double fc_low, double fc_high)
@@ -599,6 +680,34 @@ inline std::vector<double> butterworth_lowpass(std::span<const double> signal,
 }
 
 /**
+ * @brief Design and apply lowpass filter in one step
+ *
+ * @param signal Input signal
+ * @param result Output span for filtered signal (must be same size as input)
+ * @param order Filter order
+ * @param fc Cutoff frequency (normalized)
+ * @param zero_phase Use zero-phase filtering (default: true)
+ */
+inline void butterworth_lowpass(std::span<const double> signal,
+                                std::span<double> result,
+                                int order,
+                                double fc,
+                                bool zero_phase = true)
+{
+    if (result.size() != signal.size())
+    {
+        throw std::invalid_argument(
+            "Butterworth: result span must have the same size as input signal");
+    }
+
+    auto coeffs = butterworth_lowpass_design(order, fc);
+    if (zero_phase)
+        filtfilt(signal, result, coeffs);
+    else
+        filter(signal, result, coeffs);
+}
+
+/**
  * @brief Design and apply highpass filter
  */
 inline std::vector<double> butterworth_highpass(std::span<const double> signal,
@@ -608,6 +717,34 @@ inline std::vector<double> butterworth_highpass(std::span<const double> signal,
 {
     auto coeffs = butterworth_highpass_design(order, fc);
     return zero_phase ? filtfilt(signal, coeffs) : filter(signal, coeffs);
+}
+
+/**
+ * @brief Design and apply highpass filter in one step.
+ *
+ * @param signal Input signal.
+ * @param result Output signal, must match input size.
+ * @param order Filter order.
+ * @param fc Normalized cutoff frequency in (0, 1).
+ * @param zero_phase Use filtfilt when true, otherwise causal filter.
+ */
+inline void butterworth_highpass(std::span<const double> signal,
+                                 std::span<double> result,
+                                 int order,
+                                 double fc,
+                                 bool zero_phase = true)
+{
+    if (result.size() != signal.size())
+    {
+        throw std::invalid_argument(
+            "Butterworth: result span must have the same size as input signal");
+    }
+
+    auto coeffs = butterworth_highpass_design(order, fc);
+    if (zero_phase)
+        filtfilt(signal, result, coeffs);
+    else
+        filter(signal, result, coeffs);
 }
 
 /**
@@ -624,6 +761,37 @@ inline std::vector<double> butterworth_bandpass(std::span<const double> signal,
 }
 
 /**
+ * @brief Design and apply bandpass filter in one step.
+ *
+ * @param signal Input signal.
+ * @param result Output signal, must match input size.
+ * @param order Filter order.
+ * @param fc_low Normalized low cutoff in (0, 1).
+ * @param fc_high Normalized high cutoff in (0, 1), must be greater than
+ * `fc_low`.
+ * @param zero_phase Use filtfilt when true, otherwise causal filter.
+ */
+inline void butterworth_bandpass(std::span<const double> signal,
+                                 std::span<double> result,
+                                 int order,
+                                 double fc_low,
+                                 double fc_high,
+                                 bool zero_phase = true)
+{
+    if (result.size() != signal.size())
+    {
+        throw std::invalid_argument(
+            "Butterworth: result span must have the same size as input signal");
+    }
+
+    auto coeffs = butterworth_bandpass_design(order, fc_low, fc_high);
+    if (zero_phase)
+        filtfilt(signal, result, coeffs);
+    else
+        filter(signal, result, coeffs);
+}
+
+/**
  * @brief Design and apply bandstop filter
  */
 inline std::vector<double> butterworth_bandstop(std::span<const double> signal,
@@ -636,49 +804,36 @@ inline std::vector<double> butterworth_bandstop(std::span<const double> signal,
     return zero_phase ? filtfilt(signal, coeffs) : filter(signal, coeffs);
 }
 
-// Vector overloads
-inline std::vector<double>
-butterworth_lowpass(const std::vector<double> &signal,
-                    int order,
-                    double fc,
-                    bool zero_phase = true)
+/**
+ * @brief Design and apply bandstop filter in one step.
+ *
+ * @param signal Input signal.
+ * @param result Output signal, must match input size.
+ * @param order Filter order.
+ * @param fc_low Normalized low cutoff in (0, 1).
+ * @param fc_high Normalized high cutoff in (0, 1), must be greater than
+ * `fc_low`.
+ * @param zero_phase Use filtfilt when true, otherwise causal filter.
+ */
+inline void butterworth_bandstop(std::span<const double> signal,
+                                 std::span<double> result,
+                                 int order,
+                                 double fc_low,
+                                 double fc_high,
+                                 bool zero_phase = true)
 {
-    return butterworth_lowpass(
-        std::span<const double>(signal), order, fc, zero_phase);
-}
+    if (result.size() != signal.size())
+    {
+        throw std::invalid_argument(
+            "Butterworth: result span must have the same size as input signal");
+    }
 
-inline std::vector<double>
-butterworth_highpass(const std::vector<double> &signal,
-                     int order,
-                     double fc,
-                     bool zero_phase = true)
-{
-    return butterworth_highpass(
-        std::span<const double>(signal), order, fc, zero_phase);
+    auto coeffs = butterworth_bandstop_design(order, fc_low, fc_high);
+    if (zero_phase)
+        filtfilt(signal, result, coeffs);
+    else
+        filter(signal, result, coeffs);
 }
-
-inline std::vector<double>
-butterworth_bandpass(const std::vector<double> &signal,
-                     int order,
-                     double fc_low,
-                     double fc_high,
-                     bool zero_phase = true)
-{
-    return butterworth_bandpass(
-        std::span<const double>(signal), order, fc_low, fc_high, zero_phase);
-}
-
-inline std::vector<double>
-butterworth_bandstop(const std::vector<double> &signal,
-                     int order,
-                     double fc_low,
-                     double fc_high,
-                     bool zero_phase = true)
-{
-    return butterworth_bandstop(
-        std::span<const double>(signal), order, fc_low, fc_high, zero_phase);
-}
-
 } // namespace msl::signal
 
 #endif // MSL_BUTTERWORTH_FILTER_HPP

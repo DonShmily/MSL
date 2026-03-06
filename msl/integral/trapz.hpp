@@ -1,15 +1,15 @@
 /**
 **  MSL - Modern Scientific Library
 **
-**  Copyright 2025 - 2025, Dong Feiyue, All Rights Reserved.
+**  Copyright 2025 - 2026, Dong Feiyue, All Rights Reserved.
 **
 ** Project: MSL
 ** File: trapz.hpp
 ** -----
-** File Created: Wednesday, 15th October 2025 22:32:51
+** File Created: Friday, 9th January 2026 14:58:10
 ** Author: Dong Feiyue (FeiyueDong@outlook.com)
 ** -----
-** Last Modified: Sunday, 14th December 2025 17:03:28
+** Last Modified: Thursday, 5th March 2026 14:57:47
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "matrix/real_matrix_owned.hpp"
+#include "matrix/real_matrix_base.hpp"
 
 namespace msl::integral
 {
@@ -40,7 +40,8 @@ inline double trapz(std::span<const double> y, double dx)
 {
     if (y.size() < 2)
     {
-        throw std::invalid_argument("Need at least 2 points for integration");
+        throw std::invalid_argument(
+            "Trapz: need at least 2 points for integration");
     }
 
     double sum = 0.5 * (y.front() + y.back());
@@ -52,23 +53,23 @@ inline double trapz(std::span<const double> y, double dx)
     return sum * dx;
 }
 
-inline double trapz(const std::vector<double> &y, double dx)
-{
-    return trapz(std::span<const double>(y), dx);
-}
-
 /**
  * @brief Compute total integral using trapezoidal rule (non-uniform spacing)
+ *
+ * @param x Independent variable values
+ * @param y Function values at x points
+ * @return Total integral value
  */
 inline double trapz(std::span<const double> x, std::span<const double> y)
 {
     if (x.size() != y.size())
     {
-        throw std::invalid_argument("x and y must have same size");
+        throw std::invalid_argument("Trapz: x and y must have same size");
     }
     if (x.size() < 2)
     {
-        throw std::invalid_argument("Need at least 2 points for integration");
+        throw std::invalid_argument(
+            "Trapz: need at least 2 points for integration");
     }
 
     double sum = 0.0;
@@ -81,16 +82,28 @@ inline double trapz(std::span<const double> x, std::span<const double> y)
 }
 
 /**
- * @brief Integrate each column of matrix and return vector of results
+ * @brief Compute total integral using trapezoidal rule (uniform spacing)
+ *
+ * Convenience wrapper that allocates and returns a vector.
+ * For zero-copy operations, use the void version with span parameter.
+ *
+ * @param y Function values
+ * @param dx Spacing
+ * @return Total integral value
  */
-inline std::vector<double> trapz(const matrix::matrixd &mat, double dx)
+inline void
+trapz(const matrix::real_matrix_base &mat, std::span<double> result, double dx)
 {
     if (mat.rows() < 2)
     {
-        throw std::invalid_argument("Need at least 2 rows for integration");
+        throw std::invalid_argument(
+            "Trapz: need at least 2 rows for integration");
     }
-
-    std::vector<double> result(mat.cols());
+    if (result.size() != mat.cols())
+    {
+        throw std::invalid_argument(
+            "Trapz: result span must have same size as number of columns");
+    }
 
     for (size_t j = 0; j < mat.cols(); ++j)
     {
@@ -101,7 +114,22 @@ inline std::vector<double> trapz(const matrix::matrixd &mat, double dx)
         }
         result[j] = sum * dx;
     }
+}
 
+/**
+ * @brief Compute total integral using trapezoidal rule (uniform spacing)
+ *
+ * Convenience wrapper that allocates and returns a vector. For zero-copy
+ * operations, use the void version with span parameter.
+ *
+ * @param mat Input matrix (each column is a function)
+ * @param dx Spacing between rows
+ * @return Vector of integral values for each column
+ */
+inline std::vector<double> trapz(const matrix::real_matrix_base &mat, double dx)
+{
+    std::vector<double> result(mat.cols());
+    trapz(mat, result, dx);
     return result;
 }
 

@@ -37,33 +37,33 @@ class PolynomialInterpolator : public InterpolatorBase
 private:
     std::vector<double> coeffs_; // Divided difference coefficients
 
+    /**
+     * @brief Build Newton divided-difference coefficients.
+     */
     void compute_divided_differences()
     {
         size_t n = x_.size();
         coeffs_.resize(n);
 
-        // Initialize with y values
-        std::vector<std::vector<double>> table(n);
+        // In-place divided differences: coeffs_[k] becomes k-th Newton
+        // coefficient after each order update.
         for (size_t i = 0; i < n; ++i)
         {
-            table[i].resize(n - i);
-            table[i][0] = y_[i];
+            coeffs_[i] = y_[i];
         }
 
-        // Compute divided differences
-        for (size_t j = 1; j < n; ++j)
+        for (size_t order = 1; order < n; ++order)
         {
-            for (size_t i = 0; i < n - j; ++i)
+            for (size_t i = n - 1; i >= order; --i)
             {
-                table[i][j] = (table[i + 1][j - 1] - table[i][j - 1])
-                              / (x_[i + j] - x_[i]);
-            }
-        }
+                coeffs_[i] =
+                    (coeffs_[i] - coeffs_[i - 1]) / (x_[i] - x_[i - order]);
 
-        // Extract coefficients (first row)
-        for (size_t i = 0; i < n; ++i)
-        {
-            coeffs_[i] = table[0][i];
+                if (i == order)
+                {
+                    break;
+                }
+            }
         }
     }
 
@@ -72,18 +72,15 @@ public:
 
     PolynomialInterpolator(std::span<const double> x, std::span<const double> y)
     {
-        x_.assign(x.begin(), x.end());
-        y_.assign(y.begin(), y.end());
-        validate_input();
-        compute_divided_differences();
+        set_data(x, y);
     }
 
-    PolynomialInterpolator(const std::vector<double> &x,
-                           const std::vector<double> &y)
-        : PolynomialInterpolator(std::span<const double>(x),
-                                 std::span<const double>(y))
-    {}
-
+    /**
+     * @brief Set interpolation data and recompute Newton coefficients.
+     *
+     * @param x Independent variable samples (strictly increasing)
+     * @param y Dependent variable samples
+     */
     void set_data(std::span<const double> x, std::span<const double> y) override
     {
         x_.assign(x.begin(), x.end());
@@ -92,6 +89,12 @@ public:
         compute_divided_differences();
     }
 
+    /**
+     * @brief Interpolate at a single point.
+     *
+     * @param x Query point
+     * @return Interpolated value at @p x
+     */
     double interpolate(double x) const override
     {
         // Newton's form: P(x) = c0 + c1(x-x0) + c2(x-x0)(x-x1) + ...
@@ -115,40 +118,52 @@ public:
     /**
      * @brief Evaluate derivative at point
      *
-     * Computes derivative using direct differentiation of Newton form
+     * Computes derivative together with polynomial evaluation using nested
+     * multiplication in Newton form.
      */
-    double derivative(double x) const
+    [[nodiscard]] double derivative(double x) const
     {
         size_t n = x_.size();
         if (n < 2)
-            return 0.0;
-
-        double result = 0.0;
-
-        for (size_t k = 1; k < n; ++k)
         {
-            double term = coeffs_[k];
-
-            // Product of (x - x_i) for i < k, excluding one factor
-            for (size_t i = 0; i < k; ++i)
-            {
-                double product = 1.0;
-                for (size_t j = 0; j < k; ++j)
-                {
-                    if (j != i)
-                    {
-                        product *= (x - x_[j]);
-                    }
-                }
-                term *= product;
-            }
-
-            result += term;
+            return 0.0;
         }
 
-        return result;
+        double p = coeffs_[n - 1];
+        double dp = 0.0;
+
+        for (size_t i = n - 1; i-- > 0;)
+        {
+            dp = dp * (x - x_[i]) + p;
+            p = p * (x - x_[i]) + coeffs_[i];
+        }
+
+        return dp;
     }
 };
+
+/**
+ * @brief Polynomial interpolation (zero-copy output).
+ *
+ * @param x Independent variable samples
+ * @param y Dependent variable samples
+ * @param x_new Query points
+ * @param result Output buffer (must have same size as @p x_new)
+ */
+inline void interp1_polynomial(std::span<const double> x,
+                               std::span<const double> y,
+                               std::span<const double> x_new,
+                               std::span<double> result)
+{
+    if (x_new.size() != result.size())
+    {
+        throw std::invalid_argument(
+            "interp1_polynomial: x_new and result spans must have same size");
+    }
+
+    PolynomialInterpolator interp(x, y);
+    interp(x_new, result);
+}
 
 /**
  * @brief Convenience function for polynomial interpolation
