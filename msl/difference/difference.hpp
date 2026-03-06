@@ -43,12 +43,12 @@ inline void diff(std::span<const double> y, std::span<double> result)
 {
     if (y.size() < 2)
     {
-        throw std::invalid_argument("Need at least 2 points for diff");
+        throw std::invalid_argument("Diff: need at least 2 points for diff");
     }
 
     if (result.size() != y.size() - 1)
     {
-        throw std::invalid_argument("Result span must have size n-1");
+        throw std::invalid_argument("Diff: result span must have size n-1");
     }
 
     for (size_t i = 0; i < result.size(); ++i)
@@ -90,7 +90,7 @@ inline matrix::matrixd diff(const matrix::real_matrix_base &mat, int axis = 0)
         if (mat.rows() < 2)
         {
             throw std::invalid_argument(
-                "Need at least 2 rows for row-wise diff");
+                "Diff: need at least 2 rows for row-wise diff");
         }
 
         matrix::matrixd result(mat.rows() - 1, mat.cols());
@@ -109,7 +109,7 @@ inline matrix::matrixd diff(const matrix::real_matrix_base &mat, int axis = 0)
         if (mat.cols() < 2)
         {
             throw std::invalid_argument(
-                "Need at least 2 cols for column-wise diff");
+                "Diff: need at least 2 cols for column-wise diff");
         }
 
         matrix::matrixd result(mat.rows(), mat.cols() - 1);
@@ -124,7 +124,7 @@ inline matrix::matrixd diff(const matrix::real_matrix_base &mat, int axis = 0)
     }
     else
     {
-        throw std::invalid_argument("axis must be 0 or 1");
+        throw std::invalid_argument("Diff: axis must be 0 or 1");
     }
 }
 
@@ -149,12 +149,13 @@ inline void forward_gradient(std::span<const double> y,
 {
     if (y.size() < 2)
     {
-        throw std::invalid_argument("Need at least 2 points for gradient");
+        throw std::invalid_argument(
+            "Gradient: need at least 2 points for gradient");
     }
 
     if (grad.size() != y.size() - 1)
     {
-        throw std::invalid_argument("Gradient span must have size n-1");
+        throw std::invalid_argument("Gradient: span must have size n-1");
     }
 
     // Forward difference, the first point is 0
@@ -201,15 +202,16 @@ inline void forward_gradient(std::span<const double> y,
 {
     if (x.size() != y.size())
     {
-        throw std::invalid_argument("x and y must have same size");
+        throw std::invalid_argument("Gradient: x and y must have same size");
     }
     if (x.size() < 2)
     {
-        throw std::invalid_argument("Need at least 2 points for gradient");
+        throw std::invalid_argument(
+            "Gradient: need at least 2 points for gradient");
     }
     if (grad.size() != y.size() - 1)
     {
-        throw std::invalid_argument("Gradient span must have size n-1");
+        throw std::invalid_argument("Gradient: span must have size n-1");
     }
 
     // Forward difference, the first point is 0
@@ -258,7 +260,7 @@ inline matrix::matrixd forward_gradient(const matrix::real_matrix_base &mat,
         // Gradient along rows (vertical direction)
         if (mat.rows() < 2)
         {
-            throw std::invalid_argument("Need at least 2 rows");
+            throw std::invalid_argument("Gradient: need at least 2 rows");
         }
 
         matrix::matrixd grad(mat.rows() - 1, mat.cols());
@@ -280,7 +282,7 @@ inline matrix::matrixd forward_gradient(const matrix::real_matrix_base &mat,
         // Gradient along columns (horizontal direction)
         if (mat.cols() < 2)
         {
-            throw std::invalid_argument("Need at least 2 columns");
+            throw std::invalid_argument("Gradient: need at least 2 columns");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols() - 1);
@@ -322,13 +324,13 @@ inline matrix::matrixd forward_gradient(const matrix::real_matrix_base &mat,
         // Gradient along rows (vertical direction)
         if (mat.rows() < 2)
         {
-            throw std::invalid_argument("Need at least 2 rows");
+            throw std::invalid_argument("Gradient: need at least 2 rows");
         }
 
         if (x.size() != mat.rows())
         {
             throw std::invalid_argument(
-                "x size must be number of rows for axis=0");
+                "Gradient: x size must be number of rows for axis=0");
         }
 
         matrix::matrixd grad(mat.rows() - 1, mat.cols());
@@ -350,13 +352,13 @@ inline matrix::matrixd forward_gradient(const matrix::real_matrix_base &mat,
         // Gradient along columns (horizontal direction)
         if (mat.cols() < 2)
         {
-            throw std::invalid_argument("Need at least 2 columns");
+            throw std::invalid_argument("Gradient: need at least 2 columns");
         }
 
         if (x.size() != mat.cols())
         {
             throw std::invalid_argument(
-                "dx size must be number of cols for axis=1");
+                "Gradient: x size must be number of cols for axis=1");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols() - 1);
@@ -399,13 +401,14 @@ inline void central_gradient(std::span<const double> y,
 {
     if (y.size() < 2)
     {
-        throw std::invalid_argument("Need at least 2 points for gradient");
+        throw std::invalid_argument(
+            "Gradient: need at least 2 points for gradient");
     }
 
     if (grad.size() != y.size())
     {
         throw std::invalid_argument(
-            "Gradient span must have same size as input");
+            "Gradient: span must have same size as input");
     }
 
     // Forward difference at first point
@@ -458,16 +461,17 @@ inline void central_gradient(std::span<const double> x,
 {
     if (x.size() != y.size())
     {
-        throw std::invalid_argument("x and y must have same size");
+        throw std::invalid_argument("Gradient: x and y must have same size");
     }
     if (x.size() < 2)
     {
-        throw std::invalid_argument("Need at least 2 points for gradient");
+        throw std::invalid_argument(
+            "Gradient: need at least 2 points for gradient");
     }
     if (grad.size() != y.size())
     {
         throw std::invalid_argument(
-            "Gradient span must have same size as input");
+            "Gradient: span must have same size as input");
     }
 
     // Forward difference at first point
@@ -530,7 +534,7 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
         // Gradient along rows (vertical direction)
         if (mat.rows() < 2)
         {
-            throw std::invalid_argument("Need at least 2 rows");
+            throw std::invalid_argument("Gradient: need at least 2 rows");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols());
@@ -558,7 +562,7 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
         // Gradient along columns (horizontal direction)
         if (mat.cols() < 2)
         {
-            throw std::invalid_argument("Need at least 2 columns");
+            throw std::invalid_argument("Gradient: need at least 2 columns");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols());
@@ -583,7 +587,7 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
     }
     else
     {
-        throw std::invalid_argument("axis must be 0 or 1");
+        throw std::invalid_argument("Gradient: axis must be 0 or 1");
     }
 }
 
@@ -605,13 +609,13 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
         // Gradient along rows (vertical direction)
         if (mat.rows() < 2)
         {
-            throw std::invalid_argument("Need at least 2 rows");
+            throw std::invalid_argument("Gradient: need at least 2 rows");
         }
 
         if (x.size() != mat.rows())
         {
             throw std::invalid_argument(
-                "x size must be number of rows for axis=0");
+                "Gradient: x size must be number of rows for axis=0");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols());
@@ -640,13 +644,13 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
         // Gradient along columns (horizontal direction)
         if (mat.cols() < 2)
         {
-            throw std::invalid_argument("Need at least 2 columns");
+            throw std::invalid_argument("Gradient: need at least 2 columns");
         }
 
         if (x.size() != mat.cols())
         {
             throw std::invalid_argument(
-                "x size must be number of cols for axis=1");
+                "Gradient: x size must be number of cols for axis=1");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols());
@@ -672,7 +676,7 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
     }
     else
     {
-        throw std::invalid_argument("axis must be 0 or 1");
+        throw std::invalid_argument("Gradient: axis must be 0 or 1");
     }
 }
 
@@ -697,7 +701,8 @@ central_gradient2d(const matrix::real_matrix_base &mat,
 {
     if (mat.rows() < 2 || mat.cols() < 2)
     {
-        throw std::invalid_argument("Need at least 2x2 matrix for 2D gradient");
+        throw std::invalid_argument(
+            "Gradient: need at least 2x2 matrix for 2D gradient");
     }
 
     matrix::matrixd grad_x =
@@ -730,13 +735,13 @@ inline void central_gradient2(std::span<const double> y,
     if (y.size() < 3)
     {
         throw std::invalid_argument(
-            "Need at least 3 points for second derivative");
+            "Gradient: need at least 3 points for second derivative");
     }
 
     if (grad2.size() != y.size())
     {
         throw std::invalid_argument(
-            "Second derivative span must have same size as input");
+            "Gradient: second derivative span must have same size as input");
     }
 
     double dx2 = dx * dx;
@@ -790,7 +795,8 @@ laplacian(const matrix::real_matrix_base &mat, double dx = 1.0, double dy = 1.0)
 {
     if (mat.rows() < 3 || mat.cols() < 3)
     {
-        throw std::invalid_argument("Need at least 3x3 matrix for Laplacian");
+        throw std::invalid_argument(
+            "Gradient: need at least 3x3 matrix for Laplacian");
     }
 
     matrix::matrixd result(mat.rows(), mat.cols(), 0.0);
@@ -840,7 +846,7 @@ inline matrix::matrixd divergence(const matrix::real_matrix_base &Fx,
 {
     if (Fx.rows() != Fy.rows() || Fx.cols() != Fy.cols())
     {
-        throw std::invalid_argument("Fx and Fy must have same size");
+        throw std::invalid_argument("Gradient: Fx and Fy must have same size");
     }
 
     auto dFx_dx = central_gradient(Fx, dx, 1); // ∂Fx/∂x
@@ -876,7 +882,7 @@ inline matrix::matrixd curl(const matrix::real_matrix_base &Fx,
 {
     if (Fx.rows() != Fy.rows() || Fx.cols() != Fy.cols())
     {
-        throw std::invalid_argument("Fx and Fy must have same size");
+        throw std::invalid_argument("Gradient: Fx and Fy must have same size");
     }
 
     auto dFy_dx = central_gradient(Fy, dx, 1); // ∂Fy/∂x
@@ -921,20 +927,22 @@ inline void savgol_gradient(std::span<const double> y,
 {
     if (window_size % 2 == 0)
     {
-        throw std::invalid_argument("window_size must be odd");
+        throw std::invalid_argument("Gradient: window_size must be odd");
     }
     if (poly_order >= window_size)
     {
-        throw std::invalid_argument("poly_order must be < window_size");
+        throw std::invalid_argument(
+            "Gradient: poly_order must be < window_size");
     }
     if (y.size() < static_cast<size_t>(window_size))
     {
-        throw std::invalid_argument("Signal too short for window_size");
+        throw std::invalid_argument(
+            "Gradient: signal too short for window_size");
     }
     if (grad.size() != y.size())
     {
         throw std::invalid_argument(
-            "Gradient span must have same size as input");
+            "Gradient: span must have same size as input");
     }
 
     // For simplicity, use central differences with averaging
