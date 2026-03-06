@@ -22,6 +22,7 @@
 #include <cstddef>
 #include <functional>
 #include <numbers>
+#include <span>
 #include <stdexcept>
 #include <vector>
 
@@ -43,7 +44,7 @@ class FourierDomainFilter
 {
 public:
     /**
-     * @brief Design lowpass Butterworth filter
+     * @brief Transition shaping used around cutoff edges.
      *
      * - rectangular: ideal sinc filter, sharp cutoff but high side lobes
      * - hamming: smoother transition, lower side lobes
@@ -63,8 +64,6 @@ private:
     double fc_low_{0.0};
     // High cutoff frequency (0-1 where 1 = Nyquist)
     double fc_high_{1.0};
-    // FFT size, 0 = auto
-    std::size_t nfft_{0};
 
     // Filter type
     FilterType type_{FilterType::bandpass};
@@ -87,21 +86,18 @@ public:
      * Nyquist frequency)
      * @param fc_high High cutoff frequency (normalized: 0 < fc < 1, where 1 =
      * Nyquist frequency)
-     * @param nfft FFT size (0 = auto-determine based on transition band)
-     * @param type Filter type (bandpass or bandstop)
+     * @param type Filter type (lowpass/highpass/bandpass/bandstop)
      * @param window_type Window function type
      * @param transition_band Transition band width normalized of Nyquist
      * @throws std::invalid_argument if parameters are invalid
      */
     FourierDomainFilter(double fc_low,
                         double fc_high,
-                        std::size_t nfft = 0,
                         FilterType type = FilterType::bandpass,
                         WindowType window_type = WindowType::rectangular,
                         double transition_band = 0.0)
         : fc_low_(fc_low),
           fc_high_(fc_high),
-          nfft_(nfft),
           type_(type),
           window_type_(window_type),
           transition_band_(transition_band)
@@ -138,21 +134,18 @@ public:
      * Nyquist frequency)
      * @param fc_high High cutoff frequency (normalized: 0 < fc < 1, where 1 =
      * Nyquist frequency)
-     * @param nfft FFT size (0 = auto-determine based on transition band)
-     * @param type Filter type (bandpass or bandstop default: bandpass)
+     * @param type Filter type (lowpass/highpass/bandpass/bandstop)
      * @param window_type Window function type
      * @param transition_band Transition band width normalized of Nyquist
      */
     void redesign(double fc_low,
                   double fc_high,
-                  std::size_t nfft = 0,
                   FilterType type = FilterType::bandpass,
                   WindowType window_type = WindowType::rectangular,
                   double transition_band = 0.0)
     {
         fc_low_ = fc_low;
         fc_high_ = fc_high;
-        nfft_ = nfft;
         type_ = type;
         window_type_ = window_type;
         transition_band_ = transition_band;
@@ -170,12 +163,20 @@ public:
     {
         if (signal.size() != output.size())
         {
-            throw std::invalid_argument(
-                "Output buffer size must match input signal size");
+            throw std::invalid_argument("FourierDomainFilter: output buffer "
+                                        "size must match input signal size");
+        }
+        if (signal.empty())
+        {
+            return;
         }
 
-        std::size_t fft_size = (nfft_ == 0) ? signal.size() : nfft_;
-        auto fft_data = signal::fft(signal, fft_size);
+        std::size_t fft_size = signal.size();
+
+        std::vector<double> fft_input(fft_size, 0.0);
+        std::copy(signal.begin(), signal.end(), fft_input.begin());
+
+        auto fft_data = signal::fft(fft_input, fft_size);
         std::vector<std::complex<double>> filtered_fft(fft_data.size());
 
         for (std::size_t i = 0; i < fft_data.size(); ++i)
@@ -185,10 +186,6 @@ public:
                 freq -= 1.0; // Map to [-0.5, 0.5]
             freq *= 2.0;     // Normalize to [-1, 1]
             double gain = window_function_(freq);
-            if (type_ == FilterType::bandstop)
-            {
-                gain = 1.0 - gain;
-            }
             filtered_fft[i] = fft_data[i] * gain;
         }
 
@@ -217,6 +214,25 @@ public:
     matrix::matrixd apply(const matrix::real_matrix_base &signal_matrix) const
     {
         matrix::matrixd output(signal_matrix.rows(), signal_matrix.cols());
+        apply(signal_matrix, output);
+        return output;
+    }
+
+    /**
+     * @brief Apply the filter to all columns of an input matrix.
+     *
+     * @param signal_matrix Input matrix where each column is one signal.
+     * @param output Output matrix. Must have the same shape as input.
+     */
+    void apply(const matrix::real_matrix_base &signal_matrix,
+               matrix::matrixd &output) const
+    {
+        if (output.rows() != signal_matrix.rows()
+            || output.cols() != signal_matrix.cols())
+        {
+            throw std::invalid_argument("FourierDomainFilter: output matrix "
+                                        "shape must match input matrix");
+        }
 
         for (std::size_t j = 0; j < signal_matrix.cols(); ++j)
         {
@@ -227,8 +243,6 @@ public:
                       filtered_column.end(),
                       output.column(j).begin());
         }
-
-        return output;
     }
 
 
@@ -240,23 +254,52 @@ private:
      */
     void validate_parameters() const
     {
+        switch (type_)
+        {
+            case FilterType::lowpass:
+                if (fc_high_ <= 0.0 || fc_high_ >= 1.0)
+                {
+                    throw std::invalid_argument(
+                        "FourierDomainFilter: lowpass cutoff must satisfy 0 < "
+                        "fc_high < 1");
+                }
+                break;
 
-        if (fc_low_ <= 0.0 || fc_low_ >= 1.0 || fc_high_ <= 0.0
-            || fc_high_ >= 1.0)
-        {
-            throw std::invalid_argument("Frequencies must be normalized (0 < f "
-                                        "< 1, where 1 = Nyquist)");
-        }
-        if (fc_low_ >= fc_high_)
-        {
-            throw std::invalid_argument(
-                "Low frequency must be < high frequency");
+            case FilterType::highpass:
+                if (fc_low_ <= 0.0 || fc_low_ >= 1.0)
+                {
+                    throw std::invalid_argument(
+                        "FourierDomainFilter: highpass cutoff must satisfy 0 < "
+                        "fc_low < 1");
+                }
+                break;
+
+            case FilterType::bandpass:
+            case FilterType::bandstop:
+                if (fc_low_ <= 0.0 || fc_low_ >= 1.0 || fc_high_ <= 0.0
+                    || fc_high_ >= 1.0)
+                {
+                    throw std::invalid_argument(
+                        "FourierDomainFilter: band cutoffs must satisfy 0 < "
+                        "fc_low < fc_high < 1");
+                }
+                if (fc_low_ >= fc_high_)
+                {
+                    throw std::invalid_argument(
+                        "FourierDomainFilter: low frequency must be < high "
+                        "frequency");
+                }
+                break;
+
+            default:
+                throw std::invalid_argument(
+                    "FourierDomainFilter: unsupported filter type");
         }
 
         if (transition_band_ < 0.0 || transition_band_ >= 0.5)
         {
-            throw std::invalid_argument(
-                "Transition band must be in range (0, 0.5)");
+            throw std::invalid_argument("FourierDomainFilter: transition band "
+                                        "must be in range [0, 0.5)");
         }
     }
 
@@ -275,8 +318,25 @@ private:
             const double fh = std::clamp(fc_high_, 0.0, 1.0);
             const double tw = std::clamp(transition_band_, 0.0, 0.5);
 
+            if (tw == 0.0)
+            {
+                switch (type_)
+                {
+                    case FilterType::lowpass:
+                        return (f <= fh) ? 1.0 : 0.0;
+                    case FilterType::highpass:
+                        return (f >= fl) ? 1.0 : 0.0;
+                    case FilterType::bandpass:
+                        return (f >= fl && f <= fh) ? 1.0 : 0.0;
+                    case FilterType::bandstop:
+                        return (f >= fl && f <= fh) ? 0.0 : 1.0;
+                    default:
+                        return 0.0;
+                }
+            }
+
             auto smooth = [&](double x) {
-                double t = std::clamp((x + tw) / (2 * tw), 0.0, 1.0);
+                double t = std::clamp((x + tw) / (2.0 * tw), 0.0, 1.0);
                 switch (window_type_)
                 {
                     case WindowType::rectangular:
@@ -373,7 +433,6 @@ private:
  * @param result Output buffer for filtered signal, must be same size as input
  * @param fc_low Low cutoff frequency (normalized, 0 < fc < 1)
  * @param fc_high High cutoff frequency (normalized, 0 < fc < 1)
- * @param nfft FFT size (0 = auto-determine based on transition band)
  * @param window_type Window function type
  * @param transition_band Transition band width normalized of Nyquist
  */
@@ -381,17 +440,12 @@ inline void fourier_bandpass(std::span<const double> signal,
                              std::span<double> result,
                              double fc_low,
                              double fc_high,
-                             int nfft = 0,
                              FourierDomainFilter::WindowType window_type =
                                  FourierDomainFilter::WindowType::rectangular,
                              double transition_band = 0.0)
 {
-    FourierDomainFilter filter(fc_low,
-                               fc_high,
-                               nfft,
-                               FilterType::bandpass,
-                               window_type,
-                               transition_band);
+    FourierDomainFilter filter(
+        fc_low, fc_high, FilterType::bandpass, window_type, transition_band);
     filter.apply(signal, result);
 }
 
@@ -401,7 +455,6 @@ inline void fourier_bandpass(std::span<const double> signal,
  * @param signal Input signal
  * @param fc_low Low cutoff frequency (normalized, 0 < fc < 1)
  * @param fc_high High cutoff frequency (normalized, 0 < fc < 1)
- * @param nfft FFT size (0 = auto-determine based on transition band)
  * @param window_type Window function type
  * @param transition_band Transition band width normalized of Nyquist
  * @return Filtered signal
@@ -410,17 +463,12 @@ inline std::vector<double>
 fourier_bandpass(std::span<const double> signal,
                  double fc_low,
                  double fc_high,
-                 int nfft = 0,
                  FourierDomainFilter::WindowType window_type =
                      FourierDomainFilter::WindowType::rectangular,
                  double transition_band = 0.0)
 {
-    FourierDomainFilter filter(fc_low,
-                               fc_high,
-                               nfft,
-                               FilterType::bandpass,
-                               window_type,
-                               transition_band);
+    FourierDomainFilter filter(
+        fc_low, fc_high, FilterType::bandpass, window_type, transition_band);
     return filter.apply(signal);
 }
 
@@ -431,7 +479,6 @@ fourier_bandpass(std::span<const double> signal,
  * @param result Output buffer for filtered signal, must be same size as input
  * @param fc_low Low cutoff frequency (normalized, 0 < fc < 1)
  * @param fc_high High cutoff frequency (normalized, 0 < fc < 1)
- * @param nfft FFT size (0 = auto-determine based on transition band)
  * @param window_type Window function type
  * @param transition_band Transition band width normalized of Nyquist
  */
@@ -439,17 +486,12 @@ inline void fourier_bandstop(std::span<const double> signal,
                              std::span<double> result,
                              double fc_low,
                              double fc_high,
-                             int nfft = 0,
                              FourierDomainFilter::WindowType window_type =
                                  FourierDomainFilter::WindowType::rectangular,
                              double transition_band = 0.0)
 {
-    FourierDomainFilter filter(fc_low,
-                               fc_high,
-                               nfft,
-                               FilterType::bandstop,
-                               window_type,
-                               transition_band);
+    FourierDomainFilter filter(
+        fc_low, fc_high, FilterType::bandstop, window_type, transition_band);
     filter.apply(signal, result);
 }
 
@@ -459,7 +501,6 @@ inline void fourier_bandstop(std::span<const double> signal,
  * @param signal Input signal
  * @param fc_low Low cutoff frequency (normalized, 0 < fc < 1)
  * @param fc_high High cutoff frequency (normalized, 0 < fc < 1)
- * @param nfft FFT size (0 = auto-determine based on transition band)
  * @param window_type Window function type
  * @param transition_band Transition band width normalized of Nyquist
  * @return Filtered signal
@@ -468,17 +509,12 @@ inline std::vector<double>
 fourier_bandstop(std::span<const double> signal,
                  double fc_low,
                  double fc_high,
-                 int nfft = 0,
                  FourierDomainFilter::WindowType window_type =
                      FourierDomainFilter::WindowType::rectangular,
                  double transition_band = 0.0)
 {
-    FourierDomainFilter filter(fc_low,
-                               fc_high,
-                               nfft,
-                               FilterType::bandstop,
-                               window_type,
-                               transition_band);
+    FourierDomainFilter filter(
+        fc_low, fc_high, FilterType::bandstop, window_type, transition_band);
     return filter.apply(signal);
 }
 
@@ -488,20 +524,18 @@ fourier_bandstop(std::span<const double> signal,
  * @param signal Input signal
  * @param result Output buffer for filtered signal, must be same size as input
  * @param fc_high High cutoff frequency (normalized, 0 < fc < 1)
- * @param nfft FFT size (0 = auto-determine based on transition band)
  * @param window_type Window function type
  * @param transition_band Transition band width normalized of Nyquist
  */
 inline void fourier_lowpass(std::span<const double> signal,
                             std::span<double> result,
                             double fc_high,
-                            int nfft = 0,
                             FourierDomainFilter::WindowType window_type =
                                 FourierDomainFilter::WindowType::rectangular,
                             double transition_band = 0.0)
 {
     FourierDomainFilter filter(
-        0.0, fc_high, nfft, FilterType::lowpass, window_type, transition_band);
+        0.0, fc_high, FilterType::lowpass, window_type, transition_band);
     filter.apply(signal, result);
 }
 
@@ -510,7 +544,6 @@ inline void fourier_lowpass(std::span<const double> signal,
  *
  * @param signal Input signal
  * @param fc_high High cutoff frequency (normalized, 0 < fc < 1)
- * @param nfft FFT size (0 = auto-determine based on transition band)
  * @param window_type Window function type
  * @param transition_band Transition band width normalized of Nyquist
  * @return Filtered signal
@@ -518,13 +551,12 @@ inline void fourier_lowpass(std::span<const double> signal,
 inline std::vector<double>
 fourier_lowpass(std::span<const double> signal,
                 double fc_high,
-                int nfft = 0,
                 FourierDomainFilter::WindowType window_type =
                     FourierDomainFilter::WindowType::rectangular,
                 double transition_band = 0.0)
 {
     FourierDomainFilter filter(
-        0.0, fc_high, nfft, FilterType::lowpass, window_type, transition_band);
+        0.0, fc_high, FilterType::lowpass, window_type, transition_band);
     return filter.apply(signal);
 }
 
@@ -534,20 +566,18 @@ fourier_lowpass(std::span<const double> signal,
  * @param signal Input signal
  * @param result Output buffer for filtered signal, must be same size as input
  * @param fc_low Low cutoff frequency (normalized, 0 < fc < 1)
- * @param nfft FFT size (0 = auto-determine based on transition band)
  * @param window_type Window function type
  * @param transition_band Transition band width normalized of Nyquist
  */
 inline void fourier_highpass(std::span<const double> signal,
                              std::span<double> result,
                              double fc_low,
-                             int nfft = 0,
                              FourierDomainFilter::WindowType window_type =
                                  FourierDomainFilter::WindowType::rectangular,
                              double transition_band = 0.0)
 {
     FourierDomainFilter filter(
-        fc_low, 1.0, nfft, FilterType::highpass, window_type, transition_band);
+        fc_low, 1.0, FilterType::highpass, window_type, transition_band);
     filter.apply(signal, result);
 }
 
@@ -556,7 +586,6 @@ inline void fourier_highpass(std::span<const double> signal,
  *
  * @param signal Input signal
  * @param fc_low Low cutoff frequency (normalized, 0 < fc < 1)
- * @param nfft FFT size (0 = auto-determine based on transition band)
  * @param window_type Window function type
  * @param transition_band Transition band width normalized of Nyquist
  * @return Filtered signal
@@ -564,13 +593,12 @@ inline void fourier_highpass(std::span<const double> signal,
 inline std::vector<double>
 fourier_highpass(std::span<const double> signal,
                  double fc_low,
-                 int nfft = 0,
                  FourierDomainFilter::WindowType window_type =
                      FourierDomainFilter::WindowType::rectangular,
                  double transition_band = 0.0)
 {
     FourierDomainFilter filter(
-        fc_low, 1.0, nfft, FilterType::highpass, window_type, transition_band);
+        fc_low, 1.0, FilterType::highpass, window_type, transition_band);
     return filter.apply(signal);
 }
 

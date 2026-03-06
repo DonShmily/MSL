@@ -202,7 +202,7 @@ inline void apply_window(std::span<double> signal,
     if (signal.size() != window.size())
     {
         throw std::invalid_argument(
-            "Signal and window must have the same length");
+            "Apply window: signal and window must have the same length");
     }
 
     for (size_t i = 0; i < signal.size(); ++i)
@@ -225,7 +225,7 @@ inline void apply_window(std::span<const double> input,
     if (input.size() != output.size() || input.size() != window.size())
     {
         throw std::invalid_argument(
-            "Input, output, and window must have the same length");
+            "Apply window: input, output, and window must have the same length");
     }
 
     for (size_t i = 0; i < input.size(); ++i)
@@ -254,7 +254,7 @@ apply_window_columns(const matrix::real_matrix_base &input,
     if (n_rows != window.size())
     {
         throw std::invalid_argument(
-            "Number of rows in input must match window length");
+            "Apply window: number of rows in input must match window length");
     }
 
     matrix::matrixd output(n_rows, n_cols);
