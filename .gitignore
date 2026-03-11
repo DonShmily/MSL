@@ -365,6 +365,7 @@ FodyWeavers.xsd
 # vscode settings
 .vscode/
 .old/
+numerical_old/
 *.7z
 
 # vcpkg package manager
