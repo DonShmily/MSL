@@ -55,79 +55,6 @@ enum class ExtrapolationMode
  */
 class InterpolatorBase
 {
-protected:
-    std::vector<double> x_;
-    std::vector<double> y_;
-    ExtrapolationMode extrap_mode_ = ExtrapolationMode::Polynomial;
-
-    // Validate input data (size, sorting, etc.)
-    void validate_input() const
-    {
-        if (x_.size() != y_.size())
-        {
-            throw std::invalid_argument("Interp: x and y must have same size");
-        }
-        if (x_.size() < 2)
-        {
-            throw std::invalid_argument("Interp: need at least 2 points");
-        }
-
-        // Check sorted
-        for (size_t i = 1; i < x_.size(); ++i)
-        {
-            if (x_[i] <= x_[i - 1])
-            {
-                throw std::invalid_argument(
-                    "Interp: x values must be strictly increasing");
-            }
-        }
-    }
-
-    /**
-     * @brief Find interval for interpolation point
-     * Throws if out of range and extrapolation is disabled
-     */
-    size_t find_interval(double x) const
-    {
-        if (x < x_.front())
-        {
-            if (extrap_mode_ == ExtrapolationMode::None)
-            {
-                throw std::out_of_range("Interp: x out of interpolation range");
-            }
-            // Handle extrapolation
-            if (extrap_mode_ == ExtrapolationMode::Polynomial)
-                return 0;
-        }
-        if (x > x_.back())
-        {
-            if (extrap_mode_ == ExtrapolationMode::None)
-            {
-                throw std::out_of_range("Interp: x out of interpolation range");
-            }
-            // Handle extrapolation
-            if (extrap_mode_ == ExtrapolationMode::Polynomial)
-                return x_.size() - 2;
-        }
-
-        // Binary search
-        auto it = std::lower_bound(x_.begin(), x_.end(), x);
-        size_t idx = it - x_.begin();
-
-        if (idx == x_.size())
-            --idx;
-        if (idx > 0 && x < x_[idx])
-            --idx;
-
-        return idx;
-    }
-
-    /**
-     * @brief Pure virtual interpolation function
-     * Must be implemented by derived classes
-     */
-    virtual double interpolate(double x) const = 0;
-
 public:
     InterpolatorBase() = default;
     virtual ~InterpolatorBase() = default;
@@ -307,6 +234,79 @@ public:
     {
         return {x_.front(), x_.back()};
     }
+
+protected:
+    std::vector<double> x_;
+    std::vector<double> y_;
+    ExtrapolationMode extrap_mode_ = ExtrapolationMode::Polynomial;
+
+    // Validate input data (size, sorting, etc.)
+    void validate_input() const
+    {
+        if (x_.size() != y_.size())
+        {
+            throw std::invalid_argument("Interp: x and y must have same size");
+        }
+        if (x_.size() < 2)
+        {
+            throw std::invalid_argument("Interp: need at least 2 points");
+        }
+
+        // Check sorted
+        for (size_t i = 1; i < x_.size(); ++i)
+        {
+            if (x_[i] <= x_[i - 1])
+            {
+                throw std::invalid_argument(
+                    "Interp: x values must be strictly increasing");
+            }
+        }
+    }
+
+    /**
+     * @brief Find interval for interpolation point
+     * Throws if out of range and extrapolation is disabled
+     */
+    size_t find_interval(double x) const
+    {
+        if (x < x_.front())
+        {
+            if (extrap_mode_ == ExtrapolationMode::None)
+            {
+                throw std::out_of_range("Interp: x out of interpolation range");
+            }
+            // Handle extrapolation
+            if (extrap_mode_ == ExtrapolationMode::Polynomial)
+                return 0;
+        }
+        if (x > x_.back())
+        {
+            if (extrap_mode_ == ExtrapolationMode::None)
+            {
+                throw std::out_of_range("Interp: x out of interpolation range");
+            }
+            // Handle extrapolation
+            if (extrap_mode_ == ExtrapolationMode::Polynomial)
+                return x_.size() - 2;
+        }
+
+        // Binary search
+        auto it = std::lower_bound(x_.begin(), x_.end(), x);
+        size_t idx = it - x_.begin();
+
+        if (idx == x_.size())
+            --idx;
+        if (idx > 0 && x < x_[idx])
+            --idx;
+
+        return idx;
+    }
+
+    /**
+     * @brief Pure virtual interpolation function
+     * Must be implemented by derived classes
+     */
+    virtual double interpolate(double x) const = 0;
 };
 
 } // namespace msl::interp

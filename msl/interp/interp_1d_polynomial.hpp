@@ -32,45 +32,12 @@ namespace msl::interp
  *
  * Recommended: Use for <= 10 points, or consider splines instead
  */
-class PolynomialInterpolator : public InterpolatorBase
+class Polynomial : public InterpolatorBase
 {
-private:
-    std::vector<double> coeffs_; // Divided difference coefficients
-
-    /**
-     * @brief Build Newton divided-difference coefficients.
-     */
-    void compute_divided_differences()
-    {
-        size_t n = x_.size();
-        coeffs_.resize(n);
-
-        // In-place divided differences: coeffs_[k] becomes k-th Newton
-        // coefficient after each order update.
-        for (size_t i = 0; i < n; ++i)
-        {
-            coeffs_[i] = y_[i];
-        }
-
-        for (size_t order = 1; order < n; ++order)
-        {
-            for (size_t i = n - 1; i >= order; --i)
-            {
-                coeffs_[i] =
-                    (coeffs_[i] - coeffs_[i - 1]) / (x_[i] - x_[i - order]);
-
-                if (i == order)
-                {
-                    break;
-                }
-            }
-        }
-    }
-
 public:
-    PolynomialInterpolator() = default;
+    Polynomial() = default;
 
-    PolynomialInterpolator(std::span<const double> x, std::span<const double> y)
+    Polynomial(std::span<const double> x, std::span<const double> y)
     {
         set_data(x, y);
     }
@@ -140,6 +107,39 @@ public:
 
         return dp;
     }
+
+private:
+    std::vector<double> coeffs_; // Divided difference coefficients
+
+    /**
+     * @brief Build Newton divided-difference coefficients.
+     */
+    void compute_divided_differences()
+    {
+        size_t n = x_.size();
+        coeffs_.resize(n);
+
+        // In-place divided differences: coeffs_[k] becomes k-th Newton
+        // coefficient after each order update.
+        for (size_t i = 0; i < n; ++i)
+        {
+            coeffs_[i] = y_[i];
+        }
+
+        for (size_t order = 1; order < n; ++order)
+        {
+            for (size_t i = n - 1; i >= order; --i)
+            {
+                coeffs_[i] =
+                    (coeffs_[i] - coeffs_[i - 1]) / (x_[i] - x_[i - order]);
+
+                if (i == order)
+                {
+                    break;
+                }
+            }
+        }
+    }
 };
 
 /**
@@ -161,7 +161,7 @@ inline void interp1_polynomial(std::span<const double> x,
             "interp1_polynomial: x_new and result spans must have same size");
     }
 
-    PolynomialInterpolator interp(x, y);
+    Polynomial interp(x, y);
     interp(x_new, result);
 }
 
@@ -172,7 +172,7 @@ inline std::vector<double> interp1_polynomial(std::span<const double> x,
                                               std::span<const double> y,
                                               std::span<const double> x_new)
 {
-    return PolynomialInterpolator(x, y)(x_new);
+    return Polynomial(x, y)(x_new);
 }
 
 } // namespace msl::interp

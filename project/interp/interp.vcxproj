@@ -22,6 +22,7 @@
     <ClInclude Include="..\..\msl\interp\interp_1d_akima.hpp" />
     <ClInclude Include="..\..\msl\interp\interp_1d_base.hpp" />
     <ClInclude Include="..\..\msl\interp\interp_1d_linear.hpp" />
+    <ClInclude Include="..\..\msl\interp\interp_1d_pchip.hpp" />
     <ClInclude Include="..\..\msl\interp\interp_1d_polynomial.hpp" />
     <ClInclude Include="..\..\msl\interp\interp_1d_spline.hpp" />
   </ItemGroup>

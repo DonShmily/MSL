@@ -23,8 +23,65 @@ namespace msl::interp
 // Akima Spline (smoother than cubic, no overshoot)
 class AkimaSpline : public InterpolatorBase
 {
+public:
+    AkimaSpline() = default;
+
+    AkimaSpline(std::span<const double> x,
+                std::span<const double> y,
+                bool modified_akima = true)
+    {
+        modified_akima_ = modified_akima;
+        set_data(x, y);
+    }
+
+    /**
+     * @brief Set data points
+     *
+     * @param x Independent variable values
+     * @param y Dependent variable values (must have same size as x)
+     */
+    void set_data(std::span<const double> x, std::span<const double> y) override
+    {
+        x_.assign(x.begin(), x.end());
+        y_.assign(y.begin(), y.end());
+        validate_input();
+        if (x_.size() < 4)
+        {
+            throw std::invalid_argument(
+                "interp1_akima: need at least 4 points");
+        }
+        compute_coefficients();
+    }
+
+    void set_modified_akima(bool modified)
+    {
+        if (modified != modified_akima_)
+        {
+            modified_akima_ = modified;
+            compute_coefficients();
+        }
+    }
+
+    /**
+     * @brief Interpolate at a single point
+     *
+     * @param x Evaluation point
+     * @return Interpolated value at x
+     */
+    double interpolate(double x) const override
+    {
+        size_t i = find_interval(x);
+        double dx = x - x_[i];
+        return y_[i] + b_[i] * dx + c_[i] * dx * dx + d_[i] * dx * dx * dx;
+    }
+
 private:
-    std::vector<double> b_, c_, d_;
+    std::vector<double> b_; // First derivative coefficients
+    std::vector<double> c_; // Second derivative coefficients
+    std::vector<double> d_; // Third derivative coefficients
+
+    bool modified_akima_ =
+        true; // Use modified Akima weights to match MATLAB makima
 
     /**
      * @brief Compute polynomial coefficients
@@ -52,16 +109,37 @@ private:
         std::vector<double> t(n);
         for (size_t i = 0; i < n; ++i)
         {
-            double w1 = std::abs(m[i + 3] - m[i + 2]);
-            double w2 = std::abs(m[i + 1] - m[i]);
-
-            if (w1 + w2 < 1e-10)
+            if (modified_akima_)
             {
-                t[i] = 0.5 * (m[i + 1] + m[i + 2]);
+                // Modified Akima weights: |d_{i+1} - d_i| + |d_{i+1} + d_i|/2
+                double w1 = std::abs(m[i + 3] - m[i + 2])
+                            + std::abs(m[i + 3] + m[i + 2]) / 2.0;
+                double w2 =
+                    std::abs(m[i + 1] - m[i]) + std::abs(m[i + 1] + m[i]) / 2.0;
+
+                if (w1 + w2 < 1e-10)
+                {
+                    t[i] = 0.5 * (m[i + 1] + m[i + 2]);
+                }
+                else
+                {
+                    t[i] = (w1 * m[i + 1] + w2 * m[i + 2]) / (w1 + w2);
+                }
             }
             else
             {
-                t[i] = (w1 * m[i + 1] + w2 * m[i + 2]) / (w1 + w2);
+                // Original Akima weights: |d_{i+1} - d_i|
+                double w1 = std::abs(m[i + 3] - m[i + 2]);
+                double w2 = std::abs(m[i + 1] - m[i]);
+
+                if (w1 + w2 < 1e-10)
+                {
+                    t[i] = 0.5 * (m[i + 1] + m[i + 2]);
+                }
+                else
+                {
+                    t[i] = (w1 * m[i + 1] + w2 * m[i + 2]) / (w1 + w2);
+                }
             }
         }
 
@@ -77,46 +155,6 @@ private:
             c_[i] = (3.0 * m[i + 2] - 2.0 * t[i] - t[i + 1]) / h;
             d_[i] = (t[i] + t[i + 1] - 2.0 * m[i + 2]) / (h * h);
         }
-    }
-
-public:
-    AkimaSpline() = default;
-
-    AkimaSpline(std::span<const double> x, std::span<const double> y)
-    {
-        set_data(x, y);
-    }
-
-    /**
-     * @brief Set data points
-     *
-     * @param x Independent variable values
-     * @param y Dependent variable values (must have same size as x)
-     */
-    void set_data(std::span<const double> x, std::span<const double> y) override
-    {
-        x_.assign(x.begin(), x.end());
-        y_.assign(y.begin(), y.end());
-        validate_input();
-        if (x_.size() < 4)
-        {
-            throw std::invalid_argument(
-                "interp1_akima: need at least 4 points");
-        }
-        compute_coefficients();
-    }
-
-    /**
-     * @brief Interpolate at a single point
-     *
-     * @param x Evaluation point
-     * @return Interpolated value at x
-     */
-    double interpolate(double x) const override
-    {
-        size_t i = find_interval(x);
-        double dx = x - x_[i];
-        return y_[i] + b_[i] * dx + c_[i] * dx * dx + d_[i] * dx * dx * dx;
     }
 };
 

@@ -30,5 +30,8 @@
     <ClInclude Include="..\..\msl\interp\interp_1d_spline.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\msl\interp\interp_1d_pchip.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

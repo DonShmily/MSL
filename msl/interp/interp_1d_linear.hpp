@@ -26,12 +26,12 @@ namespace msl::interp
  * Uses the two neighboring samples around the query point to perform
  * first-order interpolation.
  */
-class Linear : public InterpolatorBase
+class Near : public InterpolatorBase
 {
 public:
-    Linear() = default;
+    Near() = default;
 
-    Linear(std::span<const double> x, std::span<const double> y)
+    Near(std::span<const double> x, std::span<const double> y)
     {
         set_data(x, y);
     }
@@ -96,7 +96,7 @@ inline void interp1_linear(std::span<const double> x,
             "interp1_linear: x_new and result spans must have same size");
     }
 
-    Linear interp(x, y);
+    Near interp(x, y);
     interp(x_new, result);
 }
 
@@ -112,7 +112,7 @@ inline std::vector<double> interp1_linear(std::span<const double> x,
                                           std::span<const double> y,
                                           std::span<const double> x_new)
 {
-    return Linear(x, y)(x_new);
+    return Near(x, y)(x_new);
 }
 
 } // namespace msl::interp

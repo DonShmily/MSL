@@ -81,6 +81,26 @@ int test_interp()
                          akima_interp_all,
                          4,
                          new_x.size());
+
+        // test pchip interp
+        auto pchip_interp_y1 = interp::interp1_pchip(data_x, data_y1, new_x);
+        auto pchip_interp_y2 = interp::interp1_pchip(data_x, data_y2, new_x);
+        auto pchip_interp_y3 = interp::interp1_pchip(data_x, data_y3, new_x);
+        std::vector<double> pchip_interp_all(4 * new_x.size());
+        std::copy(new_x.begin(), new_x.end(), pchip_interp_all.begin());
+        std::copy(pchip_interp_y1.begin(),
+                  pchip_interp_y1.end(),
+                  pchip_interp_all.begin() + new_x.size());
+        std::copy(pchip_interp_y2.begin(),
+                  pchip_interp_y2.end(),
+                  pchip_interp_all.begin() + 2 * new_x.size());
+        std::copy(pchip_interp_y3.begin(),
+                  pchip_interp_y3.end(),
+                  pchip_interp_all.begin() + 3 * new_x.size());
+        utils::WriteData("test_result/interp/pchip_interp_all.txt",
+                         pchip_interp_all,
+                         4,
+                         new_x.size());
     }
     catch (const std::exception &e)
     {
