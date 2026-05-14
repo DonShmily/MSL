@@ -5,31 +5,40 @@ set_warnings("all")
 set_allowedplats("windows", "linux", "macosx", "mingw")
 
 add_rules("mode.debug", "mode.release")
-set_config("plat", "mingw")
-if is_plat("mingw") then
+-- set_config("plat", "mingw")
+if is_plat("windows") then
+    set_toolchains("msvc")
+elseif is_plat("mingw") then
     set_config("sdk", "C:/Programing/msys64/ucrt64")
     set_toolchains("gcc")
-
 elseif is_plat("linux") then
     set_toolchains("gcc")
+elseif is_plat("macosx") then
+    set_toolchains("clang")
 end
 
 set_languages("c++20")
 
--- add_requires("eigen", {system = true})
-
-if is_mode("debug") then
-    set_targetdir("$(projectdir)/resource")
-else
-    if is_plat("mingw") then
-        set_targetdir("$(projectdir)/bin/mingw",{ bindir = "bin", libdir = "lib" })
-    elseif is_plat("windows") then
-        set_targetdir("$(projectdir)/bin/windows",{ bindir = "bin", libdir = "lib" })
-    elseif is_plat("linux") then
-        set_targetdir("$(projectdir)/bin/linux",{ bindir = "bin", libdir = "lib" })
-    end
+if is_plat("linux") then
+    add_requires("eigen", {system = true})
 end
 
-add_cxflags("-fPIC")
+if is_plat("windows") then
+    add_includedirs("vcpkg_installed/x64-windows/x64-windows/include")
+end
+
+if is_plat("mingw") then
+    set_targetdir("$(projectdir)/out/mingw",{ bindir = "bin", libdir = "lib" })
+elseif is_plat("windows") then
+    set_targetdir("$(projectdir)/out/windows",{ bindir = "bin", libdir = "lib" })
+elseif is_plat("linux") then
+    set_targetdir("$(projectdir)/out/linux",{ bindir = "bin", libdir = "lib" })
+elseif is_plat("macosx") then
+    set_targetdir("$(projectdir)/out/macosx",{ bindir = "bin", libdir = "lib" })
+end
+
+if is_plat("linux", "macosx", "mingw") then
+    add_cxflags("-fPIC")
+end
 
 includes("tests")
