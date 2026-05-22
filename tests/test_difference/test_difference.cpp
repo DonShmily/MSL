@@ -6,14 +6,12 @@
 
 
 using namespace msl;
-int test_difference()
-{
+int test_difference() {
     auto ori_data = utils::ReadData("KunmingSSJY.txt", 6, 3e4);
     auto data_1d =
         std::vector<double>(ori_data.begin(), ori_data.begin() + 3e4);
     matrix::matrixd ori_matrix(3e4, 6, std::span<const double>(ori_data));
-    try
-    {
+    try {
         // 1d differentiation
         auto diff_1d = difference::diff(data_1d);
         utils::WriteData(
@@ -71,9 +69,7 @@ int test_difference()
                          cent_grad_2d_col_vec2,
                          cent_grad_2d_col.second.cols(),
                          cent_grad_2d_col.second.rows());
-    }
-    catch (const std::exception &e)
-    {
+    } catch (const std::exception &e) {
         std::cerr << "Differentiation test failed: " << e.what() << std::endl;
         return -1;
     }

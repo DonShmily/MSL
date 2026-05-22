@@ -20,14 +20,12 @@
 #include <functional>
 #include <stdexcept>
 
-namespace msl::integral
-{
+namespace msl::integral {
 // ============================================================================
 // Adaptive Integration (Adaptive Simpson's)
 // ============================================================================
 
-namespace detail
-{
+namespace detail {
 inline double adaptive_simpson_recursive(const std::function<double(double)> &f,
                                          double a,
                                          double b,
@@ -37,10 +35,8 @@ inline double adaptive_simpson_recursive(const std::function<double(double)> &f,
                                          double S_ab,
                                          double tol,
                                          int max_depth,
-                                         int depth = 0)
-{
-    if (depth >= max_depth)
-    {
+                                         int depth = 0) {
+    if (depth >= max_depth) {
         return S_ab;
     }
 
@@ -58,8 +54,7 @@ inline double adaptive_simpson_recursive(const std::function<double(double)> &f,
     // Error estimate
     double error = (S_acb - S_ab) / 15.0;
 
-    if (std::abs(error) < tol)
-    {
+    if (std::abs(error) < tol) {
         return S_acb + error;
     }
 
@@ -85,26 +80,21 @@ inline double quad(const std::function<double(double)> &f,
                    double a,
                    double b,
                    double tol = 1e-8,
-                   int max_depth = 50)
-{
-    if (a >= b)
-    {
+                   int max_depth = 50) {
+    if (a >= b) {
         throw std::invalid_argument(
             "Quad: Lower limit must be less than upper limit.");
     }
 
-    if (tol <= 0)
-    {
+    if (tol <= 0) {
         throw std::invalid_argument("Quad: Tolerance must be positive.");
     }
 
-    if (max_depth <= 0)
-    {
+    if (max_depth <= 0) {
         throw std::invalid_argument("Quad: Max depth must be positive.");
     }
 
-    if (f == nullptr)
-    {
+    if (f == nullptr) {
         throw std::invalid_argument("Quad: Function cannot be null.");
     }
 

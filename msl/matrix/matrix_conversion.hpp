@@ -21,22 +21,18 @@
 #include "real_matrix_owned.hpp"
 #include "real_matrix_view.hpp"
 
-namespace msl::matrix
-{
+namespace msl::matrix {
 // - Function of real_matrix_owned
 // Construct from real_matrix_view (deep copy)
 inline real_matrix_owned::real_matrix_owned(const real_matrix_view &view)
-    : Base()
-{
+    : Base() {
     this->rows_ = view.rows();
     this->cols_ = view.cols();
     storage_.resize(view.size());
     update_span();
     // Manual copy required as view might not be contiguous column-major
-    for (size_t j = 0; j < view.cols(); ++j)
-    {
-        for (size_t i = 0; i < view.rows(); ++i)
-        {
+    for (size_t j = 0; j < view.cols(); ++j) {
+        for (size_t i = 0; i < view.rows(); ++i) {
             (*this)(i, j) = view(i, j);
         }
     }
@@ -44,15 +40,12 @@ inline real_matrix_owned::real_matrix_owned(const real_matrix_view &view)
 
 // Copy assignment from real_matrix_view (deep copy)
 inline real_matrix_owned &
-real_matrix_owned::operator=(const real_matrix_view &view)
-{
+real_matrix_owned::operator=(const real_matrix_view &view) {
     this->resize(view.rows(), view.cols());
     // Note: std::copy cannot be used directly if view is not contiguous
     // column-major. A manual loop is safer.
-    for (size_t j = 0; j < view.cols(); ++j)
-    {
-        for (size_t i = 0; i < view.rows(); ++i)
-        {
+    for (size_t j = 0; j < view.cols(); ++j) {
+        for (size_t i = 0; i < view.rows(); ++i) {
             (*this)(i, j) = view(i, j);
         }
     }
@@ -63,12 +56,10 @@ real_matrix_owned::operator=(const real_matrix_view &view)
 // - Function of real_matrix_view
 // Construct from real_matrix_owned (most common use case)
 inline real_matrix_view::real_matrix_view(real_matrix_owned &owner)
-    : Base(owner.rows(), owner.cols(), owner.data_span())
-{}
+    : Base(owner.rows(), owner.cols(), owner.data_span()) {}
 
 // Convert to owned matrix (deep copy)
-inline real_matrix_owned real_matrix_view::to_owned() const
-{
+inline real_matrix_owned real_matrix_view::to_owned() const {
     return real_matrix_owned(this->rows_, this->cols_, this->data_);
 }
 
@@ -76,11 +67,9 @@ inline real_matrix_owned real_matrix_view::to_owned() const
 // Construct from real_matrix_owned (most common use case)
 inline const_real_matrix_view::const_real_matrix_view(
     const real_matrix_owned &owner)
-    : data_(owner.data_span()), rows_(owner.rows()), cols_(owner.cols())
-{}
+    : data_(owner.data_span()), rows_(owner.rows()), cols_(owner.cols()) {}
 
-inline real_matrix_owned const_real_matrix_view::to_owned() const
-{
+inline real_matrix_owned const_real_matrix_view::to_owned() const {
     return real_matrix_owned(
         this->rows_, this->cols_, std::span<const double>(this->data_));
 }
@@ -89,16 +78,13 @@ inline real_matrix_owned const_real_matrix_view::to_owned() const
 // Construct from complex_matrix_view (deep copy)
 inline complex_matrix_owned::complex_matrix_owned(
     const complex_matrix_view &view)
-    : Base()
-{
+    : Base() {
     this->rows_ = view.rows();
     this->cols_ = view.cols();
     storage_.resize(view.size());
     // Manual copy required as view might not be contiguous column-major
-    for (size_t j = 0; j < view.cols(); ++j)
-    {
-        for (size_t i = 0; i < view.rows(); ++i)
-        {
+    for (size_t j = 0; j < view.cols(); ++j) {
+        for (size_t i = 0; i < view.rows(); ++i) {
             (*this)(i, j) = view(i, j);
         }
     }
@@ -107,15 +93,12 @@ inline complex_matrix_owned::complex_matrix_owned(
 
 // Copy assignment from complex_matrix_view (deep copy)
 inline complex_matrix_owned &
-complex_matrix_owned::operator=(const complex_matrix_view &view)
-{
+complex_matrix_owned::operator=(const complex_matrix_view &view) {
     this->resize(view.rows(), view.cols());
     // Note: std::copy cannot be used directly if view is not contiguous
     // column-major. A manual loop is safer.
-    for (size_t j = 0; j < view.cols(); ++j)
-    {
-        for (size_t i = 0; i < view.rows(); ++i)
-        {
+    for (size_t j = 0; j < view.cols(); ++j) {
+        for (size_t i = 0; i < view.rows(); ++i) {
             (*this)(i, j) = view(i, j);
         }
     }
@@ -126,12 +109,10 @@ complex_matrix_owned::operator=(const complex_matrix_view &view)
 // - Function of complex_matrix_view
 // Construct from complex_matrix_owned (most common use case)
 inline complex_matrix_view::complex_matrix_view(complex_matrix_owned &owner)
-    : Base(owner.rows(), owner.cols(), owner.data_span())
-{}
+    : Base(owner.rows(), owner.cols(), owner.data_span()) {}
 
 // Convert to owned matrix (deep copy)
-inline complex_matrix_owned complex_matrix_view::to_owned() const
-{
+inline complex_matrix_owned complex_matrix_view::to_owned() const {
     return complex_matrix_owned(this->rows_, this->cols_, this->data_);
 }
 
@@ -139,12 +120,10 @@ inline complex_matrix_owned complex_matrix_view::to_owned() const
 // Construct from complex_matrix_owned (most common use case)
 inline const_complex_matrix_view::const_complex_matrix_view(
     const complex_matrix_owned &owner)
-    : data_(owner.data_span()), rows_(owner.rows()), cols_(owner.cols())
-{}
+    : data_(owner.data_span()), rows_(owner.rows()), cols_(owner.cols()) {}
 
 // Convert to owned matrix
-inline complex_matrix_owned const_complex_matrix_view::to_owned() const
-{
+inline complex_matrix_owned const_complex_matrix_view::to_owned() const {
     return complex_matrix_owned(
         this->rows_,
         this->cols_,

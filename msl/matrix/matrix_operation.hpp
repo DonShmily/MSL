@@ -22,18 +22,14 @@
 #include "real_matrix_base.hpp"
 #include "real_matrix_owned.hpp"
 
-namespace msl::matrix
-{
+namespace msl::matrix {
 // - Matrix transpose
-inline real_matrix_owned transpose(const real_matrix_base &A)
-{
+inline real_matrix_owned transpose(const real_matrix_base &A) {
     size_t m = A.rows();
     size_t n = A.cols();
     real_matrix_owned At(n, m);
-    for (size_t i = 0; i < m; ++i)
-    {
-        for (size_t j = 0; j < n; ++j)
-        {
+    for (size_t i = 0; i < m; ++i) {
+        for (size_t j = 0; j < n; ++j) {
             At(j, i) = A(i, j);
         }
     }
@@ -41,15 +37,12 @@ inline real_matrix_owned transpose(const real_matrix_base &A)
 }
 
 // Matrix transpose
-inline complex_matrix_owned transpose(const complex_matrix_base &A)
-{
+inline complex_matrix_owned transpose(const complex_matrix_base &A) {
     size_t m = A.rows();
     size_t n = A.cols();
     complex_matrix_owned At(n, m);
-    for (size_t i = 0; i < m; ++i)
-    {
-        for (size_t j = 0; j < n; ++j)
-        {
+    for (size_t i = 0; i < m; ++i) {
+        for (size_t j = 0; j < n; ++j) {
             At(j, i) = A(i, j);
         }
     }
@@ -57,11 +50,9 @@ inline complex_matrix_owned transpose(const complex_matrix_base &A)
 }
 
 // Matrix conjugate transpose
-inline complex_matrix_owned conjugate_transpose(const complex_matrix_base &A)
-{
+inline complex_matrix_owned conjugate_transpose(const complex_matrix_base &A) {
     matrixc result = transpose(A);
-    for (auto &val : result)
-    {
+    for (auto &val : result) {
         val = std::conj(val);
     }
 
@@ -69,43 +60,35 @@ inline complex_matrix_owned conjugate_transpose(const complex_matrix_base &A)
 }
 
 // - Matrix trace
-inline double trace(const real_matrix_base &A)
-{
-    if (A.rows() != A.cols())
-    {
+inline double trace(const real_matrix_base &A) {
+    if (A.rows() != A.cols()) {
         throw std::invalid_argument("Trace requires a square matrix");
     }
 
     double tr = 0.0;
     size_t n = A.rows();
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         tr += A(i, i);
     }
     return tr;
 }
 
-inline std::complex<double> trace(const complex_matrix_base &A)
-{
-    if (A.rows() != A.cols())
-    {
+inline std::complex<double> trace(const complex_matrix_base &A) {
+    if (A.rows() != A.cols()) {
         throw std::invalid_argument("Trace requires a square matrix");
     }
 
     std::complex<double> tr = 0.0;
     size_t n = A.rows();
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         tr += A(i, i);
     }
     return tr;
 }
 
 // - Inverse of matrix
-inline real_matrix_owned inverse(const real_matrix_base &A)
-{
-    if (A.rows() != A.cols())
-    {
+inline real_matrix_owned inverse(const real_matrix_base &A) {
+    if (A.rows() != A.cols()) {
         throw std::invalid_argument("Inverse requires a square matrix");
     }
 
@@ -116,10 +99,8 @@ inline real_matrix_owned inverse(const real_matrix_base &A)
 }
 
 // Inverse of complex matrix
-inline complex_matrix_owned inverse(const complex_matrix_base &A)
-{
-    if (A.rows() != A.cols())
-    {
+inline complex_matrix_owned inverse(const complex_matrix_base &A) {
+    if (A.rows() != A.cols()) {
         throw std::invalid_argument("Inverse requires a square matrix");
     }
 
@@ -137,10 +118,8 @@ inline complex_matrix_owned inverse(const complex_matrix_base &A)
 }
 
 // - adjoint
-inline real_matrix_owned adjoint(const real_matrix_owned &A)
-{
-    if (A.rows() != A.cols())
-    {
+inline real_matrix_owned adjoint(const real_matrix_owned &A) {
+    if (A.rows() != A.cols()) {
         throw std::invalid_argument("Adjoint requires a square matrix");
     }
 
@@ -150,10 +129,8 @@ inline real_matrix_owned adjoint(const real_matrix_owned &A)
     return eigen_interface::from_eigen(eig_A_adj);
 }
 
-inline complex_matrix_owned adjoint(const complex_matrix_owned &A)
-{
-    if (A.rows() != A.cols())
-    {
+inline complex_matrix_owned adjoint(const complex_matrix_owned &A) {
+    if (A.rows() != A.cols()) {
         throw std::invalid_argument("Adjoint requires a square matrix");
     }
 
@@ -171,10 +148,8 @@ inline complex_matrix_owned adjoint(const complex_matrix_owned &A)
 }
 
 // - determinant
-inline double determinant(const real_matrix_base &A)
-{
-    if (A.rows() != A.cols())
-    {
+inline double determinant(const real_matrix_base &A) {
+    if (A.rows() != A.cols()) {
         throw std::invalid_argument("Determinant requires a square matrix");
     }
 
@@ -182,10 +157,8 @@ inline double determinant(const real_matrix_base &A)
     return eig_A.determinant();
 }
 
-inline std::complex<double> determinant(const complex_matrix_base &A)
-{
-    if (A.rows() != A.cols())
-    {
+inline std::complex<double> determinant(const complex_matrix_base &A) {
+    if (A.rows() != A.cols()) {
         throw std::invalid_argument("Determinant requires a square matrix");
     }
 

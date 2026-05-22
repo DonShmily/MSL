@@ -18,17 +18,14 @@
 
 #include "interp_1d_base.hpp"
 
-namespace msl::interp
-{
+namespace msl::interp {
 /**
  * @brief Interpolation using near neighbor (piecewise constant)
  */
-class Near : public InterpolatorBase
-{
+class Near : public InterpolatorBase {
 public:
     // Type of near neighbor selection
-    enum class NearType
-    {
+    enum class NearType {
         Previous, // Use previous neighbor (floor)
         Next,     // Use next neighbor (ceil)
         Nearest   // Use nearest neighbor (round)
@@ -38,8 +35,7 @@ public:
 
     Near(std::span<const double> x,
          std::span<const double> y,
-         NearType type = NearType::Nearest)
-    {
+         NearType type = NearType::Nearest) {
         set_data(x, y);
         near_type_ = type;
     }
@@ -50,8 +46,8 @@ public:
      * @param x Independent variable samples (strictly increasing)
      * @param y Dependent variable samples
      */
-    void set_data(std::span<const double> x, std::span<const double> y) override
-    {
+    void set_data(std::span<const double> x,
+                  std::span<const double> y) override {
         x_.assign(x.begin(), x.end());
         y_.assign(y.begin(), y.end());
         validate_input();
@@ -71,22 +67,17 @@ public:
      * @param x Query point
      * @return Interpolated value at @p x
      */
-    double interpolate(double x) const override
-    {
+    double interpolate(double x) const override {
         size_t i = find_interval(x);
-        switch (near_type_)
-        {
+        switch (near_type_) {
             case NearType::Previous:
                 return y_[i];
             case NearType::Next:
                 return y_[i + 1];
             case NearType::Nearest:
-                if (x - x_[i] < x_[i + 1] - x)
-                {
+                if (x - x_[i] < x_[i + 1] - x) {
                     return y_[i];
-                }
-                else
-                {
+                } else {
                     return y_[i + 1];
                 }
         }
@@ -108,10 +99,8 @@ private:
 inline void interp1_near(std::span<const double> x,
                          std::span<const double> y,
                          std::span<const double> x_new,
-                         std::span<double> result)
-{
-    if (x_new.size() != result.size())
-    {
+                         std::span<double> result) {
+    if (x_new.size() != result.size()) {
         throw std::invalid_argument(
             "interp1_near: x_new and result spans must have same size");
     }
@@ -130,8 +119,7 @@ inline void interp1_near(std::span<const double> x,
  */
 inline std::vector<double> interp1_near(std::span<const double> x,
                                         std::span<const double> y,
-                                        std::span<const double> x_new)
-{
+                                        std::span<const double> x_new) {
     return Near(x, y)(x_new);
 }
 

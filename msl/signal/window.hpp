@@ -24,8 +24,7 @@
 
 #include "matrix/real_matrix_owned.hpp"
 
-namespace msl::signal
-{
+namespace msl::signal {
 // ========================================================================
 // 1. Generate window functions
 // ========================================================================
@@ -35,24 +34,19 @@ namespace msl::signal
  * @param window Output coefficient buffer.
  * @param n Window length.
  */
-inline void hamming_window(std::span<double> window, size_t n)
-{
-    if (window.size() != n)
-    {
+inline void hamming_window(std::span<double> window, size_t n) {
+    if (window.size() != n) {
         throw std::invalid_argument(
             "Hamming window: output buffer size must be equal to n");
     }
-    if (n <= 1)
-    {
-        if (n == 1)
-        {
+    if (n <= 1) {
+        if (n == 1) {
             window[0] = 1.0;
         }
         return;
     }
 
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         window[i] =
             0.54 - 0.46 * std::cos(2.0 * std::numbers::pi * i / (n - 1));
     }
@@ -64,8 +58,7 @@ inline void hamming_window(std::span<double> window, size_t n)
  * @param n Window length.
  * @return Hamming window coefficients.
  */
-inline std::vector<double> hamming_window(size_t n)
-{
+inline std::vector<double> hamming_window(size_t n) {
     std::vector<double> window(n);
     hamming_window(window, n);
     return window;
@@ -77,24 +70,19 @@ inline std::vector<double> hamming_window(size_t n)
  * @param window Output coefficient buffer.
  * @param n Window length.
  */
-inline void hann_window(std::span<double> window, size_t n)
-{
-    if (window.size() != n)
-    {
+inline void hann_window(std::span<double> window, size_t n) {
+    if (window.size() != n) {
         throw std::invalid_argument(
             "Hann window: output buffer size must be equal to n");
     }
-    if (n <= 1)
-    {
-        if (n == 1)
-        {
+    if (n <= 1) {
+        if (n == 1) {
             window[0] = 1.0;
         }
         return;
     }
 
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         window[i] =
             0.5 * (1.0 - std::cos(2.0 * std::numbers::pi * i / (n - 1)));
     }
@@ -106,8 +94,7 @@ inline void hann_window(std::span<double> window, size_t n)
  * @param n Window length.
  * @return Hann window coefficients.
  */
-inline std::vector<double> hann_window(size_t n)
-{
+inline std::vector<double> hann_window(size_t n) {
     std::vector<double> window(n);
     hann_window(window, n);
     return window;
@@ -119,24 +106,19 @@ inline std::vector<double> hann_window(size_t n)
  * @param window Output coefficient buffer.
  * @param n Window length.
  */
-inline void blackman_window(std::span<double> window, size_t n)
-{
-    if (window.size() != n)
-    {
+inline void blackman_window(std::span<double> window, size_t n) {
+    if (window.size() != n) {
         throw std::invalid_argument(
             "Blackman window: output buffer size must be equal to n");
     }
-    if (n <= 1)
-    {
-        if (n == 1)
-        {
+    if (n <= 1) {
+        if (n == 1) {
             window[0] = 1.0;
         }
         return;
     }
 
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         window[i] = 0.42 - 0.5 * std::cos(2.0 * std::numbers::pi * i / (n - 1))
                     + 0.08 * std::cos(4.0 * std::numbers::pi * i / (n - 1));
     }
@@ -148,8 +130,7 @@ inline void blackman_window(std::span<double> window, size_t n)
  * @param n Window length.
  * @return Blackman window coefficients.
  */
-inline std::vector<double> blackman_window(size_t n)
-{
+inline std::vector<double> blackman_window(size_t n) {
     std::vector<double> window(n);
     blackman_window(window, n);
     return window;
@@ -161,15 +142,12 @@ inline std::vector<double> blackman_window(size_t n)
  * @param window Output coefficient buffer.
  * @param n Window length.
  */
-inline void rectangular_window(std::span<double> window, size_t n)
-{
-    if (window.size() != n)
-    {
+inline void rectangular_window(std::span<double> window, size_t n) {
+    if (window.size() != n) {
         throw std::invalid_argument(
             "Rectangular window: output buffer size must be equal to n");
     }
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         window[i] = 1.0;
     }
 }
@@ -180,8 +158,7 @@ inline void rectangular_window(std::span<double> window, size_t n)
  * @param n Window length.
  * @return Rectangular window coefficients.
  */
-inline std::vector<double> rectangular_window(size_t n)
-{
+inline std::vector<double> rectangular_window(size_t n) {
     std::vector<double> window(n);
     rectangular_window(window, n);
     return window;
@@ -197,16 +174,13 @@ inline std::vector<double> rectangular_window(size_t n)
  * @param window Window coefficients, same length as signal.
  */
 inline void apply_window(std::span<double> signal,
-                         std::span<const double> window)
-{
-    if (signal.size() != window.size())
-    {
+                         std::span<const double> window) {
+    if (signal.size() != window.size()) {
         throw std::invalid_argument(
             "Apply window: signal and window must have the same length");
     }
 
-    for (size_t i = 0; i < signal.size(); ++i)
-    {
+    for (size_t i = 0; i < signal.size(); ++i) {
         signal[i] *= window[i];
     }
 }
@@ -220,16 +194,13 @@ inline void apply_window(std::span<double> signal,
  */
 inline void apply_window(std::span<const double> input,
                          std::span<double> output,
-                         std::span<const double> window)
-{
-    if (input.size() != output.size() || input.size() != window.size())
-    {
-        throw std::invalid_argument(
-            "Apply window: input, output, and window must have the same length");
+                         std::span<const double> window) {
+    if (input.size() != output.size() || input.size() != window.size()) {
+        throw std::invalid_argument("Apply window: input, output, and window "
+                                    "must have the same length");
     }
 
-    for (size_t i = 0; i < input.size(); ++i)
-    {
+    for (size_t i = 0; i < input.size(); ++i) {
         output[i] = input[i] * window[i];
     }
 }
@@ -246,23 +217,19 @@ inline void apply_window(std::span<const double> input,
  */
 inline matrix::matrixd
 apply_window_columns(const matrix::real_matrix_base &input,
-                     std::span<const double> window)
-{
+                     std::span<const double> window) {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
-    if (n_rows != window.size())
-    {
+    if (n_rows != window.size()) {
         throw std::invalid_argument(
             "Apply window: number of rows in input must match window length");
     }
 
     matrix::matrixd output(n_rows, n_cols);
 
-    for (size_t j = 0; j < n_cols; ++j)
-    {
-        for (size_t i = 0; i < n_rows; ++i)
-        {
+    for (size_t j = 0; j < n_cols; ++j) {
+        for (size_t i = 0; i < n_rows; ++i) {
             output(i, j) = input(i, j) * window[i];
         }
     }

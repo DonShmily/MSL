@@ -27,8 +27,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace msl::signal
-{
+namespace msl::signal {
 /**
  * @brief Butterworth filter designer
  *
@@ -38,8 +37,7 @@ namespace msl::signal
  * The digital filter is designed using bilinear transformation from analog
  * prototype.
  */
-class ButterworthFilter
-{
+class ButterworthFilter {
 private:
     int order_ = 0;
     double fc_low_ =
@@ -68,20 +66,14 @@ public:
     ButterworthFilter(int order,
                       double fc,
                       FilterType type = FilterType::lowpass)
-        : order_(order), type_(type)
-    {
-        if (type == FilterType::lowpass)
-        {
+        : order_(order), type_(type) {
+        if (type == FilterType::lowpass) {
             fc_low_ = fc;
             fc_high_ = 0.0;
-        }
-        else if (type == FilterType::highpass)
-        {
+        } else if (type == FilterType::highpass) {
             fc_low_ = 0.0;
             fc_high_ = fc;
-        }
-        else
-        {
+        } else {
             throw std::invalid_argument(
                 "Butterworth: single frequency constructor only for "
                 "lowpass/highpass");
@@ -104,10 +96,8 @@ public:
                       double fc_low,
                       double fc_high,
                       FilterType type = FilterType::bandpass)
-        : order_(order), fc_low_(fc_low), fc_high_(fc_high), type_(type)
-    {
-        if (type != FilterType::bandpass && type != FilterType::bandstop)
-        {
+        : order_(order), fc_low_(fc_low), fc_high_(fc_high), type_(type) {
+        if (type != FilterType::bandpass && type != FilterType::bandstop) {
             throw std::invalid_argument(
                 "Butterworth: two-frequency constructor only for "
                 "bandpass/bandstop");
@@ -121,8 +111,7 @@ public:
      * @return FilterCoefficients struct containing numerator (b) and
      * denominator (a) coefficients
      */
-    [[nodiscard]] const FilterCoefficients &coefficients() const
-    {
+    [[nodiscard]] const FilterCoefficients &coefficients() const {
         return coeffs_;
     }
 
@@ -157,10 +146,8 @@ public:
      * frequency)
      * @param type Filter type (lowpass or highpass)
      */
-    void redesign(int order, double fc, FilterType type = FilterType::lowpass)
-    {
-        if (type != FilterType::lowpass && type != FilterType::highpass)
-        {
+    void redesign(int order, double fc, FilterType type = FilterType::lowpass) {
+        if (type != FilterType::lowpass && type != FilterType::highpass) {
             throw std::invalid_argument(
                 "Butterworth: single frequency redesign only for "
                 "lowpass/highpass");
@@ -169,12 +156,10 @@ public:
         order_ = order;
         type_ = type;
 
-        if (type == FilterType::lowpass)
-        {
+        if (type == FilterType::lowpass) {
             fc_low_ = fc;
             fc_high_ = 0.0;
-        }
-        else // highpass
+        } else // highpass
         {
             fc_low_ = 0.0;
             fc_high_ = fc;
@@ -194,10 +179,8 @@ public:
     void redesign(int order,
                   double fc_low,
                   double fc_high,
-                  FilterType type = FilterType::bandpass)
-    {
-        if (type != FilterType::bandpass && type != FilterType::bandstop)
-        {
+                  FilterType type = FilterType::bandpass) {
+        if (type != FilterType::bandpass && type != FilterType::bandstop) {
             throw std::invalid_argument(
                 "Butterworth: two-frequency redesign only for "
                 "bandpass/bandstop");
@@ -213,27 +196,22 @@ public:
 
 private:
     // Validate parameters according to filter type.
-    void validate_parameters() const
-    {
-        if (order_ <= 0)
-        {
+    void validate_parameters() const {
+        if (order_ <= 0) {
             throw std::invalid_argument(
                 "Butterworth: filter order must be positive");
         }
 
-        switch (type_)
-        {
+        switch (type_) {
             case FilterType::lowpass:
-                if (fc_low_ <= 0.0 || fc_low_ >= 1.0)
-                {
+                if (fc_low_ <= 0.0 || fc_low_ >= 1.0) {
                     throw std::invalid_argument(
                         "Butterworth: lowpass cutoff must satisfy 0 < fc < 1");
                 }
                 break;
 
             case FilterType::highpass:
-                if (fc_high_ <= 0.0 || fc_high_ >= 1.0)
-                {
+                if (fc_high_ <= 0.0 || fc_high_ >= 1.0) {
                     throw std::invalid_argument(
                         "Butterworth: highpass cutoff must satisfy 0 < fc < 1");
                 }
@@ -241,18 +219,15 @@ private:
 
             case FilterType::bandpass:
             case FilterType::bandstop:
-                if (fc_low_ <= 0.0 || fc_low_ >= 1.0)
-                {
+                if (fc_low_ <= 0.0 || fc_low_ >= 1.0) {
                     throw std::invalid_argument(
                         "Butterworth: low cutoff must satisfy 0 < fc_low < 1");
                 }
-                if (fc_high_ <= 0.0 || fc_high_ >= 1.0)
-                {
+                if (fc_high_ <= 0.0 || fc_high_ >= 1.0) {
                     throw std::invalid_argument("Butterworth: high cutoff must "
                                                 "satisfy 0 < fc_high < 1");
                 }
-                if (fc_low_ >= fc_high_)
-                {
+                if (fc_low_ >= fc_high_) {
                     throw std::invalid_argument(
                         "Butterworth: fc_low must be less than fc_high");
                 }
@@ -267,16 +242,12 @@ private:
     /**
      * @brief Design the filter
      */
-    void design()
-    {
+    void design() {
         validate_parameters();
 
-        if (type_ == FilterType::bandpass || type_ == FilterType::bandstop)
-        {
+        if (type_ == FilterType::bandpass || type_ == FilterType::bandstop) {
             design_bandpass_bandstop();
-        }
-        else
-        {
+        } else {
             design_lowpass_highpass();
         }
     }
@@ -284,8 +255,7 @@ private:
     /**
      * @brief Design lowpass or highpass filter
      */
-    void design_lowpass_highpass()
-    {
+    void design_lowpass_highpass() {
         const double fc = (type_ == FilterType::lowpass) ? fc_low_ : fc_high_;
 
         // Pre-warp cutoff frequency (T = 1 assumed)
@@ -300,8 +270,7 @@ private:
         std::vector<std::complex<double>> digital_poles;
         digital_poles.reserve(order_);
 
-        for (const auto &p : analog_poles)
-        {
+        for (const auto &p : analog_poles) {
             std::complex<double> s = p * wc; // analog pole scaled
             std::complex<double> pz =
                 (2.0 + s) / (2.0 - s); // <-- 修正: T=1 mapping
@@ -314,12 +283,10 @@ private:
 
         // Numerator: for lowpass the digital numerator corresponds to (1 +
         // z^{-1})^N (binomial)
-        if (type_ == FilterType::lowpass)
-        {
+        if (type_ == FilterType::lowpass) {
             coeffs_.b = compute_lowpass_numerator(); // returns coefficients in
                                                      // z^{-k} order (C(N,k))
-        }
-        else // highpass
+        } else                                       // highpass
         {
             coeffs_.b = compute_highpass_numerator(); // also z^{-k} order
         }
@@ -334,8 +301,7 @@ private:
     /**
      * @brief Design bandpass or bandstop filter
      */
-    void design_bandpass_bandstop()
-    {
+    void design_bandpass_bandstop() {
         // Pre-warp digital cutoff freqs (T = 1)
         const double wc1 = 2.0 * std::tan(std::numbers::pi * fc_low_ / 2.0);
         const double wc2 = 2.0 * std::tan(std::numbers::pi * fc_high_ / 2.0);
@@ -350,8 +316,7 @@ private:
         std::vector<std::complex<double>> bp_poles;
         bp_poles.reserve(2 * order_);
 
-        for (const auto &p : lp_poles)
-        {
+        for (const auto &p : lp_poles) {
             // alpha = (bw/2) * p
             std::complex<double> alpha = (bw / 2.0) * p;
             // beta = sqrt(alpha^2 - w0^2)
@@ -368,8 +333,7 @@ private:
         // s)
         std::vector<std::complex<double>> digital_poles;
         digital_poles.reserve(bp_poles.size());
-        for (const auto &s : bp_poles)
-        {
+        for (const auto &s : bp_poles) {
             std::complex<double> z = (2.0 + s) / (2.0 - s);
             digital_poles.push_back(z);
         }
@@ -382,8 +346,7 @@ private:
         const int M = 2 * order_;
         coeffs_.b.assign(M + 1, 0.0);
 
-        if (type_ == FilterType::bandpass)
-        {
+        if (type_ == FilterType::bandpass) {
             // Bandpass: zeros at s=0 and s=∞ map to z=1 and z=-1
             // Digital numerator has factor (1 - z^{-2})^N
             // (1 - t^2)^N = sum_{m=0..N} C(N,m) * (-1)^m * t^{2m}
@@ -394,8 +357,7 @@ private:
                 return r;
             };
 
-            for (int m = 0; m <= order_; ++m)
-            {
+            for (int m = 0; m <= order_; ++m) {
                 double c = binom(order_, m)
                            * ((m % 2 == 0) ? 1.0 : -1.0); // (-1)^m * C(N,m)
                 coeffs_.b[2 * m] = c;
@@ -404,8 +366,7 @@ private:
             // Normalize gain at center frequency
             const double fc_center = 0.5 * (fc_low_ + fc_high_);
             normalize_gain(fc_center);
-        }
-        else // FilterType::bandstop
+        } else // FilterType::bandstop
         {
             // Bandstop: zeros at s=±jw0 map to complex conjugate pairs on unit
             // circle For each analog zero at ±jw0, we get digital zeros at
@@ -425,11 +386,9 @@ private:
             // Multiply by (1 - 2cos(ω0)z^{-1} + z^{-2}) N times
             const double two_cos_omega0 = 2.0 * std::cos(omega0);
 
-            for (int i = 0; i < order_; ++i)
-            {
+            for (int i = 0; i < order_; ++i) {
                 std::vector<double> next(poly.size() + 2, 0.0);
-                for (size_t k = 0; k < poly.size(); ++k)
-                {
+                for (size_t k = 0; k < poly.size(); ++k) {
                     next[k] += poly[k]; // 1 * old_coeff
                     next[k + 1] -=
                         two_cos_omega0 * poly[k]; // -2cos(ω0) * old_coeff
@@ -452,13 +411,11 @@ private:
      *
      * @return poles of normalized lowpass Butterworth filter (cutoff = 1s^(-1))
      */
-    std::vector<std::complex<double>> get_analog_poles() const
-    {
+    std::vector<std::complex<double>> get_analog_poles() const {
         std::vector<std::complex<double>> poles;
         poles.reserve(order_);
 
-        for (int k = 0; k < order_; ++k)
-        {
+        for (int k = 0; k < order_; ++k) {
             // Pole angle: (2k + 1)π / (2N) + π/2
             double angle = std::numbers::pi * (2.0 * k + 1.0) / (2.0 * order_)
                            + std::numbers::pi / 2.0;
@@ -478,20 +435,17 @@ private:
      * @return Coefficients [a0, a1, ..., aN]
      */
     std::vector<double>
-    poles_to_polynomial(const std::vector<std::complex<double>> &poles) const
-    {
+    poles_to_polynomial(const std::vector<std::complex<double>> &poles) const {
         // We compute polynomial in z^{-1} form:
         //   A(z) = ∏ (1 - p_i z^{-1}) = a0 + a1 z^{-1} + ... + aN z^{-N}
         // Start with poly = [1]
         std::vector<std::complex<double>> poly(1);
         poly[0] = std::complex<double>(1.0, 0.0);
 
-        for (const auto &p : poles)
-        {
+        for (const auto &p : poles) {
             std::vector<std::complex<double>> next(
                 poly.size() + 1, std::complex<double>(0.0, 0.0));
-            for (size_t k = 0; k < poly.size(); ++k)
-            {
+            for (size_t k = 0; k < poly.size(); ++k) {
                 // multiply existing terms by 1 (coefficient for z^0) -> shift 0
                 next[k] += poly[k];
                 // multiply existing terms by (-p) and shift by one power
@@ -523,14 +477,12 @@ private:
      *
      * @return Coefficients for (1 + z^{-1})^N expansion (binomial coefficients)
      */
-    std::vector<double> compute_lowpass_numerator() const
-    {
+    std::vector<double> compute_lowpass_numerator() const {
         std::vector<double> b(order_ + 1);
 
         // Binomial coefficients
         b[0] = 1.0;
-        for (int i = 1; i <= order_; ++i)
-        {
+        for (int i = 1; i <= order_; ++i) {
             b[i] = b[i - 1] * (order_ - i + 1) / i;
         }
 
@@ -543,15 +495,12 @@ private:
      * @return Coefficients for (1 - z^{-1})^N expansion (binomial coefficients
      * with alternating signs)
      */
-    std::vector<double> compute_highpass_numerator() const
-    {
+    std::vector<double> compute_highpass_numerator() const {
         auto b = compute_lowpass_numerator();
 
         // Alternate signs for highpass
-        for (int i = 0; i <= order_; ++i)
-        {
-            if (i % 2 == 1)
-            {
+        for (int i = 0; i <= order_; ++i) {
+            if (i % 2 == 1) {
                 b[i] = -b[i];
             }
         }
@@ -564,8 +513,7 @@ private:
      *
      * @param f Normalized frequency (0 to 1, where 1 corresponds to Nyquist)
      */
-    void normalize_gain(double f)
-    {
+    void normalize_gain(double f) {
         // Evaluate H(e^{jω}) at frequency f where f in [0,1], 1 => Nyquist => ω
         // = π
         const std::complex<double> j(0.0, 1.0);
@@ -577,15 +525,13 @@ private:
         std::complex<double> num(0.0, 0.0), den(0.0, 0.0);
 
         std::complex<double> zpow(1.0, 0.0); // z^0 = 1
-        for (size_t k = 0; k < coeffs_.b.size(); ++k)
-        {
+        for (size_t k = 0; k < coeffs_.b.size(); ++k) {
             num += coeffs_.b[k] * zpow;
             zpow *= inv_z;
         }
 
         zpow = std::complex<double>(1.0, 0.0);
-        for (size_t k = 0; k < coeffs_.a.size(); ++k)
-        {
+        for (size_t k = 0; k < coeffs_.a.size(); ++k) {
             den += coeffs_.a[k] * zpow;
             zpow *= inv_z;
         }
@@ -610,8 +556,7 @@ private:
  * @param fc Cutoff frequency (normalized, 0 < fc < 1)
  * @return Filter coefficients
  */
-inline FilterCoefficients butterworth_lowpass_design(int order, double fc)
-{
+inline FilterCoefficients butterworth_lowpass_design(int order, double fc) {
     return ButterworthFilter(order, fc, FilterType::lowpass).coefficients();
 }
 
@@ -622,8 +567,7 @@ inline FilterCoefficients butterworth_lowpass_design(int order, double fc)
  * @param fc Cutoff frequency (normalized, 0 < fc < 1)
  * @return Filter coefficients
  */
-inline FilterCoefficients butterworth_highpass_design(int order, double fc)
-{
+inline FilterCoefficients butterworth_highpass_design(int order, double fc) {
     return ButterworthFilter(order, fc, FilterType::highpass).coefficients();
 }
 
@@ -636,8 +580,7 @@ inline FilterCoefficients butterworth_highpass_design(int order, double fc)
  * @return Filter coefficients
  */
 inline FilterCoefficients
-butterworth_bandpass_design(int order, double fc_low, double fc_high)
-{
+butterworth_bandpass_design(int order, double fc_low, double fc_high) {
     return ButterworthFilter(order, fc_low, fc_high, FilterType::bandpass)
         .coefficients();
 }
@@ -651,8 +594,7 @@ butterworth_bandpass_design(int order, double fc_low, double fc_high)
  * @return Filter coefficients
  */
 inline FilterCoefficients
-butterworth_bandstop_design(int order, double fc_low, double fc_high)
-{
+butterworth_bandstop_design(int order, double fc_low, double fc_high) {
     return ButterworthFilter(order, fc_low, fc_high, FilterType::bandstop)
         .coefficients();
 }
@@ -673,8 +615,7 @@ butterworth_bandstop_design(int order, double fc_low, double fc_high)
 inline std::vector<double> butterworth_lowpass(std::span<const double> signal,
                                                int order,
                                                double fc,
-                                               bool zero_phase = true)
-{
+                                               bool zero_phase = true) {
     auto coeffs = butterworth_lowpass_design(order, fc);
     return zero_phase ? filtfilt(signal, coeffs) : filter(signal, coeffs);
 }
@@ -692,10 +633,8 @@ inline void butterworth_lowpass(std::span<const double> signal,
                                 std::span<double> result,
                                 int order,
                                 double fc,
-                                bool zero_phase = true)
-{
-    if (result.size() != signal.size())
-    {
+                                bool zero_phase = true) {
+    if (result.size() != signal.size()) {
         throw std::invalid_argument(
             "Butterworth: result span must have the same size as input signal");
     }
@@ -713,8 +652,7 @@ inline void butterworth_lowpass(std::span<const double> signal,
 inline std::vector<double> butterworth_highpass(std::span<const double> signal,
                                                 int order,
                                                 double fc,
-                                                bool zero_phase = true)
-{
+                                                bool zero_phase = true) {
     auto coeffs = butterworth_highpass_design(order, fc);
     return zero_phase ? filtfilt(signal, coeffs) : filter(signal, coeffs);
 }
@@ -732,10 +670,8 @@ inline void butterworth_highpass(std::span<const double> signal,
                                  std::span<double> result,
                                  int order,
                                  double fc,
-                                 bool zero_phase = true)
-{
-    if (result.size() != signal.size())
-    {
+                                 bool zero_phase = true) {
+    if (result.size() != signal.size()) {
         throw std::invalid_argument(
             "Butterworth: result span must have the same size as input signal");
     }
@@ -754,8 +690,7 @@ inline std::vector<double> butterworth_bandpass(std::span<const double> signal,
                                                 int order,
                                                 double fc_low,
                                                 double fc_high,
-                                                bool zero_phase = true)
-{
+                                                bool zero_phase = true) {
     auto coeffs = butterworth_bandpass_design(order, fc_low, fc_high);
     return zero_phase ? filtfilt(signal, coeffs) : filter(signal, coeffs);
 }
@@ -776,10 +711,8 @@ inline void butterworth_bandpass(std::span<const double> signal,
                                  int order,
                                  double fc_low,
                                  double fc_high,
-                                 bool zero_phase = true)
-{
-    if (result.size() != signal.size())
-    {
+                                 bool zero_phase = true) {
+    if (result.size() != signal.size()) {
         throw std::invalid_argument(
             "Butterworth: result span must have the same size as input signal");
     }
@@ -798,8 +731,7 @@ inline std::vector<double> butterworth_bandstop(std::span<const double> signal,
                                                 int order,
                                                 double fc_low,
                                                 double fc_high,
-                                                bool zero_phase = true)
-{
+                                                bool zero_phase = true) {
     auto coeffs = butterworth_bandstop_design(order, fc_low, fc_high);
     return zero_phase ? filtfilt(signal, coeffs) : filter(signal, coeffs);
 }
@@ -820,10 +752,8 @@ inline void butterworth_bandstop(std::span<const double> signal,
                                  int order,
                                  double fc_low,
                                  double fc_high,
-                                 bool zero_phase = true)
-{
-    if (result.size() != signal.size())
-    {
+                                 bool zero_phase = true) {
+    if (result.size() != signal.size()) {
         throw std::invalid_argument(
             "Butterworth: result span must have the same size as input signal");
     }

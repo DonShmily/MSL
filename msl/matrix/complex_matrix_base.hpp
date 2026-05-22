@@ -21,10 +21,8 @@
 #include <span>
 #include <utility>
 
-namespace msl::matrix
-{
-class complex_matrix_base
-{
+namespace msl::matrix {
+class complex_matrix_base {
 protected:
     std::span<std::complex<double>> data_; // Unified data access through span
     size_t rows_{0};
@@ -36,8 +34,7 @@ public:
     complex_matrix_base(size_t rows,
                         size_t cols,
                         std::span<std::complex<double>> data)
-        : data_(data), rows_(rows), cols_(cols)
-    {
+        : data_(data), rows_(rows), cols_(cols) {
         assert(data_.size() == rows * cols);
     }
 
@@ -50,61 +47,52 @@ public:
     [[nodiscard]] size_t rows() const noexcept { return rows_; }
     [[nodiscard]] size_t cols() const noexcept { return cols_; }
     [[nodiscard]] size_t size() const noexcept { return rows_ * cols_; }
-    [[nodiscard]] std::pair<size_t, size_t> shape() const noexcept
-    {
+    [[nodiscard]] std::pair<size_t, size_t> shape() const noexcept {
         return {rows_, cols_};
     }
     [[nodiscard]] bool empty() const noexcept { return size() == 0; }
 
     // --- Element access (CRTP: no virtual function overhead) ---
-    [[nodiscard]] std::complex<double> &operator()(size_t i, size_t j) noexcept
-    {
+    [[nodiscard]] std::complex<double> &operator()(size_t i,
+                                                   size_t j) noexcept {
         return data_[j * rows_ + i]; // Column-major order
     }
 
     [[nodiscard]] const std::complex<double> &
-    operator()(size_t i, size_t j) const noexcept
-    {
+    operator()(size_t i, size_t j) const noexcept {
         return data_[j * rows_ + i];
     }
 
     // Linear indexing (useful for iteration)
-    [[nodiscard]] std::complex<double> &operator[](size_t idx) noexcept
-    {
+    [[nodiscard]] std::complex<double> &operator[](size_t idx) noexcept {
         return data_[idx];
     }
 
     [[nodiscard]] const std::complex<double> &
-    operator[](size_t idx) const noexcept
-    {
+    operator[](size_t idx) const noexcept {
         return data_[idx];
     }
 
     // --- Column access (efficient in column-major layout) ---
-    [[nodiscard]] std::span<std::complex<double>> column(size_t j) noexcept
-    {
+    [[nodiscard]] std::span<std::complex<double>> column(size_t j) noexcept {
         return {data_.data() + j * rows_, rows_};
     }
 
     [[nodiscard]] std::span<const std::complex<double>>
-    column(size_t j) const noexcept
-    {
+    column(size_t j) const noexcept {
         return {data_.data() + j * rows_, rows_};
     }
 
     // --- Data access ---
     [[nodiscard]] std::complex<double> *data() noexcept { return data_.data(); }
-    [[nodiscard]] const std::complex<double> *data() const noexcept
-    {
+    [[nodiscard]] const std::complex<double> *data() const noexcept {
         return data_.data();
     }
-    [[nodiscard]] std::span<std::complex<double>> data_span() noexcept
-    {
+    [[nodiscard]] std::span<std::complex<double>> data_span() noexcept {
         return data_;
     }
     [[nodiscard]] std::span<const std::complex<double>>
-    data_span() const noexcept
-    {
+    data_span() const noexcept {
         return data_;
     }
 
@@ -118,30 +106,24 @@ public:
 
     // --- Apply function to each element ---
     template <typename Func>
-    void apply(Func &&func)
-    {
-        for (auto &val : data_)
-        {
+    void apply(Func &&func) {
+        for (auto &val : data_) {
             val = func(val);
         }
     }
 
-    [[nodiscard]] inline std::complex<double> sum()
-    {
+    [[nodiscard]] inline std::complex<double> sum() {
         std::complex<double> total = 0.0;
-        for (const auto &val : data_)
-        {
+        for (const auto &val : data_) {
             total += val;
         }
         return total;
     }
 
-    [[nodiscard]] inline std::complex<double> trace()
-    {
+    [[nodiscard]] inline std::complex<double> trace() {
         assert(rows_ == cols_);
         std::complex<double> tr = 0.0;
-        for (size_t i = 0; i < rows_; ++i)
-        {
+        for (size_t i = 0; i < rows_; ++i) {
             tr += (*this)(i, i);
         }
         return tr;
@@ -149,8 +131,7 @@ public:
 
 protected:
     // Helper for checking consistency
-    [[nodiscard]] bool is_consistent() const noexcept
-    {
+    [[nodiscard]] bool is_consistent() const noexcept {
         return data_.size() == rows_ * cols_;
     }
 };

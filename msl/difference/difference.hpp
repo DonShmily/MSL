@@ -23,8 +23,7 @@
 #include "matrix/real_matrix_base.hpp"
 #include "matrix/real_matrix_owned.hpp"
 
-namespace msl::difference
-{
+namespace msl::difference {
 
 // ============================================================================
 // Difference (First-order)
@@ -39,20 +38,16 @@ namespace msl::difference
  * @param y Input values
  * @param result Output buffer for differences (must have size n-1)
  */
-inline void diff(std::span<const double> y, std::span<double> result)
-{
-    if (y.size() < 2)
-    {
+inline void diff(std::span<const double> y, std::span<double> result) {
+    if (y.size() < 2) {
         throw std::invalid_argument("Diff: need at least 2 points for diff");
     }
 
-    if (result.size() != y.size() - 1)
-    {
+    if (result.size() != y.size() - 1) {
         throw std::invalid_argument("Diff: result span must have size n-1");
     }
 
-    for (size_t i = 0; i < result.size(); ++i)
-    {
+    for (size_t i = 0; i < result.size(); ++i) {
         result[i] = y[i + 1] - y[i];
     }
 }
@@ -66,8 +61,7 @@ inline void diff(std::span<const double> y, std::span<double> result)
  * @param y Input values (can be vector, array, or span)
  * @return Vector of differences (size n-1)
  */
-inline std::vector<double> diff(std::span<const double> y)
-{
+inline std::vector<double> diff(std::span<const double> y) {
     std::vector<double> result(y.size() - 1);
 
     diff(y, result);
@@ -82,48 +76,36 @@ inline std::vector<double> diff(std::span<const double> y)
  * @param axis 0 = row-wise (vertical diff), 1 = column-wise (horizontal diff)
  * @return Difference matrix
  */
-inline matrix::matrixd diff(const matrix::real_matrix_base &mat, int axis = 0)
-{
-    if (axis == 0)
-    {
+inline matrix::matrixd diff(const matrix::real_matrix_base &mat, int axis = 0) {
+    if (axis == 0) {
         // Row-wise: diff along rows (vertical)
-        if (mat.rows() < 2)
-        {
+        if (mat.rows() < 2) {
             throw std::invalid_argument(
                 "Diff: need at least 2 rows for row-wise diff");
         }
 
         matrix::matrixd result(mat.rows() - 1, mat.cols());
-        for (size_t j = 0; j < mat.cols(); ++j)
-        {
-            for (size_t i = 0; i < result.rows() - 1; ++i)
-            {
+        for (size_t j = 0; j < mat.cols(); ++j) {
+            for (size_t i = 0; i < result.rows() - 1; ++i) {
                 result(i, j) = mat(i + 1, j) - mat(i, j);
             }
         }
         return result;
-    }
-    else if (axis == 1)
-    {
+    } else if (axis == 1) {
         // Column-wise: diff along columns (horizontal)
-        if (mat.cols() < 2)
-        {
+        if (mat.cols() < 2) {
             throw std::invalid_argument(
                 "Diff: need at least 2 cols for column-wise diff");
         }
 
         matrix::matrixd result(mat.rows(), mat.cols() - 1);
-        for (size_t i = 0; i < mat.rows(); ++i)
-        {
-            for (size_t j = 0; j < result.cols() - 1; ++j)
-            {
+        for (size_t i = 0; i < mat.rows(); ++i) {
+            for (size_t j = 0; j < result.cols() - 1; ++j) {
                 result(i, j) = mat(i, j + 1) - mat(i, j);
             }
         }
         return result;
-    }
-    else
-    {
+    } else {
         throw std::invalid_argument("Diff: axis must be 0 or 1");
     }
 }
@@ -145,22 +127,18 @@ inline matrix::matrixd diff(const matrix::real_matrix_base &mat, int axis = 0)
  */
 inline void forward_gradient(std::span<const double> y,
                              std::span<double> grad,
-                             double dx = 1.0)
-{
-    if (y.size() < 2)
-    {
+                             double dx = 1.0) {
+    if (y.size() < 2) {
         throw std::invalid_argument(
             "Gradient: need at least 2 points for gradient");
     }
 
-    if (grad.size() != y.size() - 1)
-    {
+    if (grad.size() != y.size() - 1) {
         throw std::invalid_argument("Gradient: span must have size n-1");
     }
 
     // Forward difference, the first point is 0
-    for (size_t i = 0; i < y.size() - 1; ++i)
-    {
+    for (size_t i = 0; i < y.size() - 1; ++i) {
         grad[i] = (y[i + 1] - y[i]) / dx;
     }
 }
@@ -176,8 +154,7 @@ inline void forward_gradient(std::span<const double> y,
  * @return Vector of gradient values (size n-1)
  */
 inline std::vector<double> forward_gradient(std::span<const double> y,
-                                            double dx = 1.0)
-{
+                                            double dx = 1.0) {
     std::vector<double> grad(y.size() - 1);
 
     forward_gradient(y, grad, dx);
@@ -198,25 +175,20 @@ inline std::vector<double> forward_gradient(std::span<const double> y,
  */
 inline void forward_gradient(std::span<const double> y,
                              std::span<double> grad,
-                             std::span<const double> x)
-{
-    if (x.size() != y.size())
-    {
+                             std::span<const double> x) {
+    if (x.size() != y.size()) {
         throw std::invalid_argument("Gradient: x and y must have same size");
     }
-    if (x.size() < 2)
-    {
+    if (x.size() < 2) {
         throw std::invalid_argument(
             "Gradient: need at least 2 points for gradient");
     }
-    if (grad.size() != y.size() - 1)
-    {
+    if (grad.size() != y.size() - 1) {
         throw std::invalid_argument("Gradient: span must have size n-1");
     }
 
     // Forward difference, the first point is 0
-    for (size_t i = 0; i < y.size() - 1; ++i)
-    {
+    for (size_t i = 0; i < y.size() - 1; ++i) {
         double dx_local = x[i + 1] - x[i];
         grad[i] = (y[i + 1] - y[i]) / dx_local;
     }
@@ -233,8 +205,7 @@ inline void forward_gradient(std::span<const double> y,
  * @return Vector of gradient values (size n-1)
  */
 inline std::vector<double> forward_gradient(std::span<const double> y,
-                                            std::span<const double> x)
-{
+                                            std::span<const double> x) {
     std::vector<double> grad(y.size() - 1);
 
     forward_gradient(y, grad, x);
@@ -253,54 +224,42 @@ inline std::vector<double> forward_gradient(std::span<const double> y,
  */
 inline matrix::matrixd forward_gradient(const matrix::real_matrix_base &mat,
                                         double dx = 1.0,
-                                        int axis = 0)
-{
-    if (axis == 0)
-    {
+                                        int axis = 0) {
+    if (axis == 0) {
         // Gradient along rows (vertical direction)
-        if (mat.rows() < 2)
-        {
+        if (mat.rows() < 2) {
             throw std::invalid_argument("Gradient: need at least 2 rows");
         }
 
         matrix::matrixd grad(mat.rows() - 1, mat.cols());
 
         // First row gradient is zero
-        for (size_t j = 0; j < mat.cols(); ++j)
-        {
+        for (size_t j = 0; j < mat.cols(); ++j) {
             // Forward difference
-            for (size_t i = 0; i < mat.rows() - 1; ++i)
-            {
+            for (size_t i = 0; i < mat.rows() - 1; ++i) {
                 grad(i, j) = (mat(i + 1, j) - mat(i, j)) / dx;
             }
         }
 
         return grad;
-    }
-    else if (axis == 1)
-    {
+    } else if (axis == 1) {
         // Gradient along columns (horizontal direction)
-        if (mat.cols() < 2)
-        {
+        if (mat.cols() < 2) {
             throw std::invalid_argument("Gradient: need at least 2 columns");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols() - 1);
 
         // First column gradient is zero
-        for (size_t i = 0; i < mat.rows(); ++i)
-        {
+        for (size_t i = 0; i < mat.rows(); ++i) {
             // Central at interior columns
-            for (size_t j = 0; j < mat.cols() - 1; ++j)
-            {
+            for (size_t j = 0; j < mat.cols() - 1; ++j) {
                 grad(i, j) = (mat(i, j + 1) - mat(i, j)) / dx;
             }
         }
 
         return grad;
-    }
-    else
-    {
+    } else {
         throw std::invalid_argument("axis must be 0 or 1");
     }
 }
@@ -317,66 +276,52 @@ inline matrix::matrixd forward_gradient(const matrix::real_matrix_base &mat,
  */
 inline matrix::matrixd forward_gradient(const matrix::real_matrix_base &mat,
                                         std::span<const double> x,
-                                        int axis = 0)
-{
-    if (axis == 0)
-    {
+                                        int axis = 0) {
+    if (axis == 0) {
         // Gradient along rows (vertical direction)
-        if (mat.rows() < 2)
-        {
+        if (mat.rows() < 2) {
             throw std::invalid_argument("Gradient: need at least 2 rows");
         }
 
-        if (x.size() != mat.rows())
-        {
+        if (x.size() != mat.rows()) {
             throw std::invalid_argument(
                 "Gradient: x size must be number of rows for axis=0");
         }
 
         matrix::matrixd grad(mat.rows() - 1, mat.cols());
 
-        for (size_t j = 0; j < mat.cols(); ++j)
-        {
+        for (size_t j = 0; j < mat.cols(); ++j) {
             // Forward difference
-            for (size_t i = 0; i < mat.rows() - 1; ++i)
-            {
+            for (size_t i = 0; i < mat.rows() - 1; ++i) {
                 double dx_local = x[i + 1] - x[i];
                 grad(i, j) = (mat(i + 1, j) - mat(i, j)) / dx_local;
             }
         }
 
         return grad;
-    }
-    else if (axis == 1)
-    {
+    } else if (axis == 1) {
         // Gradient along columns (horizontal direction)
-        if (mat.cols() < 2)
-        {
+        if (mat.cols() < 2) {
             throw std::invalid_argument("Gradient: need at least 2 columns");
         }
 
-        if (x.size() != mat.cols())
-        {
+        if (x.size() != mat.cols()) {
             throw std::invalid_argument(
                 "Gradient: x size must be number of cols for axis=1");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols() - 1);
 
-        for (size_t i = 0; i < mat.rows(); ++i)
-        {
+        for (size_t i = 0; i < mat.rows(); ++i) {
             // Forward difference
-            for (size_t j = 0; j < mat.cols() - 1; ++j)
-            {
+            for (size_t j = 0; j < mat.cols() - 1; ++j) {
                 double dx_local = x[j + 1] - x[j];
                 grad(i, j) = (mat(i, j + 1) - mat(i, j)) / dx_local;
             }
         }
 
         return grad;
-    }
-    else
-    {
+    } else {
         throw std::invalid_argument("axis must be 0 or 1");
     }
 }
@@ -397,16 +342,13 @@ inline matrix::matrixd forward_gradient(const matrix::real_matrix_base &mat,
  */
 inline void central_gradient(std::span<const double> y,
                              std::span<double> grad,
-                             double dx = 1.0)
-{
-    if (y.size() < 2)
-    {
+                             double dx = 1.0) {
+    if (y.size() < 2) {
         throw std::invalid_argument(
             "Gradient: need at least 2 points for gradient");
     }
 
-    if (grad.size() != y.size())
-    {
+    if (grad.size() != y.size()) {
         throw std::invalid_argument(
             "Gradient: span must have same size as input");
     }
@@ -415,8 +357,7 @@ inline void central_gradient(std::span<const double> y,
     grad[0] = (y[1] - y[0]) / dx;
 
     // Central difference at interior points
-    for (size_t i = 1; i < y.size() - 1; ++i)
-    {
+    for (size_t i = 1; i < y.size() - 1; ++i) {
         grad[i] = (y[i + 1] - y[i - 1]) / (2.0 * dx);
     }
 
@@ -435,8 +376,7 @@ inline void central_gradient(std::span<const double> y,
  * @return Vector of gradient values (same size as input)
  */
 inline std::vector<double> central_gradient(std::span<const double> y,
-                                            double dx = 1.0)
-{
+                                            double dx = 1.0) {
     std::vector<double> grad(y.size());
 
     central_gradient(y, grad, dx);
@@ -457,19 +397,15 @@ inline std::vector<double> central_gradient(std::span<const double> y,
  */
 inline void central_gradient(std::span<const double> x,
                              std::span<const double> y,
-                             std::span<double> grad)
-{
-    if (x.size() != y.size())
-    {
+                             std::span<double> grad) {
+    if (x.size() != y.size()) {
         throw std::invalid_argument("Gradient: x and y must have same size");
     }
-    if (x.size() < 2)
-    {
+    if (x.size() < 2) {
         throw std::invalid_argument(
             "Gradient: need at least 2 points for gradient");
     }
-    if (grad.size() != y.size())
-    {
+    if (grad.size() != y.size()) {
         throw std::invalid_argument(
             "Gradient: span must have same size as input");
     }
@@ -479,8 +415,7 @@ inline void central_gradient(std::span<const double> x,
     grad[0] = (y[1] - y[0]) / dx0;
 
     // Central difference at interior points
-    for (size_t i = 1; i < y.size() - 1; ++i)
-    {
+    for (size_t i = 1; i < y.size() - 1; ++i) {
         double dx_left = x[i] - x[i - 1];
         double dx_right = x[i + 1] - x[i];
 
@@ -507,8 +442,7 @@ inline void central_gradient(std::span<const double> x,
  * @return Vector of gradient values (same size as input)
  */
 inline std::vector<double> central_gradient(std::span<const double> x,
-                                            std::span<const double> y)
-{
+                                            std::span<const double> y) {
     std::vector<double> grad(y.size());
 
     central_gradient(x, y, grad);
@@ -527,26 +461,21 @@ inline std::vector<double> central_gradient(std::span<const double> x,
  */
 inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
                                         double dx = 1.0,
-                                        int axis = 0)
-{
-    if (axis == 0)
-    {
+                                        int axis = 0) {
+    if (axis == 0) {
         // Gradient along rows (vertical direction)
-        if (mat.rows() < 2)
-        {
+        if (mat.rows() < 2) {
             throw std::invalid_argument("Gradient: need at least 2 rows");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols());
 
-        for (size_t j = 0; j < mat.cols(); ++j)
-        {
+        for (size_t j = 0; j < mat.cols(); ++j) {
             // Forward at first row
             grad(0, j) = (mat(1, j) - mat(0, j)) / dx;
 
             // Central at interior rows
-            for (size_t i = 1; i < mat.rows() - 1; ++i)
-            {
+            for (size_t i = 1; i < mat.rows() - 1; ++i) {
                 grad(i, j) = (mat(i + 1, j) - mat(i - 1, j)) / (2.0 * dx);
             }
 
@@ -556,25 +485,20 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
         }
 
         return grad;
-    }
-    else if (axis == 1)
-    {
+    } else if (axis == 1) {
         // Gradient along columns (horizontal direction)
-        if (mat.cols() < 2)
-        {
+        if (mat.cols() < 2) {
             throw std::invalid_argument("Gradient: need at least 2 columns");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols());
 
-        for (size_t i = 0; i < mat.rows(); ++i)
-        {
+        for (size_t i = 0; i < mat.rows(); ++i) {
             // Forward at first column
             grad(i, 0) = (mat(i, 1) - mat(i, 0)) / dx;
 
             // Central at interior columns
-            for (size_t j = 1; j < mat.cols() - 1; ++j)
-            {
+            for (size_t j = 1; j < mat.cols() - 1; ++j) {
                 grad(i, j) = (mat(i, j + 1) - mat(i, j - 1)) / (2.0 * dx);
             }
 
@@ -584,9 +508,7 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
         }
 
         return grad;
-    }
-    else
-    {
+    } else {
         throw std::invalid_argument("Gradient: axis must be 0 or 1");
     }
 }
@@ -602,32 +524,26 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
  */
 inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
                                         std::span<const double> x,
-                                        int axis = 0)
-{
-    if (axis == 0)
-    {
+                                        int axis = 0) {
+    if (axis == 0) {
         // Gradient along rows (vertical direction)
-        if (mat.rows() < 2)
-        {
+        if (mat.rows() < 2) {
             throw std::invalid_argument("Gradient: need at least 2 rows");
         }
 
-        if (x.size() != mat.rows())
-        {
+        if (x.size() != mat.rows()) {
             throw std::invalid_argument(
                 "Gradient: x size must be number of rows for axis=0");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols());
 
-        for (size_t j = 0; j < mat.cols(); ++j)
-        {
+        for (size_t j = 0; j < mat.cols(); ++j) {
             // Forward at first row
             grad(0, j) = (mat(1, j) - mat(0, j)) / (x[1] - x[0]);
 
             // Central at interior rows
-            for (size_t i = 1; i < mat.rows() - 1; ++i)
-            {
+            for (size_t i = 1; i < mat.rows() - 1; ++i) {
                 grad(i, j) =
                     (mat(i + 1, j) - mat(i - 1, j)) / (x[i + 1] - x[i - 1]);
             }
@@ -638,31 +554,25 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
         }
 
         return grad;
-    }
-    else if (axis == 1)
-    {
+    } else if (axis == 1) {
         // Gradient along columns (horizontal direction)
-        if (mat.cols() < 2)
-        {
+        if (mat.cols() < 2) {
             throw std::invalid_argument("Gradient: need at least 2 columns");
         }
 
-        if (x.size() != mat.cols())
-        {
+        if (x.size() != mat.cols()) {
             throw std::invalid_argument(
                 "Gradient: x size must be number of cols for axis=1");
         }
 
         matrix::matrixd grad(mat.rows(), mat.cols());
 
-        for (size_t i = 0; i < mat.rows(); ++i)
-        {
+        for (size_t i = 0; i < mat.rows(); ++i) {
             // Forward at first column
             grad(i, 0) = (mat(i, 1) - mat(i, 0)) / (x[1] - x[0]);
 
             // Central at interior columns
-            for (size_t j = 1; j < mat.cols() - 1; ++j)
-            {
+            for (size_t j = 1; j < mat.cols() - 1; ++j) {
                 grad(i, j) =
                     (mat(i, j + 1) - mat(i, j - 1)) / (x[j + 1] - x[j - 1]);
             }
@@ -673,9 +583,7 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
         }
 
         return grad;
-    }
-    else
-    {
+    } else {
         throw std::invalid_argument("Gradient: axis must be 0 or 1");
     }
 }
@@ -697,10 +605,8 @@ inline matrix::matrixd central_gradient(const matrix::real_matrix_base &mat,
 inline std::pair<matrix::matrixd, matrix::matrixd>
 central_gradient2d(const matrix::real_matrix_base &mat,
                    double dx = 1.0,
-                   double dy = 1.0)
-{
-    if (mat.rows() < 2 || mat.cols() < 2)
-    {
+                   double dy = 1.0) {
+    if (mat.rows() < 2 || mat.cols() < 2) {
         throw std::invalid_argument(
             "Gradient: need at least 2x2 matrix for 2D gradient");
     }
@@ -730,16 +636,13 @@ central_gradient2d(const matrix::real_matrix_base &mat,
  */
 inline void central_gradient2(std::span<const double> y,
                               std::span<double> grad2,
-                              double dx = 1.0)
-{
-    if (y.size() < 3)
-    {
+                              double dx = 1.0) {
+    if (y.size() < 3) {
         throw std::invalid_argument(
             "Gradient: need at least 3 points for second derivative");
     }
 
-    if (grad2.size() != y.size())
-    {
+    if (grad2.size() != y.size()) {
         throw std::invalid_argument(
             "Gradient: second derivative span must have same size as input");
     }
@@ -750,8 +653,7 @@ inline void central_gradient2(std::span<const double> y,
     grad2[0] = (y[2] - 2.0 * y[1] + y[0]) / dx2;
 
     // Central difference at interior points
-    for (size_t i = 1; i < y.size() - 1; ++i)
-    {
+    for (size_t i = 1; i < y.size() - 1; ++i) {
         grad2[i] = (y[i + 1] - 2.0 * y[i] + y[i - 1]) / dx2;
     }
 
@@ -771,8 +673,7 @@ inline void central_gradient2(std::span<const double> y,
  * @return Vector of second derivative values (same size as input)
  */
 inline std::vector<double> central_gradient2(std::span<const double> y,
-                                             double dx = 1.0)
-{
+                                             double dx = 1.0) {
     std::vector<double> grad2(y.size());
     central_gradient2(y, grad2, dx);
     return grad2;
@@ -790,11 +691,10 @@ inline std::vector<double> central_gradient2(std::span<const double> y,
  * @param dy Vertical spacing
  * @return Laplacian matrix (same size, boundaries set to 0)
  */
-inline matrix::matrixd
-laplacian(const matrix::real_matrix_base &mat, double dx = 1.0, double dy = 1.0)
-{
-    if (mat.rows() < 3 || mat.cols() < 3)
-    {
+inline matrix::matrixd laplacian(const matrix::real_matrix_base &mat,
+                                 double dx = 1.0,
+                                 double dy = 1.0) {
+    if (mat.rows() < 3 || mat.cols() < 3) {
         throw std::invalid_argument(
             "Gradient: need at least 3x3 matrix for Laplacian");
     }
@@ -805,10 +705,8 @@ laplacian(const matrix::real_matrix_base &mat, double dx = 1.0, double dy = 1.0)
     double dy2 = dy * dy;
 
     // Interior points only
-    for (size_t i = 1; i < mat.rows() - 1; ++i)
-    {
-        for (size_t j = 1; j < mat.cols() - 1; ++j)
-        {
+    for (size_t i = 1; i < mat.rows() - 1; ++i) {
+        for (size_t j = 1; j < mat.cols() - 1; ++j) {
             // ∂²f/∂x²
             double d2_dx2 =
                 (mat(i, j + 1) - 2.0 * mat(i, j) + mat(i, j - 1)) / dx2;
@@ -842,10 +740,8 @@ laplacian(const matrix::real_matrix_base &mat, double dx = 1.0, double dy = 1.0)
 inline matrix::matrixd divergence(const matrix::real_matrix_base &Fx,
                                   const matrix::real_matrix_base &Fy,
                                   double dx = 1.0,
-                                  double dy = 1.0)
-{
-    if (Fx.rows() != Fy.rows() || Fx.cols() != Fy.cols())
-    {
+                                  double dy = 1.0) {
+    if (Fx.rows() != Fy.rows() || Fx.cols() != Fy.cols()) {
         throw std::invalid_argument("Gradient: Fx and Fy must have same size");
     }
 
@@ -853,10 +749,8 @@ inline matrix::matrixd divergence(const matrix::real_matrix_base &Fx,
     auto dFy_dy = central_gradient(Fy, dy, 0); // ∂Fy/∂y
 
     matrix::matrixd div(Fx.rows(), Fx.cols());
-    for (size_t i = 0; i < div.rows(); ++i)
-    {
-        for (size_t j = 0; j < div.cols(); ++j)
-        {
+    for (size_t i = 0; i < div.rows(); ++i) {
+        for (size_t j = 0; j < div.cols(); ++j) {
             div(i, j) = dFx_dx(i, j) + dFy_dy(i, j);
         }
     }
@@ -878,10 +772,8 @@ inline matrix::matrixd divergence(const matrix::real_matrix_base &Fx,
 inline matrix::matrixd curl(const matrix::real_matrix_base &Fx,
                             const matrix::real_matrix_base &Fy,
                             double dx = 1.0,
-                            double dy = 1.0)
-{
-    if (Fx.rows() != Fy.rows() || Fx.cols() != Fy.cols())
-    {
+                            double dy = 1.0) {
+    if (Fx.rows() != Fy.rows() || Fx.cols() != Fy.cols()) {
         throw std::invalid_argument("Gradient: Fx and Fy must have same size");
     }
 
@@ -889,10 +781,8 @@ inline matrix::matrixd curl(const matrix::real_matrix_base &Fx,
     auto dFx_dy = central_gradient(Fx, dy, 0); // ∂Fx/∂y
 
     matrix::matrixd curl_z(Fx.rows(), Fx.cols());
-    for (size_t i = 0; i < curl_z.rows(); ++i)
-    {
-        for (size_t j = 0; j < curl_z.cols(); ++j)
-        {
+    for (size_t i = 0; i < curl_z.rows(); ++i) {
+        for (size_t j = 0; j < curl_z.cols(); ++j) {
             curl_z(i, j) = dFy_dx(i, j) - dFx_dy(i, j);
         }
     }
@@ -923,24 +813,19 @@ inline void savgol_gradient(std::span<const double> y,
                             std::span<double> grad,
                             int window_size = 5,
                             int poly_order = 2,
-                            double dx = 1.0)
-{
-    if (window_size % 2 == 0)
-    {
+                            double dx = 1.0) {
+    if (window_size % 2 == 0) {
         throw std::invalid_argument("Gradient: window_size must be odd");
     }
-    if (poly_order >= window_size)
-    {
+    if (poly_order >= window_size) {
         throw std::invalid_argument(
             "Gradient: poly_order must be < window_size");
     }
-    if (y.size() < static_cast<size_t>(window_size))
-    {
+    if (y.size() < static_cast<size_t>(window_size)) {
         throw std::invalid_argument(
             "Gradient: signal too short for window_size");
     }
-    if (grad.size() != y.size())
-    {
+    if (grad.size() != y.size()) {
         throw std::invalid_argument(
             "Gradient: span must have same size as input");
     }
@@ -951,8 +836,7 @@ inline void savgol_gradient(std::span<const double> y,
     int half_window = window_size / 2;
 
     // Central smoothed derivative
-    for (size_t i = 0; i < y.size(); ++i)
-    {
+    for (size_t i = 0; i < y.size(); ++i) {
         int start = std::max(0, static_cast<int>(i) - half_window);
         int end = std::min(static_cast<int>(y.size()) - 1,
                            static_cast<int>(i) + half_window);
@@ -961,8 +845,7 @@ inline void savgol_gradient(std::span<const double> y,
         double sum_grad = 0.0;
         int count = 0;
 
-        for (int j = start; j < end; ++j)
-        {
+        for (int j = start; j < end; ++j) {
             sum_grad += (y[j + 1] - y[j]) / dx;
             ++count;
         }
@@ -986,8 +869,7 @@ inline void savgol_gradient(std::span<const double> y,
 inline std::vector<double> savgol_gradient(std::span<const double> y,
                                            int window_size = 5,
                                            int poly_order = 2,
-                                           double dx = 1.0)
-{
+                                           double dx = 1.0) {
     std::vector<double> grad(y.size());
 
     savgol_gradient(y, grad, window_size, poly_order, dx);

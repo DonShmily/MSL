@@ -6,8 +6,7 @@
 
 using namespace msl;
 
-int test_interp()
-{
+int test_interp() {
     auto ori_data =
         utils::ReadData("test_result/interp/test_interp_data.txt", 4, 11);
     auto data_x = std::vector<double>(ori_data.begin(), ori_data.begin() + 11);
@@ -20,8 +19,7 @@ int test_interp()
     std::vector<double> new_x = {
         -1, 0, 0.5, 2, 2.2, 5, 5.6, 8, 8.7, 9.1, 10, 11.5};
 
-    try
-    {
+    try {
         // test linear interp
         auto lin_interp_y1 = interp::interp1_linear(data_x, data_y1, new_x);
         auto lin_interp_y2 = interp::interp1_linear(data_x, data_y2, new_x);
@@ -101,9 +99,7 @@ int test_interp()
                          pchip_interp_all,
                          4,
                          new_x.size());
-    }
-    catch (const std::exception &e)
-    {
+    } catch (const std::exception &e) {
         std::cerr << "Interp test failed: " << e.what() << std::endl;
         return -1;
     }

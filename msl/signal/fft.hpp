@@ -29,8 +29,7 @@
 #include "matrix/real_matrix_base.hpp"
 #include "matrix/real_matrix_owned.hpp"
 
-namespace msl::signal
-{
+namespace msl::signal {
 
 // ============================================================================
 // 1. 1D FFT for vectors
@@ -45,16 +44,13 @@ namespace msl::signal
  */
 inline void fft(std::span<const double> input,
                 std::span<std::complex<double>> output,
-                std::size_t nfft = 0)
-{
+                std::size_t nfft = 0) {
     nfft = (nfft == 0) ? input.size() : nfft;
-    if (output.size() != nfft)
-    {
+    if (output.size() != nfft) {
         throw std::invalid_argument(
             "FFT: output buffer size must be equal to nfft");
     }
-    if (input.size() < nfft)
-    {
+    if (input.size() < nfft) {
         throw std::invalid_argument(
             "FFT: FFT length nfft cannot be greater than input size");
     }
@@ -71,8 +67,7 @@ inline void fft(std::span<const double> input,
  * @return Complex-valued frequency domain (size determined by nfft)
  */
 inline std::vector<std::complex<double>> fft(std::span<const double> input,
-                                             std::size_t nfft = 0)
-{
+                                             std::size_t nfft = 0) {
     const std::size_t fft_len = (nfft == 0) ? input.size() : nfft;
     std::vector<std::complex<double>> output(fft_len);
     fft(input, output, fft_len);
@@ -90,16 +85,13 @@ inline std::vector<std::complex<double>> fft(std::span<const double> input,
  */
 inline void fft(std::span<const std::complex<double>> input,
                 std::span<std::complex<double>> output,
-                std::size_t nfft = 0)
-{
+                std::size_t nfft = 0) {
     nfft = (nfft == 0) ? input.size() : nfft;
-    if (output.size() != nfft)
-    {
+    if (output.size() != nfft) {
         throw std::invalid_argument(
             "FFT: output buffer size must be equal to nfft");
     }
-    if (input.size() < nfft)
-    {
+    if (input.size() < nfft) {
         throw std::invalid_argument(
             "FFT: FFT length nfft cannot be greater than input size");
     }
@@ -117,8 +109,7 @@ inline void fft(std::span<const std::complex<double>> input,
  * @return Complex-valued frequency domain (same size as input)
  */
 inline std::vector<std::complex<double>>
-fft(std::span<const std::complex<double>> input, std::size_t nfft = 0)
-{
+fft(std::span<const std::complex<double>> input, std::size_t nfft = 0) {
     const std::size_t fft_len = (nfft == 0) ? input.size() : nfft;
     std::vector<std::complex<double>> output(fft_len);
     fft(input, output, fft_len);
@@ -138,16 +129,13 @@ fft(std::span<const std::complex<double>> input, std::size_t nfft = 0)
  */
 inline void ifft(std::span<const std::complex<double>> input,
                  std::span<std::complex<double>> output,
-                 std::size_t nfft = 0)
-{
+                 std::size_t nfft = 0) {
     nfft = (nfft == 0) ? input.size() : nfft;
-    if (output.size() != nfft)
-    {
+    if (output.size() != nfft) {
         throw std::invalid_argument(
             "IFFT: output buffer size must be equal to nfft");
     }
-    if (input.size() < nfft)
-    {
+    if (input.size() < nfft) {
         throw std::invalid_argument(
             "IFFT: FFT length nfft cannot be greater than input size");
     }
@@ -164,8 +152,7 @@ inline void ifft(std::span<const std::complex<double>> input,
  * @return Complex time domain signal
  */
 inline std::vector<std::complex<double>>
-ifft(std::span<const std::complex<double>> input, std::size_t nfft = 0)
-{
+ifft(std::span<const std::complex<double>> input, std::size_t nfft = 0) {
     const std::size_t fft_len = (nfft == 0) ? input.size() : nfft;
     std::vector<std::complex<double>> output(fft_len);
     ifft(input, output, fft_len);
@@ -184,16 +171,13 @@ ifft(std::span<const std::complex<double>> input, std::size_t nfft = 0)
  */
 inline void ifft_real(std::span<const std::complex<double>> input,
                       std::span<double> output,
-                      std::size_t nfft = 0)
-{
+                      std::size_t nfft = 0) {
     nfft = (nfft == 0) ? input.size() : nfft;
-    if (output.size() != nfft)
-    {
+    if (output.size() != nfft) {
         throw std::invalid_argument(
             "IFFT: output buffer size must be equal to nfft");
     }
-    if (input.size() < nfft)
-    {
+    if (input.size() < nfft) {
         throw std::invalid_argument(
             "IFFT: FFT length nfft cannot be greater than input size");
     }
@@ -211,8 +195,7 @@ inline void ifft_real(std::span<const std::complex<double>> input,
  * @return Real-valued time domain signal
  */
 inline std::vector<double>
-ifft_real(std::span<const std::complex<double>> input, std::size_t nfft = 0)
-{
+ifft_real(std::span<const std::complex<double>> input, std::size_t nfft = 0) {
     const std::size_t fft_len = (nfft == 0) ? input.size() : nfft;
     std::vector<double> output(fft_len);
     ifft_real(input, output, fft_len);
@@ -234,14 +217,12 @@ ifft_real(std::span<const std::complex<double>> input, std::size_t nfft = 0)
  * @return Complex matrix with FFT of each column
  */
 inline matrix::matrixc fft_columns(const matrix::real_matrix_base &input,
-                                   size_t nfft = 0)
-{
+                                   size_t nfft = 0) {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_rows : nfft;
-    if (n_rows < nfft)
-    {
+    if (n_rows < nfft) {
         throw std::invalid_argument(
             "FFT columns: nfft cannot be greater than input rows");
     }
@@ -251,8 +232,7 @@ inline matrix::matrixc fft_columns(const matrix::real_matrix_base &input,
     Eigen::FFT<double> fft_engine;
 
     // Process each column
-    for (size_t j = 0; j < n_cols; ++j)
-    {
+    for (size_t j = 0; j < n_cols; ++j) {
         auto col_span = input.column(j);
 
         auto col_fft = output.column(j);
@@ -272,14 +252,12 @@ inline matrix::matrixc fft_columns(const matrix::real_matrix_base &input,
  * @return Complex matrix with FFT of each column
  */
 inline matrix::matrixc fft_columns(const matrix::complex_matrix_base &input,
-                                   size_t nfft = 0)
-{
+                                   size_t nfft = 0) {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_rows : nfft;
-    if (n_rows < nfft)
-    {
+    if (n_rows < nfft) {
         throw std::invalid_argument(
             "FFT columns: nfft cannot be greater than input rows");
     }
@@ -288,8 +266,7 @@ inline matrix::matrixc fft_columns(const matrix::complex_matrix_base &input,
 
     Eigen::FFT<double> fft_engine;
 
-    for (size_t j = 0; j < n_cols; ++j)
-    {
+    for (size_t j = 0; j < n_cols; ++j) {
         auto col_span = input.column(j);
         auto col_fft = output.column(j);
         fft_engine.fwd(col_fft.data(), col_span.data(), nfft);
@@ -311,14 +288,12 @@ inline matrix::matrixc fft_columns(const matrix::complex_matrix_base &input,
  * @return Complex matrix with IFFT of each column (time domain)
  */
 inline matrix::matrixc ifft_columns(const matrix::complex_matrix_base &input,
-                                    size_t nfft = 0)
-{
+                                    size_t nfft = 0) {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_rows : nfft;
-    if (n_rows < nfft)
-    {
+    if (n_rows < nfft) {
         throw std::invalid_argument(
             "IFFT columns: nfft cannot be greater than input rows");
     }
@@ -327,8 +302,7 @@ inline matrix::matrixc ifft_columns(const matrix::complex_matrix_base &input,
 
     Eigen::FFT<double> fft_engine;
 
-    for (size_t j = 0; j < n_cols; ++j)
-    {
+    for (size_t j = 0; j < n_cols; ++j) {
         auto col_span = input.column(j);
         auto col_ifft = output.column(j);
         fft_engine.inv(col_ifft.data(), col_span.data(), nfft);
@@ -347,14 +321,12 @@ inline matrix::matrixc ifft_columns(const matrix::complex_matrix_base &input,
  * @return Real-valued time domain matrix
  */
 inline matrix::matrixd
-ifft_columns_real(const matrix::complex_matrix_base &input, size_t nfft = 0)
-{
+ifft_columns_real(const matrix::complex_matrix_base &input, size_t nfft = 0) {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_rows : nfft;
-    if (n_rows < nfft)
-    {
+    if (n_rows < nfft) {
         throw std::invalid_argument(
             "IFFT columns real: nfft cannot be greater than input rows");
     }
@@ -363,8 +335,7 @@ ifft_columns_real(const matrix::complex_matrix_base &input, size_t nfft = 0)
 
     Eigen::FFT<double> fft_engine;
 
-    for (size_t j = 0; j < n_cols; ++j)
-    {
+    for (size_t j = 0; j < n_cols; ++j) {
         auto col_span = input.column(j);
         auto col_ifft = output.column(j);
         fft_engine.inv(col_ifft.data(), col_span.data(), nfft);
@@ -387,14 +358,12 @@ ifft_columns_real(const matrix::complex_matrix_base &input, size_t nfft = 0)
  * @return Complex matrix with FFT of each row
  */
 inline matrix::matrixc fft_rows(const matrix::real_matrix_base &input,
-                                size_t nfft = 0)
-{
+                                size_t nfft = 0) {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_cols : nfft;
-    if (n_cols < nfft)
-    {
+    if (n_cols < nfft) {
         throw std::invalid_argument(
             "FFT rows: nfft cannot be greater than input columns");
     }
@@ -403,11 +372,9 @@ inline matrix::matrixc fft_rows(const matrix::real_matrix_base &input,
 
     Eigen::FFT<double> fft_engine;
 
-    for (size_t i = 0; i < n_rows; ++i)
-    {
+    for (size_t i = 0; i < n_rows; ++i) {
         std::vector<double> row_vec(input.rows());
-        for (size_t j = 0; j < n_cols; ++j)
-        {
+        for (size_t j = 0; j < n_cols; ++j) {
             row_vec[j] = input(i, j);
         }
         auto row_fft = output.get_row(i);
@@ -427,14 +394,12 @@ inline matrix::matrixc fft_rows(const matrix::real_matrix_base &input,
  * @return Complex matrix with FFT of each row
  */
 inline matrix::matrixc fft_rows(const matrix::complex_matrix_base &input,
-                                size_t nfft = 0)
-{
+                                size_t nfft = 0) {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_cols : nfft;
-    if (n_cols < nfft)
-    {
+    if (n_cols < nfft) {
         throw std::invalid_argument(
             "FFT rows: nfft cannot be greater than input columns");
     }
@@ -443,11 +408,9 @@ inline matrix::matrixc fft_rows(const matrix::complex_matrix_base &input,
 
     Eigen::FFT<double> fft_engine;
 
-    for (size_t i = 0; i < n_rows; ++i)
-    {
+    for (size_t i = 0; i < n_rows; ++i) {
         std::vector<std::complex<double>> row_vec(input.cols());
-        for (size_t j = 0; j < n_cols; ++j)
-        {
+        for (size_t j = 0; j < n_cols; ++j) {
             row_vec[j] = input(i, j);
         }
         auto row_fft = output.get_row(i);
@@ -468,14 +431,12 @@ inline matrix::matrixc fft_rows(const matrix::complex_matrix_base &input,
  * @return Complex matrix with IFFT of each row (time domain)
  */
 inline matrix::matrixc ifft_rows(const matrix::complex_matrix_base &input,
-                                 size_t nfft = 0)
-{
+                                 size_t nfft = 0) {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_cols : nfft;
-    if (n_cols < nfft)
-    {
+    if (n_cols < nfft) {
         throw std::invalid_argument(
             "IFFT rows: nfft cannot be greater than input columns");
     }
@@ -484,11 +445,9 @@ inline matrix::matrixc ifft_rows(const matrix::complex_matrix_base &input,
 
     Eigen::FFT<double> fft_engine;
 
-    for (size_t i = 0; i < n_rows; ++i)
-    {
+    for (size_t i = 0; i < n_rows; ++i) {
         std::vector<std::complex<double>> row_vec(input.cols());
-        for (size_t j = 0; j < n_cols; ++j)
-        {
+        for (size_t j = 0; j < n_cols; ++j) {
             row_vec[j] = input(i, j);
         }
         auto row_ifft = output.get_row(i);
@@ -508,14 +467,12 @@ inline matrix::matrixc ifft_rows(const matrix::complex_matrix_base &input,
  * @return Real-valued time domain matrix
  */
 inline matrix::matrixd ifft_rows_real(const matrix::complex_matrix_base &input,
-                                      size_t nfft = 0)
-{
+                                      size_t nfft = 0) {
     size_t n_rows = input.rows();
     size_t n_cols = input.cols();
 
     nfft = (nfft == 0) ? n_cols : nfft;
-    if (n_cols < nfft)
-    {
+    if (n_cols < nfft) {
         throw std::invalid_argument(
             "IFFT rows real: nfft cannot be greater than input columns");
     }
@@ -524,11 +481,9 @@ inline matrix::matrixd ifft_rows_real(const matrix::complex_matrix_base &input,
 
     Eigen::FFT<double> fft_engine;
 
-    for (size_t i = 0; i < n_rows; ++i)
-    {
+    for (size_t i = 0; i < n_rows; ++i) {
         std::vector<std::complex<double>> row_vec(input.cols());
-        for (size_t j = 0; j < n_cols; ++j)
-        {
+        for (size_t j = 0; j < n_cols; ++j) {
             row_vec[j] = input(i, j);
         }
         auto row_ifft = output.get_row(i);
@@ -552,26 +507,21 @@ inline matrix::matrixd ifft_rows_real(const matrix::complex_matrix_base &input,
  * @param sample_rate Sampling rate in Hz, must be greater than 0.
  */
 inline void
-fft_frequencies(std::span<double> freqs, size_t n, double sample_rate = 1.0)
-{
-    if (freqs.size() != n)
-    {
+fft_frequencies(std::span<double> freqs, size_t n, double sample_rate = 1.0) {
+    if (freqs.size() != n) {
         throw std::invalid_argument(
             "FFT frequencies: output buffer size must be equal to n");
     }
-    if (n == 0)
-    {
+    if (n == 0) {
         return;
     }
-    if (sample_rate <= 0.0)
-    {
+    if (sample_rate <= 0.0) {
         throw std::invalid_argument(
             "FFT frequencies: sample_rate must be greater than 0");
     }
     double df = sample_rate / n;
 
-    for (size_t i = 0; i < freqs.size(); ++i)
-    {
+    for (size_t i = 0; i < freqs.size(); ++i) {
         freqs[i] = i * df;
     }
 }
@@ -583,8 +533,7 @@ fft_frequencies(std::span<double> freqs, size_t n, double sample_rate = 1.0)
  * @param sample_rate Sampling rate (Hz)
  * @return Vector of frequency values
  */
-inline std::vector<double> fft_frequencies(size_t n, double sample_rate = 1.0)
-{
+inline std::vector<double> fft_frequencies(size_t n, double sample_rate = 1.0) {
     std::vector<double> freqs(n);
     fft_frequencies(freqs, n, sample_rate);
     return freqs;
@@ -597,16 +546,13 @@ inline std::vector<double> fft_frequencies(size_t n, double sample_rate = 1.0)
  * @param power Output buffer of power values `|X[k]|^2`.
  */
 inline void power_spectrum(std::span<const std::complex<double>> fft_result,
-                           std::span<double> power)
-{
-    if (power.size() != fft_result.size())
-    {
+                           std::span<double> power) {
+    if (power.size() != fft_result.size()) {
         throw std::invalid_argument("Power spectrum: output buffer size must "
                                     "be equal to FFT result size");
     }
 
-    for (size_t i = 0; i < fft_result.size(); ++i)
-    {
+    for (size_t i = 0; i < fft_result.size(); ++i) {
         power[i] = std::norm(fft_result[i]); // |z|^2
     }
 }
@@ -618,8 +564,7 @@ inline void power_spectrum(std::span<const std::complex<double>> fft_result,
  * @return Power spectrum (|FFT|^2)
  */
 inline std::vector<double>
-power_spectrum(std::span<const std::complex<double>> fft_result)
-{
+power_spectrum(std::span<const std::complex<double>> fft_result) {
     std::vector<double> power(fft_result.size());
     power_spectrum(fft_result, power);
     return power;
@@ -632,16 +577,13 @@ power_spectrum(std::span<const std::complex<double>> fft_result)
  * @param magnitude Output buffer of magnitudes `|X[k]|`.
  */
 inline void magnitude_spectrum(std::span<const std::complex<double>> fft_result,
-                               std::span<double> magnitude)
-{
-    if (magnitude.size() != fft_result.size())
-    {
+                               std::span<double> magnitude) {
+    if (magnitude.size() != fft_result.size()) {
         throw std::invalid_argument("Magnitude spectrum: output buffer size "
                                     "must be equal to FFT result size");
     }
 
-    for (size_t i = 0; i < fft_result.size(); ++i)
-    {
+    for (size_t i = 0; i < fft_result.size(); ++i) {
         magnitude[i] = std::abs(fft_result[i]);
     }
 }
@@ -653,8 +595,7 @@ inline void magnitude_spectrum(std::span<const std::complex<double>> fft_result,
  * @return Magnitude spectrum (|FFT|)
  */
 inline std::vector<double>
-magnitude_spectrum(std::span<const std::complex<double>> fft_result)
-{
+magnitude_spectrum(std::span<const std::complex<double>> fft_result) {
     std::vector<double> magnitude(fft_result.size());
     magnitude_spectrum(fft_result, magnitude);
     return magnitude;
@@ -667,16 +608,13 @@ magnitude_spectrum(std::span<const std::complex<double>> fft_result)
  * @param phase Output buffer of phase values `arg(X[k])` in radians.
  */
 inline void phase_spectrum(std::span<const std::complex<double>> fft_result,
-                           std::span<double> phase)
-{
-    if (phase.size() != fft_result.size())
-    {
+                           std::span<double> phase) {
+    if (phase.size() != fft_result.size()) {
         throw std::invalid_argument("Phase spectrum: output buffer size must "
                                     "be equal to FFT result size");
     }
 
-    for (size_t i = 0; i < fft_result.size(); ++i)
-    {
+    for (size_t i = 0; i < fft_result.size(); ++i) {
         phase[i] = std::arg(fft_result[i]);
     }
 }
@@ -688,8 +626,7 @@ inline void phase_spectrum(std::span<const std::complex<double>> fft_result,
  * @return Phase spectrum (arg(FFT))
  */
 inline std::vector<double>
-phase_spectrum(std::span<const std::complex<double>> fft_result)
-{
+phase_spectrum(std::span<const std::complex<double>> fft_result) {
     std::vector<double> phase(fft_result.size());
     phase_spectrum(fft_result, phase);
     return phase;

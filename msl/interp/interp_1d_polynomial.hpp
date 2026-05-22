@@ -21,8 +21,7 @@
 
 #include "interp_1d_base.hpp"
 
-namespace msl::interp
-{
+namespace msl::interp {
 
 /**
  * @brief Polynomial interpolation using divided differences (Newton form)
@@ -32,13 +31,11 @@ namespace msl::interp
  *
  * Recommended: Use for <= 10 points, or consider splines instead
  */
-class Polynomial : public InterpolatorBase
-{
+class Polynomial : public InterpolatorBase {
 public:
     Polynomial() = default;
 
-    Polynomial(std::span<const double> x, std::span<const double> y)
-    {
+    Polynomial(std::span<const double> x, std::span<const double> y) {
         set_data(x, y);
     }
 
@@ -48,8 +45,8 @@ public:
      * @param x Independent variable samples (strictly increasing)
      * @param y Dependent variable samples
      */
-    void set_data(std::span<const double> x, std::span<const double> y) override
-    {
+    void set_data(std::span<const double> x,
+                  std::span<const double> y) override {
         x_.assign(x.begin(), x.end());
         y_.assign(y.begin(), y.end());
         validate_input();
@@ -62,15 +59,13 @@ public:
      * @param x Query point
      * @return Interpolated value at @p x
      */
-    double interpolate(double x) const override
-    {
+    double interpolate(double x) const override {
         // Newton's form: P(x) = c0 + c1(x-x0) + c2(x-x0)(x-x1) + ...
         size_t n = x_.size();
         double result = coeffs_[n - 1];
 
         // Horner's method (reverse order for stability)
-        for (int i = n - 2; i >= 0; --i)
-        {
+        for (int i = n - 2; i >= 0; --i) {
             result = result * (x - x_[i]) + coeffs_[i];
         }
 
@@ -88,19 +83,16 @@ public:
      * Computes derivative together with polynomial evaluation using nested
      * multiplication in Newton form.
      */
-    [[nodiscard]] double derivative(double x) const
-    {
+    [[nodiscard]] double derivative(double x) const {
         size_t n = x_.size();
-        if (n < 2)
-        {
+        if (n < 2) {
             return 0.0;
         }
 
         double p = coeffs_[n - 1];
         double dp = 0.0;
 
-        for (size_t i = n - 1; i-- > 0;)
-        {
+        for (size_t i = n - 1; i-- > 0;) {
             dp = dp * (x - x_[i]) + p;
             p = p * (x - x_[i]) + coeffs_[i];
         }
@@ -114,27 +106,22 @@ private:
     /**
      * @brief Build Newton divided-difference coefficients.
      */
-    void compute_divided_differences()
-    {
+    void compute_divided_differences() {
         size_t n = x_.size();
         coeffs_.resize(n);
 
         // In-place divided differences: coeffs_[k] becomes k-th Newton
         // coefficient after each order update.
-        for (size_t i = 0; i < n; ++i)
-        {
+        for (size_t i = 0; i < n; ++i) {
             coeffs_[i] = y_[i];
         }
 
-        for (size_t order = 1; order < n; ++order)
-        {
-            for (size_t i = n - 1; i >= order; --i)
-            {
+        for (size_t order = 1; order < n; ++order) {
+            for (size_t i = n - 1; i >= order; --i) {
                 coeffs_[i] =
                     (coeffs_[i] - coeffs_[i - 1]) / (x_[i] - x_[i - order]);
 
-                if (i == order)
-                {
+                if (i == order) {
                     break;
                 }
             }
@@ -153,10 +140,8 @@ private:
 inline void interp1_polynomial(std::span<const double> x,
                                std::span<const double> y,
                                std::span<const double> x_new,
-                               std::span<double> result)
-{
-    if (x_new.size() != result.size())
-    {
+                               std::span<double> result) {
+    if (x_new.size() != result.size()) {
         throw std::invalid_argument(
             "interp1_polynomial: x_new and result spans must have same size");
     }
@@ -170,8 +155,7 @@ inline void interp1_polynomial(std::span<const double> x,
  */
 inline std::vector<double> interp1_polynomial(std::span<const double> x,
                                               std::span<const double> y,
-                                              std::span<const double> x_new)
-{
+                                              std::span<const double> x_new) {
     return Polynomial(x, y)(x_new);
 }
 

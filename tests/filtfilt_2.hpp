@@ -11,12 +11,10 @@
 // third-party headers
 #include "eigen3/Eigen/Dense"
 
-namespace numerical_algorithm
-{
+namespace numerical_algorithm {
 
 // filtfilt滤波方法类
-class FiltFilt
-{
+class FiltFilt {
 public:
     // 默认构造函数
     FiltFilt() = default;
@@ -26,8 +24,7 @@ public:
     // @param coefficients_b 滤波器分子系数
     FiltFilt(std::vector<double> coefficients_a,
              std::vector<double> coefficients_b)
-        : coefficients_a_(coefficients_a), coefficients_b_(coefficients_b)
-    {}
+        : coefficients_a_(coefficients_a), coefficients_b_(coefficients_b) {}
 
     // 析构函数
     ~FiltFilt() = default;
@@ -36,8 +33,7 @@ public:
     // @param coefficients_a 滤波器分母系数
     // @param coefficients_b 滤波器分子系数
     void set_coefficients(std::vector<double> coefficients_a,
-                          std::vector<double> coefficients_b)
-    {
+                          std::vector<double> coefficients_b) {
         coefficients_a_ = coefficients_a;
         coefficients_b_ = coefficients_b;
     }
@@ -59,43 +55,38 @@ private:
 
     // filtfilt算法的功能函数
     inline void
-    AddIndexRange(std::vector<int> &indices, int beg, int end, int inc = 1)
-    {
-        for (int i = beg; i <= end; i += inc)
-        {
+    AddIndexRange(std::vector<int> &indices, int beg, int end, int inc = 1) {
+        for (int i = beg; i <= end; i += inc) {
             indices.push_back(i);
         }
     }
 
     inline void
-    AddIndexConst(std::vector<int> &indices, int value, size_t numel)
-    {
+    AddIndexConst(std::vector<int> &indices, int value, size_t numel) {
         indices.resize(numel + indices.size(), value);
     }
 
     inline void AppendVector(std::vector<double> &vec,
-                             const std::vector<double> &tail)
-    {
+                             const std::vector<double> &tail) {
         vec.insert(vec.end(), tail.begin(), tail.end());
     }
 
-    inline std::vector<double>
-    SubvectorReverse(const std::vector<double> &vec, int idx_end, int idx_start)
-    {
+    inline std::vector<double> SubvectorReverse(const std::vector<double> &vec,
+                                                int idx_end,
+                                                int idx_start) {
         std::vector<double> result(&vec[idx_start], &vec[idx_end + 1]);
         std::reverse(result.begin(), result.end());
         return result;
     }
 
-    inline int MaxVal(const std::vector<int> &vec)
-    {
+    inline int MaxVal(const std::vector<int> &vec) {
         return *std::max_element(vec.begin(), vec.end());
     }
 };
 
 // 单列滤波算法入口
-std::vector<double> FiltFilt::Filtering(const std::vector<double> &input_signal)
-{
+std::vector<double>
+FiltFilt::Filtering(const std::vector<double> &input_signal) {
     int len = static_cast<int>(input_signal.size()); // length of input
     int nfilt =
         static_cast<int>(coefficients_b_.size() > coefficients_a_.size())
@@ -115,15 +106,13 @@ std::vector<double> FiltFilt::Filtering(const std::vector<double> &input_signal)
     std::vector<int> rows, cols;
     // rows = [1:nfilt-1           2:nfilt-1             1:nfilt-2];
     AddIndexRange(rows, 0, nfilt - 2);
-    if (nfilt > 2)
-    {
+    if (nfilt > 2) {
         AddIndexRange(rows, 1, nfilt - 2);
         AddIndexRange(rows, 0, nfilt - 3);
     }
     // cols = [ones(1,nfilt-1)         2:nfilt-1          2:nfilt-1];
     AddIndexConst(cols, 0, nfilt - 1);
-    if (nfilt > 2)
-    {
+    if (nfilt > 2) {
         AddIndexRange(cols, 1, nfilt - 2);
         AddIndexRange(cols, 1, nfilt - 2);
     }
@@ -134,18 +123,14 @@ std::vector<double> FiltFilt::Filtering(const std::vector<double> &input_signal)
     data.resize(klen);
     data[0] = 1 + coefficients_a_[1];
     int j = 1;
-    if (nfilt > 2)
-    {
-        for (int i = 2; i < nfilt; i++)
-        {
+    if (nfilt > 2) {
+        for (int i = 2; i < nfilt; i++) {
             data[j++] = coefficients_a_[i];
         }
-        for (int i = 0; i < nfilt - 2; i++)
-        {
+        for (int i = 0; i < nfilt - 2; i++) {
             data[j++] = 1.0;
         }
-        for (int i = 0; i < nfilt - 2; i++)
-        {
+        for (int i = 0; i < nfilt - 2; i++) {
             data[j++] = -1.0;
         }
     }
@@ -176,8 +161,7 @@ std::vector<double> FiltFilt::Filtering(const std::vector<double> &input_signal)
     // Calculate initial conditions
     Eigen::MatrixXd sp =
         Eigen::MatrixXd::Zero(MaxVal(rows) + 1, MaxVal(cols) + 1);
-    for (size_t k = 0; k < klen; ++k)
-    {
+    for (size_t k = 0; k < klen; ++k) {
         sp(rows[k], cols[k]) = data[k];
     }
     auto bb =
@@ -209,8 +193,7 @@ std::vector<double> FiltFilt::Filtering(const std::vector<double> &input_signal)
 // filtfilt滤波算法的filter函数
 void FiltFilt::filter(const std::vector<double> &input_signal,
                       std::vector<double> &output_signal,
-                      std::vector<double> zi)
-{
+                      std::vector<double> zi) {
     if (coefficients_a_.empty())
         throw std::domain_error("The feedback filter coefficients are empty.");
     if (std::all_of(coefficients_a_.begin(),
@@ -224,8 +207,7 @@ void FiltFilt::filter(const std::vector<double> &input_signal,
 
     // Normalize feedback coefficients if a[0] != 1;
     auto a0 = coefficients_a_[0];
-    if (a0 != 1.0)
-    {
+    if (a0 != 1.0) {
         std::transform(coefficients_a_.begin(),
                        coefficients_a_.end(),
                        coefficients_a_.begin(),
@@ -250,11 +232,9 @@ void FiltFilt::filter(const std::vector<double> &input_signal,
     double *z = &zi[0];
     double *y = &output_signal[0];
 
-    for (size_t i = 0; i < input_size; ++i)
-    {
+    for (size_t i = 0; i < input_size; ++i) {
         size_t order = filter_order - 1;
-        while (order)
-        {
+        while (order) {
             if (i >= order)
                 z[order - 1] = b[order] * x[i - order] - a[order] * y[i - order]
                                + z[order];

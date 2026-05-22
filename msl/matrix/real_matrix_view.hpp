@@ -20,13 +20,11 @@
 
 #include "real_matrix_base.hpp"
 
-namespace msl::matrix
-{
+namespace msl::matrix {
 class const_real_matrix_view; // Forward declaration
 class real_matrix_owned;      // Forward declaration
 
-class real_matrix_view : public real_matrix_base
-{
+class real_matrix_view : public real_matrix_base {
 private:
     using Base = real_matrix_base;
 
@@ -37,16 +35,14 @@ public:
 
     // Construct from raw pointer
     real_matrix_view(double *data, size_t rows, size_t cols)
-        : Base(rows, cols, std::span<double>(data, rows * cols))
-    {}
+        : Base(rows, cols, std::span<double>(data, rows * cols)) {}
 
     // Construct from real_matrix_owned (most common use case)
     real_matrix_view(real_matrix_owned &owner);
 
     // Construct from span
     real_matrix_view(std::span<double> data, size_t rows, size_t cols)
-        : Base(rows, cols, data)
-    {
+        : Base(rows, cols, data) {
         assert(data.size() == rows * cols);
     }
 
@@ -65,9 +61,10 @@ public:
     ~real_matrix_view() = default;
 
     // --- Subview creation ---
-    [[nodiscard]] real_matrix_view
-    subview(size_t row_start, size_t row_end, size_t col_start, size_t col_end)
-    {
+    [[nodiscard]] real_matrix_view subview(size_t row_start,
+                                           size_t row_end,
+                                           size_t col_start,
+                                           size_t col_end) {
         assert(row_start < row_end && row_end <= this->rows_);
         assert(col_start < col_end && col_end <= this->cols_);
 
@@ -84,60 +81,49 @@ public:
     }
 
     // --- Column subview (efficient) ---
-    [[nodiscard]] real_matrix_view column_view(size_t j)
-    {
+    [[nodiscard]] real_matrix_view column_view(size_t j) {
         auto col_span = this->column(j);
         return real_matrix_view(col_span.data(), this->rows_, 1);
     }
     [[nodiscard]] const_real_matrix_view column_view(size_t j) const;
 
     // --- Fill operations ---
-    void fill(const double &value)
-    {
+    void fill(const double &value) {
         std::fill(this->begin(), this->end(), value);
     }
 
     void fill_zeros() { std::fill(this->begin(), this->end(), 0.0); }
 
     // --- In-place operations ---
-    real_matrix_view &operator+=(const real_matrix_base &other)
-    {
+    real_matrix_view &operator+=(const real_matrix_base &other) {
         assert(this->rows_ == other.rows() && this->cols_ == other.cols());
-        for (size_t i = 0; i < this->size(); ++i)
-        {
+        for (size_t i = 0; i < this->size(); ++i) {
             this->data_[i] += other.data()[i];
         }
         return *this;
     }
-    real_matrix_view &operator-=(const real_matrix_base &other)
-    {
+    real_matrix_view &operator-=(const real_matrix_base &other) {
         assert(this->rows_ == other.rows() && this->cols_ == other.cols());
-        for (size_t i = 0; i < this->size(); ++i)
-        {
+        for (size_t i = 0; i < this->size(); ++i) {
             this->data_[i] -= other.data()[i];
         }
         return *this;
     }
-    real_matrix_view &operator*=(const double &scalar)
-    {
-        for (size_t i = 0; i < this->size(); ++i)
-        {
+    real_matrix_view &operator*=(const double &scalar) {
+        for (size_t i = 0; i < this->size(); ++i) {
             this->data_[i] *= scalar;
         }
         return *this;
     }
-    real_matrix_view &operator/=(const double &scalar)
-    {
-        for (size_t i = 0; i < this->size(); ++i)
-        {
+    real_matrix_view &operator/=(const double &scalar) {
+        for (size_t i = 0; i < this->size(); ++i) {
             this->data_[i] /= scalar;
         }
         return *this;
     }
 
     // --- Copy data from another matrix ---
-    void copy_from(const real_matrix_base &src)
-    {
+    void copy_from(const real_matrix_base &src) {
         assert(this->rows_ == src.rows() && this->cols_ == src.cols());
         std::copy(src.begin(), src.end(), this->begin());
     }
@@ -146,8 +132,7 @@ public:
     [[nodiscard]] real_matrix_owned to_owned() const;
 
     // --- Swap (swaps the views, not the data) ---
-    void swap(real_matrix_view &other) noexcept
-    {
+    void swap(real_matrix_view &other) noexcept {
         using std::swap;
         swap(this->data_, other.data_);
         swap(this->rows_, other.rows_);
@@ -160,8 +145,7 @@ public:
  *
  * Similar to matrix_view but provides read-only access
  */
-class const_real_matrix_view
-{
+class const_real_matrix_view {
 private:
     std::span<const double> data_;
     size_t rows_{0};
@@ -172,20 +156,17 @@ public:
     const_real_matrix_view() = default;
 
     const_real_matrix_view(const double *data, size_t rows, size_t cols)
-        : data_(data, rows * cols), rows_(rows), cols_(cols)
-    {}
+        : data_(data, rows * cols), rows_(rows), cols_(cols) {}
 
     const_real_matrix_view(const real_matrix_owned &owner);
 
     const_real_matrix_view(const real_matrix_view &view)
-        : data_(view.data_span()), rows_(view.rows()), cols_(view.cols())
-    {}
+        : data_(view.data_span()), rows_(view.rows()), cols_(view.cols()) {}
 
     const_real_matrix_view(std::span<const double> data,
                            size_t rows,
                            size_t cols)
-        : data_(data), rows_(rows), cols_(cols)
-    {
+        : data_(data), rows_(rows), cols_(cols) {
         assert(data.size() == rows * cols);
     }
 
@@ -200,32 +181,27 @@ public:
     [[nodiscard]] size_t rows() const noexcept { return rows_; }
     [[nodiscard]] size_t cols() const noexcept { return cols_; }
     [[nodiscard]] size_t size() const noexcept { return rows_ * cols_; }
-    [[nodiscard]] std::pair<size_t, size_t> shape() const noexcept
-    {
+    [[nodiscard]] std::pair<size_t, size_t> shape() const noexcept {
         return {rows_, cols_};
     }
 
     // --- Element access (read-only) ---
-    [[nodiscard]] const double &operator()(size_t i, size_t j) const noexcept
-    {
+    [[nodiscard]] const double &operator()(size_t i, size_t j) const noexcept {
         return data_[j * rows_ + i];
     }
 
-    [[nodiscard]] const double &operator[](size_t idx) const noexcept
-    {
+    [[nodiscard]] const double &operator[](size_t idx) const noexcept {
         return data_[idx];
     }
 
     // --- Column access ---
-    [[nodiscard]] std::span<const double> column(size_t j) const noexcept
-    {
+    [[nodiscard]] std::span<const double> column(size_t j) const noexcept {
         return {data_.data() + j * rows_, rows_};
     }
 
     // --- Data access ---
     [[nodiscard]] const double *data() const noexcept { return data_.data(); }
-    [[nodiscard]] std::span<const double> data_span() const noexcept
-    {
+    [[nodiscard]] std::span<const double> data_span() const noexcept {
         return data_;
     }
 
@@ -240,8 +216,7 @@ public:
 };
 
 // --- Column subview (efficient) ---
-inline const_real_matrix_view real_matrix_view::column_view(size_t j) const
-{
+inline const_real_matrix_view real_matrix_view::column_view(size_t j) const {
     auto col_span = this->column(j);
     return const_real_matrix_view(col_span.data(), this->rows_, 1);
 }
@@ -250,20 +225,17 @@ typedef real_matrix_view matrixd_view;
 typedef const_real_matrix_view const_matrixd_view;
 
 // --- Helper functions ---
-inline void swap(real_matrix_view &a, real_matrix_view &b) noexcept
-{
+inline void swap(real_matrix_view &a, real_matrix_view &b) noexcept {
     a.swap(b);
 }
 
 // Create view from owned matrix
-[[nodiscard]] inline real_matrix_view make_view(real_matrix_owned &mat)
-{
+[[nodiscard]] inline real_matrix_view make_view(real_matrix_owned &mat) {
     return real_matrix_view(mat);
 }
 
 [[nodiscard]] inline const_real_matrix_view
-make_view(const real_matrix_owned &mat)
-{
+make_view(const real_matrix_owned &mat) {
     return const_real_matrix_view(mat);
 }
 

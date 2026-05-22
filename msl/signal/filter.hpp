@@ -24,8 +24,7 @@
 #include "filter_design.hpp"
 #include "matrix/real_matrix_owned.hpp"
 
-namespace msl::signal
-{
+namespace msl::signal {
 
 // ============================================================================
 // Direct Form II Transposed (most numerically stable)
@@ -42,21 +41,17 @@ namespace msl::signal
  */
 inline void filter(std::span<const double> signal,
                    std::span<double> result,
-                   const FilterCoefficients &coeffs)
-{
-    if (signal.size() != result.size())
-    {
+                   const FilterCoefficients &coeffs) {
+    if (signal.size() != result.size()) {
         throw std::invalid_argument(
             "Filter: input and output spans must have the same size");
     }
 
-    if (coeffs.a.empty() || coeffs.b.empty())
-    {
+    if (coeffs.a.empty() || coeffs.b.empty()) {
         throw std::invalid_argument("Filter: coefficients cannot be empty");
     }
 
-    if (std::abs(coeffs.a[0] - 1.0) > 1e-10)
-    {
+    if (std::abs(coeffs.a[0] - 1.0) > 1e-10) {
         throw std::invalid_argument(
             "Filter: first denominator coefficient must be 1.0");
     }
@@ -69,24 +64,21 @@ inline void filter(std::span<const double> signal,
     std::vector<double> z(nz, 0.0); // State vector (delay line)
 
     // Direct Form II Transposed implementation
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         double x = signal[i];
 
         // Output = b[0]*x + z[0]
         result[i] = (nb > 0 ? coeffs.b[0] : 0.0) * x + (nz > 0 ? z[0] : 0.0);
 
         // Update state vector
-        for (size_t j = 0; j < nz - 1; ++j)
-        {
+        for (size_t j = 0; j < nz - 1; ++j) {
             double bj = (j + 1 < nb) ? coeffs.b[j + 1] : 0.0;
             double aj = (j + 1 < na) ? coeffs.a[j + 1] : 0.0;
             z[j] = bj * x - aj * result[i] + z[j + 1];
         }
 
         // Last state
-        if (nz > 0)
-        {
+        if (nz > 0) {
             double bn = (nz < nb) ? coeffs.b[nz] : 0.0;
             double an = (nz < na) ? coeffs.a[nz] : 0.0;
             z[nz - 1] = bn * x - an * result[i];
@@ -106,8 +98,7 @@ inline void filter(std::span<const double> signal,
  * @note Uses zero initial conditions
  */
 inline std::vector<double> filter(std::span<const double> signal,
-                                  const FilterCoefficients &coeffs)
-{
+                                  const FilterCoefficients &coeffs) {
 
     std::vector<double> output(signal.size());
     filter(signal, output, coeffs);
@@ -125,17 +116,14 @@ inline std::vector<double> filter(std::span<const double> signal,
  * @return Filtered matrix
  */
 inline matrix::matrixd filter_columns(const matrix::real_matrix_base &signals,
-                                      const FilterCoefficients &coeffs)
-{
+                                      const FilterCoefficients &coeffs) {
     matrix::matrixd output(signals.rows(), signals.cols());
 
-    for (size_t j = 0; j < signals.cols(); ++j)
-    {
+    for (size_t j = 0; j < signals.cols(); ++j) {
         auto col_span = signals.column(j);
         auto filtered = filter(col_span, coeffs);
 
-        for (size_t i = 0; i < signals.rows(); ++i)
-        {
+        for (size_t i = 0; i < signals.rows(); ++i) {
             output(i, j) = filtered[i];
         }
     }

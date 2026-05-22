@@ -18,19 +18,16 @@
 
 #include "interp_1d_base.hpp"
 
-namespace msl::interp
-{
+namespace msl::interp {
 /**
  * @brief Natural cubic spline interpolation.
  *
  * Boundary condition: second derivative is zero at both ends.
  */
-class CubicSpline : public InterpolatorBase
-{
+class CubicSpline : public InterpolatorBase {
 public:
     // Boundary condition types
-    enum class BoundaryCondition
-    {
+    enum class BoundaryCondition {
         Natural,  // Second derivative is zero at endpoints
         NotAKnot, // Third derivative is continuous at second and penultimate
                   // points
@@ -41,8 +38,7 @@ public:
 
     CubicSpline(std::span<const double> x,
                 std::span<const double> y,
-                BoundaryCondition bc_type = BoundaryCondition::NotAKnot)
-    {
+                BoundaryCondition bc_type = BoundaryCondition::NotAKnot) {
         bc_type_ = bc_type;
         set_data(x, y);
     }
@@ -53,8 +49,8 @@ public:
      * @param x Independent variable samples (strictly increasing)
      * @param y Dependent variable samples
      */
-    void set_data(std::span<const double> x, std::span<const double> y) override
-    {
+    void set_data(std::span<const double> x,
+                  std::span<const double> y) override {
         x_.assign(x.begin(), x.end());
         y_.assign(y.begin(), y.end());
         validate_input();
@@ -70,13 +66,10 @@ public:
      */
     void set_boundary_condition(BoundaryCondition bc_type,
                                 double left_slope = 0.0,
-                                double right_slope = 0.0)
-    {
-        if (bc_type != bc_type_)
-        {
+                                double right_slope = 0.0) {
+        if (bc_type != bc_type_) {
             bc_type_ = bc_type;
-            if (bc_type == BoundaryCondition::Clamped)
-            {
+            if (bc_type == BoundaryCondition::Clamped) {
                 left_slope_ = left_slope;
                 right_slope_ = right_slope;
             }
@@ -90,8 +83,7 @@ public:
      * @param x Query point
      * @return Interpolated value at @p x
      */
-    double interpolate(double x) const override
-    {
+    double interpolate(double x) const override {
         size_t i = find_interval(x);
 
         // Cubic spline: S_i(x) = a_i + b_i*(x-x_i) + c_i*(x-x_i)^2 +
@@ -106,8 +98,7 @@ public:
      * @param x Query point
      * @return First derivative value
      */
-    [[nodiscard]] double derivative(double x) const
-    {
+    [[nodiscard]] double derivative(double x) const {
         size_t i = find_interval(x);
         double dx = x - x_[i];
         return b_[i] + 2.0 * c_[i] * dx + 3.0 * d_[i] * dx * dx;
@@ -119,8 +110,7 @@ public:
      * @param x Query point
      * @return Second derivative value
      */
-    [[nodiscard]] double second_derivative(double x) const
-    {
+    [[nodiscard]] double second_derivative(double x) const {
         size_t i = find_interval(x);
         double dx = x - x_[i];
         return 2.0 * c_[i] + 6.0 * d_[i] * dx;
@@ -135,26 +125,22 @@ private:
     double left_slope_ = 0.0;  // For clamped BC
     double right_slope_ = 0.0; // For clamped BC
 
-    void compute_coefficients()
-    {
+    void compute_coefficients() {
         size_t n = x_.size();
-        if (n < 3)
-        {
+        if (n < 3) {
             throw std::runtime_error(
                 "At least 3 points are required for cubic spline.");
         }
 
         // Calculate step sizes h[i] = x[i+1] - x[i]
         std::vector<double> h(n - 1);
-        for (size_t i = 0; i < n - 1; ++i)
-        {
+        for (size_t i = 0; i < n - 1; ++i) {
             h[i] = x_[i + 1] - x_[i];
         }
 
         // Calculate standard right-hand side differences (alpha)
         std::vector<double> alpha(n, 0.0);
-        for (size_t i = 1; i < n - 1; ++i)
-        {
+        for (size_t i = 1; i < n - 1; ++i) {
             alpha[i] =
                 3.0
                 * ((y_[i + 1] - y_[i]) / h[i] - (y_[i] - y_[i - 1]) / h[i - 1]);
@@ -164,8 +150,7 @@ private:
         c_.assign(n, 0.0);
 
         // Dispatch to the corresponding solver based on boundary condition
-        switch (bc_type_)
-        {
+        switch (bc_type_) {
             case BoundaryCondition::Natural:
                 compute_natural(h, alpha);
                 break;
@@ -180,8 +165,7 @@ private:
         // Calculate final b_i and d_i coefficients
         b_.resize(n - 1);
         d_.resize(n - 1);
-        for (size_t i = 0; i < n - 1; ++i)
-        {
+        for (size_t i = 0; i < n - 1; ++i) {
             b_[i] = (y_[i + 1] - y_[i]) / h[i]
                     - h[i] * (c_[i + 1] + 2.0 * c_[i]) / 3.0;
             d_[i] = (c_[i + 1] - c_[i]) / (3.0 * h[i]);
@@ -189,13 +173,11 @@ private:
     }
 
     void compute_natural(const std::vector<double> &h,
-                         const std::vector<double> &alpha)
-    {
+                         const std::vector<double> &alpha) {
         size_t n = x_.size();
         std::vector<double> L(n, 0.0), D(n, 1.0), U(n, 0.0), B(n, 0.0);
 
-        for (size_t i = 1; i < n - 1; ++i)
-        {
+        for (size_t i = 1; i < n - 1; ++i) {
             L[i] = h[i - 1];
             D[i] = 2.0 * (h[i - 1] + h[i]);
             U[i] = h[i];
@@ -206,13 +188,11 @@ private:
     }
 
     void compute_clamped(const std::vector<double> &h,
-                         const std::vector<double> &alpha)
-    {
+                         const std::vector<double> &alpha) {
         size_t n = x_.size();
         std::vector<double> L(n, 0.0), D(n, 1.0), U(n, 0.0), B(n, 0.0);
 
-        for (size_t i = 1; i < n - 1; ++i)
-        {
+        for (size_t i = 1; i < n - 1; ++i) {
             L[i] = h[i - 1];
             D[i] = 2.0 * (h[i - 1] + h[i]);
             U[i] = h[i];
@@ -232,15 +212,13 @@ private:
     }
 
     void compute_not_a_knot(const std::vector<double> &h,
-                            const std::vector<double> &alpha)
-    {
+                            const std::vector<double> &alpha) {
         size_t n = x_.size();
 
         // Not-a-knot strictly requires at least 4 points to form the (N-2)
         // subsystem. Fallback to Natural boundary if only 3 points are
         // provided.
-        if (n == 3)
-        {
+        if (n == 3) {
             compute_natural(h, alpha);
             return;
         }
@@ -254,8 +232,7 @@ private:
         U[0] = h[1] * h[1] - h[0] * h[0];
         B[0] = h[1] * alpha[1];
 
-        for (size_t i = 1; i < N_reduced - 1; ++i)
-        {
+        for (size_t i = 1; i < N_reduced - 1; ++i) {
             L[i] = h[i];
             D[i] = 2.0 * (h[i] + h[i + 1]);
             U[i] = h[i + 1];
@@ -271,8 +248,7 @@ private:
 
         // Back-substitute to reconstruct the full c_ array of size N
         c_[0] = (h[0] + h[1]) / h[1] * c_sol[0] - h[0] / h[1] * c_sol[1];
-        for (size_t i = 0; i < N_reduced; ++i)
-        {
+        for (size_t i = 0; i < N_reduced; ++i) {
             c_[i + 1] = c_sol[i];
         }
         c_[n - 1] = (h[n - 3] + h[n - 2]) / h[n - 3] * c_sol[N_reduced - 1]
@@ -282,15 +258,13 @@ private:
     std::vector<double> solve_tridiagonal(const std::vector<double> &L,
                                           const std::vector<double> &D,
                                           const std::vector<double> &U,
-                                          const std::vector<double> &B) const
-    {
+                                          const std::vector<double> &B) const {
         size_t n = D.size();
         std::vector<double> c_sol(n);
         std::vector<double> cp(n); // c-prime
         std::vector<double> bp(n); // B-prime
 
-        if (std::abs(D[0]) < 1e-14)
-        {
+        if (std::abs(D[0]) < 1e-14) {
             throw std::runtime_error(
                 "Zero pivot encountered in Thomas algorithm.");
         }
@@ -299,11 +273,9 @@ private:
         cp[0] = U[0] / D[0];
         bp[0] = B[0] / D[0];
 
-        for (size_t i = 1; i < n; i++)
-        {
+        for (size_t i = 1; i < n; i++) {
             double denom = D[i] - L[i] * cp[i - 1];
-            if (std::abs(denom) < 1e-14)
-            {
+            if (std::abs(denom) < 1e-14) {
                 throw std::runtime_error(
                     "Division by zero in tridiagonal solver.");
             }
@@ -314,8 +286,7 @@ private:
 
         // Backward substitution
         c_sol[n - 1] = bp[n - 1];
-        for (int i = static_cast<int>(n) - 2; i >= 0; i--)
-        {
+        for (int i = static_cast<int>(n) - 2; i >= 0; i--) {
             c_sol[i] = bp[i] - cp[i] * c_sol[i + 1];
         }
         return c_sol;
@@ -333,10 +304,8 @@ private:
 inline void interp1_cubic(std::span<const double> x,
                           std::span<const double> y,
                           std::span<const double> x_new,
-                          std::span<double> result)
-{
-    if (x_new.size() != result.size())
-    {
+                          std::span<double> result) {
+    if (x_new.size() != result.size()) {
         throw std::invalid_argument(
             "interp1_cubic: x_new and result spans must have same size");
     }
@@ -355,8 +324,7 @@ inline void interp1_cubic(std::span<const double> x,
  */
 inline std::vector<double> interp1_cubic(std::span<const double> x,
                                          std::span<const double> y,
-                                         std::span<const double> x_new)
-{
+                                         std::span<const double> x_new) {
     return CubicSpline(x, y)(x_new);
 }
 

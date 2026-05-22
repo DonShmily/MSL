@@ -25,8 +25,7 @@
 #include "matrix/real_matrix_owned.hpp"
 #include "matrix/real_matrix_view.hpp"
 
-namespace msl::matrix::eigen_interface
-{
+namespace msl::matrix::eigen_interface {
 
 // ============================================================================
 // 1. MSL -> Eigen (Zero-copy views using Eigen::Map)
@@ -37,16 +36,14 @@ namespace msl::matrix::eigen_interface
  * @note Zero-copy operation. The Eigen::Map is only valid while mat exists.
  * @warning mat must be in contiguous column-major layout
  */
-inline Eigen::Map<Eigen::MatrixXd> as_eigen(matrixd &mat)
-{
+inline Eigen::Map<Eigen::MatrixXd> as_eigen(matrixd &mat) {
     return Eigen::Map<Eigen::MatrixXd>(mat.data(), mat.rows(), mat.cols());
 }
 
 /**
  * @brief Create const Eigen::Map from const matrixd
  */
-inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const matrixd &mat)
-{
+inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const matrixd &mat) {
     return Eigen::Map<const Eigen::MatrixXd>(
         mat.data(), mat.rows(), mat.cols());
 }
@@ -55,16 +52,14 @@ inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const matrixd &mat)
  * @brief Create Eigen::Map from matrixd_view
  * @warning The view must point to contiguous column-major data
  */
-inline Eigen::Map<Eigen::MatrixXd> as_eigen(matrixd_view &view)
-{
+inline Eigen::Map<Eigen::MatrixXd> as_eigen(matrixd_view &view) {
     return Eigen::Map<Eigen::MatrixXd>(view.data(), view.rows(), view.cols());
 }
 
 /**
  * @brief Create const Eigen::Map from const matrixd_view
  */
-inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const matrixd_view &view)
-{
+inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const matrixd_view &view) {
     return Eigen::Map<const Eigen::MatrixXd>(
         view.data(), view.rows(), view.cols());
 }
@@ -73,8 +68,7 @@ inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const matrixd_view &view)
  * @brief Create const Eigen::Map from const_matrixd_view
  */
 inline Eigen::Map<const Eigen::MatrixXd>
-as_eigen(const const_matrixd_view &view)
-{
+as_eigen(const const_matrixd_view &view) {
     return Eigen::Map<const Eigen::MatrixXd>(
         view.data(), view.rows(), view.cols());
 }
@@ -83,8 +77,7 @@ as_eigen(const const_matrixd_view &view)
  * @brief Create Eigen::Map from real_matrix_base
  * @warning The view must point to contiguous column-major data
  */
-inline Eigen::Map<const Eigen::MatrixXd> as_eigen(real_matrix_base &base)
-{
+inline Eigen::Map<const Eigen::MatrixXd> as_eigen(real_matrix_base &base) {
     return Eigen::Map<const Eigen::MatrixXd>(
         base.data(), base.rows(), base.cols());
 }
@@ -93,8 +86,8 @@ inline Eigen::Map<const Eigen::MatrixXd> as_eigen(real_matrix_base &base)
  * @brief Create const Eigen::Map from const real_matrix_base
  * @warning The view must point to contiguous column-major data
  */
-inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const real_matrix_base &base)
-{
+inline Eigen::Map<const Eigen::MatrixXd>
+as_eigen(const real_matrix_base &base) {
     return Eigen::Map<const Eigen::MatrixXd>(
         base.data(), base.rows(), base.cols());
 }
@@ -105,8 +98,7 @@ inline Eigen::Map<const Eigen::MatrixXd> as_eigen(const real_matrix_base &base)
  */
 inline Eigen::Map<
     const Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>>
-as_eigen(complex_matrix_base &base)
-{
+as_eigen(complex_matrix_base &base) {
     return Eigen::Map<const Eigen::Matrix<std::complex<double>,
                                           Eigen::Dynamic,
                                           Eigen::Dynamic>>(
@@ -119,8 +111,7 @@ as_eigen(complex_matrix_base &base)
  */
 inline Eigen::Map<
     const Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>>
-as_eigen(const complex_matrix_base &base)
-{
+as_eigen(const complex_matrix_base &base) {
     return Eigen::Map<const Eigen::Matrix<std::complex<double>,
                                           Eigen::Dynamic,
                                           Eigen::Dynamic>>(
@@ -138,8 +129,7 @@ as_eigen(const complex_matrix_base &base)
  * @note This always performs a deep copy, ensuring safety
  */
 template <typename Derived>
-inline matrixd from_eigen(const Eigen::MatrixBase<Derived> &eig)
-{
+inline matrixd from_eigen(const Eigen::MatrixBase<Derived> &eig) {
     // Force evaluation of expression templates
     Eigen::MatrixXd evaluated = eig;
     matrixd result(evaluated.rows(), evaluated.cols());
@@ -151,8 +141,7 @@ inline matrixd from_eigen(const Eigen::MatrixBase<Derived> &eig)
 /**
  * @brief Specialization for Eigen::MatrixXd (may avoid one copy)
  */
-inline matrixd from_eigen(const Eigen::MatrixXd &eig)
-{
+inline matrixd from_eigen(const Eigen::MatrixXd &eig) {
     matrixd result(eig.rows(), eig.cols());
     std::copy(eig.data(), eig.data() + eig.size(), result.data());
     return result;
@@ -163,8 +152,7 @@ inline matrixd from_eigen(const Eigen::MatrixXd &eig)
  */
 inline matrixc from_eigen(
     const Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>
-        &eig)
-{
+        &eig) {
     matrixc result(eig.rows(), eig.cols());
     std::copy(eig.data(), eig.data() + eig.size(), result.data());
     return result;
@@ -175,8 +163,7 @@ inline matrixc from_eigen(
  */
 inline matrixd from_eigen(
     const Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>>
-        &eig)
-{
+        &eig) {
     matrixd result(eig.rows(), eig.cols());
     std::copy(eig.data(), eig.data() + eig.size(), result.data());
     return result;
@@ -188,8 +175,7 @@ inline matrixd from_eigen(
 inline matrixc
 from_eigen(const Eigen::Map<
            Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>>
-               &eig)
-{
+               &eig) {
     matrixc result(eig.rows(), eig.cols());
     std::copy(eig.data(), eig.data() + eig.size(), result.data());
     return result;
@@ -217,16 +203,14 @@ from_eigen(const Eigen::Map<
  * @param eig Named Eigen matrix (lvalue reference only)
  * @return Non-owning view into Eigen's data
  */
-inline matrixd_view view_from_eigen(Eigen::MatrixXd &eig)
-{
+inline matrixd_view view_from_eigen(Eigen::MatrixXd &eig) {
     return matrixd_view(eig.data(), eig.rows(), eig.cols());
 }
 
 /**
  * @brief Create const view from const Eigen::MatrixXd
  */
-inline const_matrixd_view view_from_eigen(const Eigen::MatrixXd &eig)
-{
+inline const_matrixd_view view_from_eigen(const Eigen::MatrixXd &eig) {
     return const_matrixd_view(eig.data(), eig.rows(), eig.cols());
 }
 
@@ -253,11 +237,9 @@ view_from_eigen(const Eigen::MatrixBase<Derived> &&) = delete;
  */
 template <typename Derived>
 inline void copy_from_eigen(matrixd &dest,
-                            const Eigen::MatrixBase<Derived> &eig)
-{
+                            const Eigen::MatrixBase<Derived> &eig) {
     if (dest.rows() != static_cast<size_t>(eig.rows())
-        || dest.cols() != static_cast<size_t>(eig.cols()))
-    {
+        || dest.cols() != static_cast<size_t>(eig.cols())) {
         dest.resize(eig.rows(), eig.cols());
     }
 
@@ -272,8 +254,7 @@ inline void copy_from_eigen(matrixd &dest,
  * @param src Source MSL matrix
  * @param dest Destination Eigen matrix (will be resized if needed)
  */
-inline void copy_to_eigen(const matrixd &src, Eigen::MatrixXd &dest)
-{
+inline void copy_to_eigen(const matrixd &src, Eigen::MatrixXd &dest) {
     dest.resize(src.rows(), src.cols());
     std::copy(src.data(), src.data() + src.size(), dest.data());
 }
@@ -281,8 +262,7 @@ inline void copy_to_eigen(const matrixd &src, Eigen::MatrixXd &dest)
 /**
  * @brief Copy from MSL view to Eigen matrix
  */
-inline void copy_to_eigen(const matrixd_view &src, Eigen::MatrixXd &dest)
-{
+inline void copy_to_eigen(const matrixd_view &src, Eigen::MatrixXd &dest) {
     dest.resize(src.rows(), src.cols());
     std::copy(src.data(), src.data() + src.size(), dest.data());
 }
@@ -290,8 +270,8 @@ inline void copy_to_eigen(const matrixd_view &src, Eigen::MatrixXd &dest)
 /**
  * @brief Copy from const MSL view to Eigen matrix
  */
-inline void copy_to_eigen(const const_matrixd_view &src, Eigen::MatrixXd &dest)
-{
+inline void copy_to_eigen(const const_matrixd_view &src,
+                          Eigen::MatrixXd &dest) {
     dest.resize(src.rows(), src.cols());
     std::copy(src.data(), src.data() + src.size(), dest.data());
 }
@@ -314,8 +294,7 @@ inline void copy_to_eigen(const const_matrixd_view &src, Eigen::MatrixXd &dest)
  * @return New matrixd with result
  */
 template <typename Func>
-inline matrixd with_eigen(matrixd &mat, Func &&func)
-{
+inline matrixd with_eigen(matrixd &mat, Func &&func) {
     auto eig_map = as_eigen(mat);
     auto result = func(eig_map);
     return from_eigen(result);
@@ -325,8 +304,7 @@ inline matrixd with_eigen(matrixd &mat, Func &&func)
  * @brief Const version
  */
 template <typename Func>
-inline matrixd with_eigen(const matrixd &mat, Func &&func)
-{
+inline matrixd with_eigen(const matrixd &mat, Func &&func) {
     auto eig_map = as_eigen(mat);
     auto result = func(eig_map);
     return from_eigen(result);
@@ -345,8 +323,7 @@ inline matrixd with_eigen(const matrixd &mat, Func &&func)
  * @param func Lambda taking Eigen::Map reference
  */
 template <typename Func>
-inline void inplace_eigen(matrixd &mat, Func &&func)
-{
+inline void inplace_eigen(matrixd &mat, Func &&func) {
     auto eig_map = as_eigen(mat);
     func(eig_map);
 }
@@ -358,8 +335,7 @@ inline void inplace_eigen(matrixd &mat, Func &&func)
 /**
  * @brief Matrix-matrix multiplication using Eigen
  */
-inline matrixd matmul(const matrixd &A, const matrixd &B)
-{
+inline matrixd matmul(const matrixd &A, const matrixd &B) {
     auto eig_A = as_eigen(A);
     auto eig_B = as_eigen(B);
     return from_eigen(eig_A * eig_B);
@@ -369,8 +345,7 @@ inline matrixd matmul(const matrixd &A, const matrixd &B)
  * @brief Matrix-vector multiplication
  */
 inline std::vector<double> matvec(const matrixd &A,
-                                  const std::vector<double> &x)
-{
+                                  const std::vector<double> &x) {
     assert(A.cols() == x.size());
 
     auto eig_A = as_eigen(A);
@@ -383,8 +358,8 @@ inline std::vector<double> matvec(const matrixd &A,
 /**
  * @brief Solve linear system Ax = b
  */
-inline std::vector<double> solve(const matrixd &A, const std::vector<double> &b)
-{
+inline std::vector<double> solve(const matrixd &A,
+                                 const std::vector<double> &b) {
     assert(A.rows() == A.cols());
     assert(A.rows() == b.size());
 

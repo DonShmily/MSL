@@ -23,8 +23,7 @@
 #include "matrix/real_matrix_base.hpp"
 #include "matrix/real_matrix_owned.hpp"
 
-namespace msl::integral
-{
+namespace msl::integral {
 
 // ============================================================================
 // Cumulative Trapezoidal Integration
@@ -43,22 +42,18 @@ namespace msl::integral
  * @param dx Spacing between points
  */
 inline void
-cumtrapz(std::span<const double> y, std::span<double> result, double dx)
-{
-    if (y.size() < 2)
-    {
+cumtrapz(std::span<const double> y, std::span<double> result, double dx) {
+    if (y.size() < 2) {
         throw std::invalid_argument(
             "Cumtrapz: needs at least 2 points for integration");
     }
-    if (result.size() != y.size())
-    {
+    if (result.size() != y.size()) {
         throw std::invalid_argument(
             "Cumtrapz: result span must have same size as y");
     }
 
     result[0] = 0.0;
-    for (size_t i = 1; i < y.size(); ++i)
-    {
+    for (size_t i = 1; i < y.size(); ++i) {
         result[i] = result[i - 1] + 0.5 * (y[i] + y[i - 1]) * dx;
     }
 }
@@ -72,8 +67,7 @@ cumtrapz(std::span<const double> y, std::span<double> result, double dx)
  * @param dx Spacing between points
  * @return Cumulative integral values
  */
-inline std::vector<double> cumtrapz(std::span<const double> y, double dx)
-{
+inline std::vector<double> cumtrapz(std::span<const double> y, double dx) {
     std::vector<double> result(y.size());
     cumtrapz(y, result, dx);
     return result;
@@ -92,26 +86,21 @@ inline std::vector<double> cumtrapz(std::span<const double> y, double dx)
  */
 inline void cumtrapz(std::span<const double> x,
                      std::span<const double> y,
-                     std::span<double> result)
-{
-    if (x.size() != y.size())
-    {
+                     std::span<double> result) {
+    if (x.size() != y.size()) {
         throw std::invalid_argument("Cumtrapz: x and y must have same size");
     }
-    if (x.size() < 2)
-    {
+    if (x.size() < 2) {
         throw std::invalid_argument(
             "Cumtrapz: needs at least 2 points for integration");
     }
-    if (result.size() != y.size())
-    {
+    if (result.size() != y.size()) {
         throw std::invalid_argument(
             "Cumtrapz: result span must have same size as y");
     }
 
     result[0] = 0.0;
-    for (size_t i = 1; i < y.size(); ++i)
-    {
+    for (size_t i = 1; i < y.size(); ++i) {
         double dx = x[i] - x[i - 1];
         result[i] = result[i - 1] + 0.5 * (y[i] + y[i - 1]) * dx;
     }
@@ -125,8 +114,7 @@ inline void cumtrapz(std::span<const double> x,
  * @return Cumulative integral values
  */
 inline std::vector<double> cumtrapz(std::span<const double> x,
-                                    std::span<const double> y)
-{
+                                    std::span<const double> y) {
     std::vector<double> result(y.size());
     cumtrapz(x, y, result);
     return result;
@@ -142,20 +130,17 @@ inline std::vector<double> cumtrapz(std::span<const double> x,
  * @param dx Spacing between rows
  * @return Matrix of cumulative integrals
  */
-inline matrix::matrixd cumtrapz(const matrix::real_matrix_base &mat, double dx)
-{
-    if (mat.rows() < 2)
-    {
+inline matrix::matrixd cumtrapz(const matrix::real_matrix_base &mat,
+                                double dx) {
+    if (mat.rows() < 2) {
         throw std::invalid_argument(
             "Cumtrapz: needs at least 2 rows for integration");
     }
 
     matrix::matrixd result(mat.rows(), mat.cols(), 0.0);
 
-    for (size_t j = 0; j < mat.cols(); ++j)
-    {
-        for (size_t i = 1; i < mat.rows(); ++i)
-        {
+    for (size_t j = 0; j < mat.cols(); ++j) {
+        for (size_t i = 1; i < mat.rows(); ++i) {
             result(i, j) =
                 result(i - 1, j) + 0.5 * (mat(i, j) + mat(i - 1, j)) * dx;
         }
@@ -173,25 +158,20 @@ inline matrix::matrixd cumtrapz(const matrix::real_matrix_base &mat, double dx)
  * @return Matrix of cumulative integrals
  */
 inline matrix::matrixd cumtrapz(std::span<const double> x,
-                                const matrix::real_matrix_base &mat)
-{
-    if (x.size() != mat.rows())
-    {
+                                const matrix::real_matrix_base &mat) {
+    if (x.size() != mat.rows()) {
         throw std::invalid_argument(
             "Cumtrapz: x size must match number of rows");
     }
-    if (mat.rows() < 2)
-    {
+    if (mat.rows() < 2) {
         throw std::invalid_argument(
             "Cumtrapz: needs at least 2 rows for integration");
     }
 
     matrix::matrixd result(mat.rows(), mat.cols(), 0.0);
 
-    for (size_t j = 0; j < mat.cols(); ++j)
-    {
-        for (size_t i = 1; i < mat.rows(); ++i)
-        {
+    for (size_t j = 0; j < mat.cols(); ++j) {
+        for (size_t i = 1; i < mat.rows(); ++i) {
             double dx = x[i] - x[i - 1];
             result(i, j) =
                 result(i - 1, j) + 0.5 * (mat(i, j) + mat(i - 1, j)) * dx;

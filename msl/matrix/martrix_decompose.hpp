@@ -26,15 +26,13 @@
 #include "real_matrix_base.hpp"
 #include "real_matrix_owned.hpp"
 
-namespace msl::matrix
-{
+namespace msl::matrix {
 // ============================================================================
 // 1. Matrix SVD Functions
 // ============================================================================
 // Decompose real matrix A into U, S, V such that A = U * S * V^T
 // U and V are orthogonal matrices, S is diagonal matrix of singular values
-inline std::array<real_matrix_owned, 3> svd(const real_matrix_base &A)
-{
+inline std::array<real_matrix_owned, 3> svd(const real_matrix_base &A) {
     // Placeholder implementation (to be replaced with actual SVD algorithm)
     size_t m = A.rows();
     size_t n = A.cols();
@@ -55,8 +53,7 @@ inline std::array<real_matrix_owned, 3> svd(const real_matrix_base &A)
     std::copy(eig_U.data(), eig_U.data() + eig_U.size(), U.data());
     std::copy(eig_V.data(), eig_V.data() + eig_V.size(), V.data());
     std::fill(S.data(), S.data() + S.size(), 0.0);
-    for (size_t i = 0; i < std::min(m, n); ++i)
-    {
+    for (size_t i = 0; i < std::min(m, n); ++i) {
         S(i, i) = eig_S(i);
     }
 
@@ -65,8 +62,7 @@ inline std::array<real_matrix_owned, 3> svd(const real_matrix_base &A)
 
 // Decompose complex matrix A into U, S, V such that A = U * S * V^T
 // U and V are orthogonal matrices, S is diagonal matrix of singular values
-inline std::array<complex_matrix_owned, 3> svd(const complex_matrix_base &A)
-{
+inline std::array<complex_matrix_owned, 3> svd(const complex_matrix_base &A) {
     // Placeholder implementation (to be replaced with actual SVD algorithm)
     size_t m = A.rows();
     size_t n = A.cols();
@@ -91,8 +87,7 @@ inline std::array<complex_matrix_owned, 3> svd(const complex_matrix_base &A)
     std::copy(eig_U.data(), eig_U.data() + eig_U.size(), U.data());
     std::copy(eig_V.data(), eig_V.data() + eig_V.size(), V.data());
     std::fill(S.data(), S.data() + S.size(), 0.0);
-    for (size_t i = 0; i < std::min(m, n); ++i)
-    {
+    for (size_t i = 0; i < std::min(m, n); ++i) {
         S(i, i) = eig_S(i);
     }
 
@@ -104,10 +99,8 @@ inline std::array<complex_matrix_owned, 3> svd(const complex_matrix_base &A)
 // ============================================================================
 // Decompose real matrix A into V, D such that A * V = V * D;
 // V is matrix of eigenvectors, D is diagonal matrix of eigenvalues
-inline std::array<msl::matrix::matrixc, 2> eig(const real_matrix_base &A)
-{
-    if (A.rows() != A.cols())
-    {
+inline std::array<msl::matrix::matrixc, 2> eig(const real_matrix_base &A) {
+    if (A.rows() != A.cols()) {
         throw std::invalid_argument(
             "Eigenvalue decomposition requires a square matrix");
     }
@@ -129,8 +122,7 @@ inline std::array<msl::matrix::matrixc, 2> eig(const real_matrix_base &A)
     // Copy
     std::copy(eig_V.data(), eig_V.data() + eig_V.size(), V.data());
     std::fill(D.data(), D.data() + D.size(), 0.0);
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         D(i, i) = eig_D(i).real(); // Use real part for diagonal
     }
 
@@ -140,10 +132,8 @@ inline std::array<msl::matrix::matrixc, 2> eig(const real_matrix_base &A)
 // Decompose real matrix A and B into V, D such that A * V = B * V * D;
 // V is matrix of eigenvectors, D is diagonal matrix of eigenvalues
 inline std::array<msl::matrix::matrixc, 2> eig(const real_matrix_base &A,
-                                               const real_matrix_base &B)
-{
-    if (A.rows() != A.cols() || B.rows() != B.cols() || A.rows() != B.rows())
-    {
+                                               const real_matrix_base &B) {
+    if (A.rows() != A.cols() || B.rows() != B.cols() || A.rows() != B.rows()) {
         throw std::invalid_argument(
             "Generalized eigenvalue decomposition requires square matrices of "
             "the same size");
@@ -167,8 +157,7 @@ inline std::array<msl::matrix::matrixc, 2> eig(const real_matrix_base &A,
     // Copy
     std::copy(eig_V.data(), eig_V.data() + eig_V.size(), V.data());
     std::fill(D.data(), D.data() + D.size(), 0.0);
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         D(i, i) = eig_D(i).real(); // Use real part for diagonal
     }
 
@@ -180,10 +169,8 @@ inline std::array<msl::matrix::matrixc, 2> eig(const real_matrix_base &A,
 // ============================================================================
 // Decompose real matrix A into L and U such that A = L * U
 // L is lower triangular matrix, U is upper triangular matrix
-inline std::array<real_matrix_owned, 2> lu(const real_matrix_base &A)
-{
-    if (A.rows() != A.cols())
-    {
+inline std::array<real_matrix_owned, 2> lu(const real_matrix_base &A) {
+    if (A.rows() != A.cols()) {
         throw std::invalid_argument(
             "LU decomposition requires a square matrix");
     }
@@ -200,19 +187,15 @@ inline std::array<real_matrix_owned, 2> lu(const real_matrix_base &A)
     Eigen::MatrixXd eig_U = lu.matrixLU().triangularView<Eigen::Upper>();
 
     // Copy L
-    for (size_t i = 0; i < n; ++i)
-    {
-        for (size_t j = 0; j <= i; ++j)
-        {
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t j = 0; j <= i; ++j) {
             L(i, j) = eig_L(i, j);
         }
     }
 
     // Copy U
-    for (size_t i = 0; i < n; ++i)
-    {
-        for (size_t j = i; j < n; ++j)
-        {
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t j = i; j < n; ++j) {
             U(i, j) = eig_U(i, j);
         }
     }
@@ -222,10 +205,8 @@ inline std::array<real_matrix_owned, 2> lu(const real_matrix_base &A)
 
 // Decompose complex matrix A into L and U such that A = L * U
 // L is lower triangular matrix, U is upper triangular matrix
-inline std::array<complex_matrix_owned, 2> lu(const complex_matrix_base &A)
-{
-    if (A.rows() != A.cols())
-    {
+inline std::array<complex_matrix_owned, 2> lu(const complex_matrix_base &A) {
+    if (A.rows() != A.cols()) {
         throw std::invalid_argument(
             "LU decomposition requires a square matrix");
     }
@@ -248,19 +229,15 @@ inline std::array<complex_matrix_owned, 2> lu(const complex_matrix_base &A)
         matLU.triangularView<Eigen::Upper>();
 
     // Copy L
-    for (size_t i = 0; i < n; ++i)
-    {
-        for (size_t j = 0; j <= i; ++j)
-        {
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t j = 0; j <= i; ++j) {
             L(i, j) = eig_L(i, j);
         }
     }
 
     // Copy U
-    for (size_t i = 0; i < n; ++i)
-    {
-        for (size_t j = i; j < n; ++j)
-        {
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t j = i; j < n; ++j) {
             U(i, j) = eig_U(i, j);
         }
     }
@@ -274,8 +251,7 @@ inline std::array<complex_matrix_owned, 2> lu(const complex_matrix_base &A)
 // Decompose real matrix A into Q and R such that A = Q * R
 // Q is orthogonal matrix, R is upper triangular matrix
 inline std::array<real_matrix_owned, 2> qr(const real_matrix_base &A,
-                                           bool full = false)
-{
+                                           bool full = false) {
     size_t m = A.rows();
     size_t n = A.cols();
     std::array<real_matrix_owned, 2> result;
@@ -287,15 +263,12 @@ inline std::array<real_matrix_owned, 2> qr(const real_matrix_base &A,
 
     Eigen::MatrixXd eig_R = qr.matrixQR().triangularView<Eigen::Upper>();
 
-    if (full)
-    {
+    if (full) {
         // full QR: Q is m x m
         Eigen::MatrixXd I = Eigen::MatrixXd::Identity(m, m);
         Q = eigen_interface::from_eigen(qr.householderQ() * I);
         R = eigen_interface::from_eigen(eig_R);
-    }
-    else
-    {
+    } else {
         // thin QR: Q is m x n
         Eigen::MatrixXd I = Eigen::MatrixXd::Identity(m, n);
         Q = eigen_interface::from_eigen(qr.householderQ() * I);
@@ -307,8 +280,7 @@ inline std::array<real_matrix_owned, 2> qr(const real_matrix_base &A,
 
 // Decompose complex matrix A into Q and R such that A = Q * R
 // Q is orthogonal matrix, R is upper triangular matrix
-inline std::array<complex_matrix_owned, 2> qr(const complex_matrix_base &A)
-{
+inline std::array<complex_matrix_owned, 2> qr(const complex_matrix_base &A) {
     size_t m = A.rows();
     size_t n = A.cols();
     std::array<complex_matrix_owned, 2> result;
@@ -327,19 +299,15 @@ inline std::array<complex_matrix_owned, 2> qr(const complex_matrix_base &A)
 
     // Copy Q
     // Note: eig_Q is complete m x m matrix
-    for (size_t i = 0; i < m; ++i)
-    {
-        for (size_t j = 0; j < m; ++j)
-        {
+    for (size_t i = 0; i < m; ++i) {
+        for (size_t j = 0; j < m; ++j) {
             Q(i, j) = eig_Q(i, j);
         }
     }
 
     // Copy R
-    for (size_t i = 0; i < m; ++i)
-    {
-        for (size_t j = 0; j < n; ++j)
-        {
+    for (size_t i = 0; i < m; ++i) {
+        for (size_t j = 0; j < n; ++j) {
             R(i, j) = eig_R(i, j);
         }
     }

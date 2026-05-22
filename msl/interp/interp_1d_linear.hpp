@@ -18,21 +18,18 @@
 
 #include "interp_1d_base.hpp"
 
-namespace msl::interp
-{
+namespace msl::interp {
 /**
  * @brief Piecewise linear interpolation.
  *
  * Uses the two neighboring samples around the query point to perform
  * first-order interpolation.
  */
-class Linear : public InterpolatorBase
-{
+class Linear : public InterpolatorBase {
 public:
     Linear() = default;
 
-    Linear(std::span<const double> x, std::span<const double> y)
-    {
+    Linear(std::span<const double> x, std::span<const double> y) {
         set_data(x, y);
     }
 
@@ -42,8 +39,8 @@ public:
      * @param x Independent variable samples (strictly increasing)
      * @param y Dependent variable samples
      */
-    void set_data(std::span<const double> x, std::span<const double> y) override
-    {
+    void set_data(std::span<const double> x,
+                  std::span<const double> y) override {
         x_.assign(x.begin(), x.end());
         y_.assign(y.begin(), y.end());
         validate_input();
@@ -55,8 +52,7 @@ public:
      * @param x Query point
      * @return Interpolated value at @p x
      */
-    double interpolate(double x) const override
-    {
+    double interpolate(double x) const override {
         size_t i = find_interval(x);
 
         // Linear interpolation: y = y0 + (y1-y0)/(x1-x0) * (x-x0)
@@ -70,8 +66,7 @@ public:
      * @param x Query point
      * @return Slope of the active linear segment
      */
-    [[nodiscard]] double derivative(double x) const
-    {
+    [[nodiscard]] double derivative(double x) const {
         size_t i = find_interval(x);
         return (y_[i + 1] - y_[i]) / (x_[i + 1] - x_[i]);
     }
@@ -88,10 +83,8 @@ public:
 inline void interp1_linear(std::span<const double> x,
                            std::span<const double> y,
                            std::span<const double> x_new,
-                           std::span<double> result)
-{
-    if (x_new.size() != result.size())
-    {
+                           std::span<double> result) {
+    if (x_new.size() != result.size()) {
         throw std::invalid_argument(
             "interp1_linear: x_new and result spans must have same size");
     }
@@ -110,8 +103,7 @@ inline void interp1_linear(std::span<const double> x,
  */
 inline std::vector<double> interp1_linear(std::span<const double> x,
                                           std::span<const double> y,
-                                          std::span<const double> x_new)
-{
+                                          std::span<const double> x_new) {
     return Linear(x, y)(x_new);
 }
 

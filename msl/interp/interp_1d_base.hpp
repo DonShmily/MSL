@@ -22,26 +22,17 @@
 #include <stdexcept>
 #include <vector>
 
-namespace msl::interp
-{
+namespace msl::interp {
 
 /**
  * @brief Interpolation methods
  */
-enum class InterpolationMethod
-{
-    Nearest,
-    Linear,
-    Spline,
-    Akima,
-    Polynomial
-};
+enum class InterpolationMethod { Nearest, Linear, Spline, Akima, Polynomial };
 
 /**
  * @brief Extrapolation methods
  */
-enum class ExtrapolationMode
-{
+enum class ExtrapolationMode {
     None,      // Throw exception (default)
     Constant,  // Use boundary values
     Linear,    // Linear extrapolation using boundary slopes
@@ -53,8 +44,7 @@ enum class ExtrapolationMode
 /**
  * @brief Base class for 1D interpolators
  */
-class InterpolatorBase
-{
+class InterpolatorBase {
 public:
     InterpolatorBase() = default;
     virtual ~InterpolatorBase() = default;
@@ -69,8 +59,7 @@ public:
     /**
      * @brief Get current extrapolation mode
      */
-    [[nodiscard]] ExtrapolationMode extrapolation_mode() const
-    {
+    [[nodiscard]] ExtrapolationMode extrapolation_mode() const {
         return extrap_mode_;
     }
 
@@ -80,20 +69,16 @@ public:
      * @param x Evaluation point
      * @return Interpolated (or extrapolated) value at x
      */
-    double operator()(double x) const
-    {
+    double operator()(double x) const {
         // Check for exact match
         auto idx = std::find(x_.begin(), x_.end(), x);
-        if (idx != x_.end())
-        {
+        if (idx != x_.end()) {
             return y_[idx - x_.begin()];
         }
 
         // Handle extrapolation
-        if (x < x_.front())
-        {
-            switch (extrap_mode_)
-            {
+        if (x < x_.front()) {
+            switch (extrap_mode_) {
                 case ExtrapolationMode::None:
                     throw std::out_of_range(
                         "Interp: x < x_min, extrapolation disabled");
@@ -122,11 +107,8 @@ public:
                     ; // Let derived class handle polynomial extrapolation
                 }
             }
-        }
-        else if (x > x_.back())
-        {
-            switch (extrap_mode_)
-            {
+        } else if (x > x_.back()) {
+            switch (extrap_mode_) {
                 case ExtrapolationMode::None:
                     throw std::out_of_range(
                         "Interp: x > x_max, extrapolation disabled");
@@ -171,16 +153,13 @@ public:
      * as x_new)
      */
     void operator()(std::span<const double> x_new,
-                    std::span<double> result) const
-    {
-        if (x_new.size() != result.size())
-        {
+                    std::span<double> result) const {
+        if (x_new.size() != result.size()) {
             throw std::invalid_argument(
                 "Interp: x_new and result spans must have same size");
         }
 
-        for (size_t i = 0; i < x_new.size(); ++i)
-        {
+        for (size_t i = 0; i < x_new.size(); ++i) {
             result[i] = operator()(x_new[i]);
         }
     }
@@ -190,8 +169,7 @@ public:
      * @param x_new Span of evaluation points
      * @return Vector of interpolated (or extrapolated) values at x_new
      */
-    std::vector<double> operator()(std::span<const double> x_new) const
-    {
+    std::vector<double> operator()(std::span<const double> x_new) const {
         std::vector<double> result(x_new.size());
         operator()(x_new, result);
         return result;
@@ -220,8 +198,7 @@ public:
      * @param x Evaluation point
      * @return True if x is within [x_min, x_max], false otherwise
      */
-    [[nodiscard]] bool in_range(double x) const
-    {
+    [[nodiscard]] bool in_range(double x) const {
         return x >= x_.front() && x <= x_.back();
     }
 
@@ -230,8 +207,7 @@ public:
      *
      * @return Pair of (x_min, x_max)
      */
-    [[nodiscard]] std::pair<double, double> range() const
-    {
+    [[nodiscard]] std::pair<double, double> range() const {
         return {x_.front(), x_.back()};
     }
 
@@ -241,22 +217,17 @@ protected:
     ExtrapolationMode extrap_mode_ = ExtrapolationMode::Polynomial;
 
     // Validate input data (size, sorting, etc.)
-    void validate_input() const
-    {
-        if (x_.size() != y_.size())
-        {
+    void validate_input() const {
+        if (x_.size() != y_.size()) {
             throw std::invalid_argument("Interp: x and y must have same size");
         }
-        if (x_.size() < 2)
-        {
+        if (x_.size() < 2) {
             throw std::invalid_argument("Interp: need at least 2 points");
         }
 
         // Check sorted
-        for (size_t i = 1; i < x_.size(); ++i)
-        {
-            if (x_[i] <= x_[i - 1])
-            {
+        for (size_t i = 1; i < x_.size(); ++i) {
+            if (x_[i] <= x_[i - 1]) {
                 throw std::invalid_argument(
                     "Interp: x values must be strictly increasing");
             }
@@ -267,22 +238,17 @@ protected:
      * @brief Find interval for interpolation point
      * Throws if out of range and extrapolation is disabled
      */
-    size_t find_interval(double x) const
-    {
-        if (x < x_.front())
-        {
-            if (extrap_mode_ == ExtrapolationMode::None)
-            {
+    size_t find_interval(double x) const {
+        if (x < x_.front()) {
+            if (extrap_mode_ == ExtrapolationMode::None) {
                 throw std::out_of_range("Interp: x out of interpolation range");
             }
             // Handle extrapolation
             if (extrap_mode_ == ExtrapolationMode::Polynomial)
                 return 0;
         }
-        if (x > x_.back())
-        {
-            if (extrap_mode_ == ExtrapolationMode::None)
-            {
+        if (x > x_.back()) {
+            if (extrap_mode_ == ExtrapolationMode::None) {
                 throw std::out_of_range("Interp: x out of interpolation range");
             }
             // Handle extrapolation

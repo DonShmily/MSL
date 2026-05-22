@@ -8,21 +8,17 @@
 #include <stdexcept>
 #include <vector>
 
-namespace msl::signal
-{
+namespace msl::signal {
 
-struct FilterCoefficients
-{
+struct FilterCoefficients {
     std::vector<double> b; // Numerator coefficients
     std::vector<double> a; // Denominator coefficients (a[0] = 1.0)
 
     FilterCoefficients() = default;
     FilterCoefficients(std::vector<double> num, std::vector<double> den)
-        : b(std::move(num)), a(std::move(den))
-    {}
+        : b(std::move(num)), a(std::move(den)) {}
 
-    [[nodiscard]] size_t order() const
-    {
+    [[nodiscard]] size_t order() const {
         return std::max(a.size(), b.size()) - 1;
     }
 };
@@ -37,12 +33,11 @@ struct FilterCoefficients
  * Computes initial filter state to minimize startup transients
  * Based on MATLAB's filtfilt implementation
  */
-inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
-{
+inline std::vector<double>
+compute_filtfilt_zi(const FilterCoefficients &coeffs) {
     size_t n = std::max(coeffs.a.size(), coeffs.b.size()) - 1;
 
-    if (n == 0)
-    {
+    if (n == 0) {
         return {}; // No initial conditions needed for order 0
     }
 
@@ -52,8 +47,7 @@ inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
 
     // For Butterworth filters, we use a simplified initialization
     // zi = b[1:] - b[0] * a[1:]
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         double b_val = (i + 1 < coeffs.b.size()) ? coeffs.b[i + 1] : 0.0;
         double a_val = (i + 1 < coeffs.a.size()) ? coeffs.a[i + 1] : 0.0;
         zi[i] = b_val - coeffs.b[0] * a_val;
@@ -67,15 +61,12 @@ inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
  */
 inline std::vector<double> filter_with_zi(std::span<const double> signal,
                                           const FilterCoefficients &coeffs,
-                                          std::vector<double> zi)
-{
-    if (coeffs.a.empty() || coeffs.b.empty())
-    {
+                                          std::vector<double> zi) {
+    if (coeffs.a.empty() || coeffs.b.empty()) {
         throw std::invalid_argument("Filter coefficients cannot be empty");
     }
 
-    if (std::abs(coeffs.a[0] - 1.0) > 1e-10)
-    {
+    if (std::abs(coeffs.a[0] - 1.0) > 1e-10) {
         throw std::invalid_argument(
             "First denominator coefficient must be 1.0");
     }
@@ -90,24 +81,21 @@ inline std::vector<double> filter_with_zi(std::span<const double> signal,
     z.resize(nz, 0.0);
 
     // Direct Form II Transposed with initial conditions
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         double x = signal[i];
 
         // Output = b[0]*x + z[0]
         output[i] = (nb > 0 ? coeffs.b[0] : 0.0) * x + (nz > 0 ? z[0] : 0.0);
 
         // Update state vector
-        for (size_t j = 0; j < nz - 1; ++j)
-        {
+        for (size_t j = 0; j < nz - 1; ++j) {
             double bj = (j + 1 < nb) ? coeffs.b[j + 1] : 0.0;
             double aj = (j + 1 < na) ? coeffs.a[j + 1] : 0.0;
             z[j] = bj * x - aj * output[i] + z[j + 1];
         }
 
         // Last state
-        if (nz > 0)
-        {
+        if (nz > 0) {
             double bn = (nz < nb) ? coeffs.b[nz] : 0.0;
             double an = (nz < na) ? coeffs.a[nz] : 0.0;
             z[nz - 1] = bn * x - an * output[i];
@@ -134,14 +122,12 @@ inline std::vector<double> filter_with_zi(std::span<const double> signal,
  * @note Uses reflection padding with initial conditions
  */
 inline std::vector<double> filtfilt(std::span<const double> signal,
-                                    const FilterCoefficients &coeffs)
-{
+                                    const FilterCoefficients &coeffs) {
     const size_t len = signal.size();
     const size_t nfilt = std::max(coeffs.a.size(), coeffs.b.size());
     const size_t nfact = 3 * (nfilt - 1); // Edge transient length
 
-    if (len <= nfact)
-    {
+    if (len <= nfact) {
         throw std::invalid_argument(
             "Input data too short! Must have length > 3 * filter_order");
     }
@@ -156,8 +142,7 @@ inline std::vector<double> filtfilt(std::span<const double> signal,
     padded.reserve(len + 2 * nfact);
 
     // Left padding (reverse of signal[1:nfact+1], reflected around signal[0])
-    for (size_t i = 0; i < nfact; ++i)
-    {
+    for (size_t i = 0; i < nfact; ++i) {
         padded.push_back(2.0 * signal[0] - signal[nfact - i]);
     }
 
@@ -166,15 +151,13 @@ inline std::vector<double> filtfilt(std::span<const double> signal,
 
     // Right padding (reverse of signal[end-nfact:end-1], reflected around
     // signal[end])
-    for (size_t i = 0; i < nfact; ++i)
-    {
+    for (size_t i = 0; i < nfact; ++i) {
         padded.push_back(2.0 * signal[len - 1] - signal[len - 2 - i]);
     }
 
     // Initialize zi for forward pass
     std::vector<double> zi_forward = zi_base;
-    for (auto &z : zi_forward)
-    {
+    for (auto &z : zi_forward) {
         z *= padded[0]; // Scale by first value
     }
 
@@ -186,8 +169,7 @@ inline std::vector<double> filtfilt(std::span<const double> signal,
 
     // Initialize zi for backward pass
     std::vector<double> zi_backward = zi_base;
-    for (auto &z : zi_backward)
-    {
+    for (auto &z : zi_backward) {
         z *= forward[0]; // Scale by first value of reversed signal
     }
 
@@ -210,8 +192,7 @@ inline std::vector<double> filtfilt(std::span<const double> signal,
  * @brief Zero-phase filtering (vector overload)
  */
 inline std::vector<double> filtfilt(const std::vector<double> &signal,
-                                    const FilterCoefficients &coeffs)
-{
+                                    const FilterCoefficients &coeffs) {
     return filtfilt(std::span<const double>(signal), coeffs);
 }
 

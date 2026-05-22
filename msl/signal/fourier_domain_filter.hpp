@@ -31,8 +31,7 @@
 #include "matrix.hpp"
 #include "matrix/real_matrix_base.hpp"
 
-namespace msl::signal
-{
+namespace msl::signal {
 /**
  * @brief Fourier domain filter designer
  *
@@ -40,8 +39,7 @@ namespace msl::signal
  * The filter is designed by creating an ideal frequency response and
  * applying a window function to reduce ringing artifacts.
  */
-class FourierDomainFilter
-{
+class FourierDomainFilter {
 public:
     /**
      * @brief Transition shaping used around cutoff edges.
@@ -51,13 +49,7 @@ public:
      * - hanning: similar to Hamming, slightly wider main lobe
      * - blackman: even smoother, very low side lobes but wider transition
      */
-    enum class WindowType
-    {
-        rectangular,
-        hamming,
-        hanning,
-        blackman
-    };
+    enum class WindowType { rectangular, hamming, hanning, blackman };
 
 private:
     // Low cutoff frequency (0-1 where 1 = Nyquist)
@@ -100,8 +92,7 @@ public:
           fc_high_(fc_high),
           type_(type),
           window_type_(window_type),
-          transition_band_(transition_band)
-    {
+          transition_band_(transition_band) {
         design();
     }
 
@@ -109,8 +100,7 @@ public:
      * @brief Set window type
      * @param window_type Window function type
      */
-    void set_window_type(WindowType window_type)
-    {
+    void set_window_type(WindowType window_type) {
         window_type_ = window_type;
         design();
     }
@@ -120,8 +110,7 @@ public:
      * @param width Transition band width (normalized, e.g., 0.01 = 1% of
      * Nyquist)
      */
-    void set_transition_band(double width)
-    {
+    void set_transition_band(double width) {
 
         transition_band_ = width;
         design();
@@ -142,8 +131,7 @@ public:
                   double fc_high,
                   FilterType type = FilterType::bandpass,
                   WindowType window_type = WindowType::rectangular,
-                  double transition_band = 0.0)
-    {
+                  double transition_band = 0.0) {
         fc_low_ = fc_low;
         fc_high_ = fc_high;
         type_ = type;
@@ -159,15 +147,12 @@ public:
      * @param output Output buffer for filtered signal (time domain), must be
      * same size as input
      */
-    void apply(std::span<const double> signal, std::span<double> output) const
-    {
-        if (signal.size() != output.size())
-        {
+    void apply(std::span<const double> signal, std::span<double> output) const {
+        if (signal.size() != output.size()) {
             throw std::invalid_argument("FourierDomainFilter: output buffer "
                                         "size must match input signal size");
         }
-        if (signal.empty())
-        {
+        if (signal.empty()) {
             return;
         }
 
@@ -179,8 +164,7 @@ public:
         auto fft_data = signal::fft(fft_input, fft_size);
         std::vector<std::complex<double>> filtered_fft(fft_data.size());
 
-        for (std::size_t i = 0; i < fft_data.size(); ++i)
-        {
+        for (std::size_t i = 0; i < fft_data.size(); ++i) {
             double freq = static_cast<double>(i) / fft_size;
             if (freq > 0.5)
                 freq -= 1.0; // Map to [-0.5, 0.5]
@@ -198,8 +182,7 @@ public:
      * @param signal Input signal (time domain)
      * @return Filtered signal (time domain)
      */
-    std::vector<double> apply(std::span<const double> signal) const
-    {
+    std::vector<double> apply(std::span<const double> signal) const {
         std::vector<double> output(signal.size());
         apply(signal, output);
         return output;
@@ -211,8 +194,7 @@ public:
      * @param signal_matrix Input signal matrix (time domain)
      * @return Filtered signal matrix (time domain)
      */
-    matrix::matrixd apply(const matrix::real_matrix_base &signal_matrix) const
-    {
+    matrix::matrixd apply(const matrix::real_matrix_base &signal_matrix) const {
         matrix::matrixd output(signal_matrix.rows(), signal_matrix.cols());
         apply(signal_matrix, output);
         return output;
@@ -225,17 +207,14 @@ public:
      * @param output Output matrix. Must have the same shape as input.
      */
     void apply(const matrix::real_matrix_base &signal_matrix,
-               matrix::matrixd &output) const
-    {
+               matrix::matrixd &output) const {
         if (output.rows() != signal_matrix.rows()
-            || output.cols() != signal_matrix.cols())
-        {
+            || output.cols() != signal_matrix.cols()) {
             throw std::invalid_argument("FourierDomainFilter: output matrix "
                                         "shape must match input matrix");
         }
 
-        for (std::size_t j = 0; j < signal_matrix.cols(); ++j)
-        {
+        for (std::size_t j = 0; j < signal_matrix.cols(); ++j) {
             std::vector<double> column(signal_matrix.column(j).begin(),
                                        signal_matrix.column(j).end());
             auto filtered_column = apply(column);
@@ -252,13 +231,10 @@ private:
      *
      * @throws std::invalid_argument if parameters are invalid
      */
-    void validate_parameters() const
-    {
-        switch (type_)
-        {
+    void validate_parameters() const {
+        switch (type_) {
             case FilterType::lowpass:
-                if (fc_high_ <= 0.0 || fc_high_ >= 1.0)
-                {
+                if (fc_high_ <= 0.0 || fc_high_ >= 1.0) {
                     throw std::invalid_argument(
                         "FourierDomainFilter: lowpass cutoff must satisfy 0 < "
                         "fc_high < 1");
@@ -266,8 +242,7 @@ private:
                 break;
 
             case FilterType::highpass:
-                if (fc_low_ <= 0.0 || fc_low_ >= 1.0)
-                {
+                if (fc_low_ <= 0.0 || fc_low_ >= 1.0) {
                     throw std::invalid_argument(
                         "FourierDomainFilter: highpass cutoff must satisfy 0 < "
                         "fc_low < 1");
@@ -277,14 +252,12 @@ private:
             case FilterType::bandpass:
             case FilterType::bandstop:
                 if (fc_low_ <= 0.0 || fc_low_ >= 1.0 || fc_high_ <= 0.0
-                    || fc_high_ >= 1.0)
-                {
+                    || fc_high_ >= 1.0) {
                     throw std::invalid_argument(
                         "FourierDomainFilter: band cutoffs must satisfy 0 < "
                         "fc_low < fc_high < 1");
                 }
-                if (fc_low_ >= fc_high_)
-                {
+                if (fc_low_ >= fc_high_) {
                     throw std::invalid_argument(
                         "FourierDomainFilter: low frequency must be < high "
                         "frequency");
@@ -296,8 +269,7 @@ private:
                     "FourierDomainFilter: unsupported filter type");
         }
 
-        if (transition_band_ < 0.0 || transition_band_ >= 0.5)
-        {
+        if (transition_band_ < 0.0 || transition_band_ >= 0.5) {
             throw std::invalid_argument("FourierDomainFilter: transition band "
                                         "must be in range [0, 0.5)");
         }
@@ -306,8 +278,7 @@ private:
     /**
      * @brief Design the filter
      */
-    void design()
-    {
+    void design() {
         validate_parameters();
 
         window_function_ = [=, this](double f) -> double {
@@ -318,10 +289,8 @@ private:
             const double fh = std::clamp(fc_high_, 0.0, 1.0);
             const double tw = std::clamp(transition_band_, 0.0, 0.5);
 
-            if (tw == 0.0)
-            {
-                switch (type_)
-                {
+            if (tw == 0.0) {
+                switch (type_) {
                     case FilterType::lowpass:
                         return (f <= fh) ? 1.0 : 0.0;
                     case FilterType::highpass:
@@ -337,8 +306,7 @@ private:
 
             auto smooth = [&](double x) {
                 double t = std::clamp((x + tw) / (2.0 * tw), 0.0, 1.0);
-                switch (window_type_)
-                {
+                switch (window_type_) {
                     case WindowType::rectangular:
                         return (t >= 0.5) ? 1.0 : 0.0;
                     case WindowType::hanning:
@@ -354,8 +322,7 @@ private:
 
             double gain = 0.0;
 
-            switch (type_)
-            {
+            switch (type_) {
                 case FilterType::lowpass: {
                     const double pass_end = fh - tw;
                     const double stop_start = fh + tw;
@@ -442,8 +409,7 @@ inline void fourier_bandpass(std::span<const double> signal,
                              double fc_high,
                              FourierDomainFilter::WindowType window_type =
                                  FourierDomainFilter::WindowType::rectangular,
-                             double transition_band = 0.0)
-{
+                             double transition_band = 0.0) {
     FourierDomainFilter filter(
         fc_low, fc_high, FilterType::bandpass, window_type, transition_band);
     filter.apply(signal, result);
@@ -465,8 +431,7 @@ fourier_bandpass(std::span<const double> signal,
                  double fc_high,
                  FourierDomainFilter::WindowType window_type =
                      FourierDomainFilter::WindowType::rectangular,
-                 double transition_band = 0.0)
-{
+                 double transition_band = 0.0) {
     FourierDomainFilter filter(
         fc_low, fc_high, FilterType::bandpass, window_type, transition_band);
     return filter.apply(signal);
@@ -488,8 +453,7 @@ inline void fourier_bandstop(std::span<const double> signal,
                              double fc_high,
                              FourierDomainFilter::WindowType window_type =
                                  FourierDomainFilter::WindowType::rectangular,
-                             double transition_band = 0.0)
-{
+                             double transition_band = 0.0) {
     FourierDomainFilter filter(
         fc_low, fc_high, FilterType::bandstop, window_type, transition_band);
     filter.apply(signal, result);
@@ -511,8 +475,7 @@ fourier_bandstop(std::span<const double> signal,
                  double fc_high,
                  FourierDomainFilter::WindowType window_type =
                      FourierDomainFilter::WindowType::rectangular,
-                 double transition_band = 0.0)
-{
+                 double transition_band = 0.0) {
     FourierDomainFilter filter(
         fc_low, fc_high, FilterType::bandstop, window_type, transition_band);
     return filter.apply(signal);
@@ -532,8 +495,7 @@ inline void fourier_lowpass(std::span<const double> signal,
                             double fc_high,
                             FourierDomainFilter::WindowType window_type =
                                 FourierDomainFilter::WindowType::rectangular,
-                            double transition_band = 0.0)
-{
+                            double transition_band = 0.0) {
     FourierDomainFilter filter(
         0.0, fc_high, FilterType::lowpass, window_type, transition_band);
     filter.apply(signal, result);
@@ -553,8 +515,7 @@ fourier_lowpass(std::span<const double> signal,
                 double fc_high,
                 FourierDomainFilter::WindowType window_type =
                     FourierDomainFilter::WindowType::rectangular,
-                double transition_band = 0.0)
-{
+                double transition_band = 0.0) {
     FourierDomainFilter filter(
         0.0, fc_high, FilterType::lowpass, window_type, transition_band);
     return filter.apply(signal);
@@ -574,8 +535,7 @@ inline void fourier_highpass(std::span<const double> signal,
                              double fc_low,
                              FourierDomainFilter::WindowType window_type =
                                  FourierDomainFilter::WindowType::rectangular,
-                             double transition_band = 0.0)
-{
+                             double transition_band = 0.0) {
     FourierDomainFilter filter(
         fc_low, 1.0, FilterType::highpass, window_type, transition_band);
     filter.apply(signal, result);
@@ -595,8 +555,7 @@ fourier_highpass(std::span<const double> signal,
                  double fc_low,
                  FourierDomainFilter::WindowType window_type =
                      FourierDomainFilter::WindowType::rectangular,
-                 double transition_band = 0.0)
-{
+                 double transition_band = 0.0) {
     FourierDomainFilter filter(
         fc_low, 1.0, FilterType::highpass, window_type, transition_band);
     return filter.apply(signal);

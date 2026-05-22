@@ -4,23 +4,24 @@
 #include "matrix.hpp"
 #include "signal.hpp"
 #include "signal/detrend.hpp"
+#include "signal/filter_design.hpp"
+#include "signal/fourier_domain_filter.hpp"
 #include "utils/data_io.hpp"
 
 using namespace msl;
 
-int test_filter()
-{
+int test_filter() {
     auto ori_data = utils::ReadData("KunmingSSJY.txt", 6, 3e4);
     auto data_1d =
         std::vector<double>(ori_data.begin(), ori_data.begin() + 3e4);
     matrix::matrixd ori_matrix(3e4, 6, std::span<const double>(ori_data));
-    try
-    {
+    try {
         double fs = 50;
         double low = 0.1 / (fs / 2);
         double high = 10.0 / (fs / 2);
         // test fourier domain bandpass filter
-        auto fft_filter = signal::FourierDomainFilter(low, high, 0);
+        auto fft_filter = signal::FourierDomainFilter(
+            low, high, signal::FilterType::bandpass);
         auto fft_filt = fft_filter.apply(data_1d);
         utils::WriteData(
             "test_result/signal/signal_fft_bandpass.txt", fft_filt, 1, 3e4);
@@ -43,9 +44,7 @@ int test_filter()
                                     + butter_matrix_filt.size()),
             butter_matrix_filt.cols(),
             butter_matrix_filt.rows());
-    }
-    catch (const std::exception &e)
-    {
+    } catch (const std::exception &e) {
         std::cerr << "Signal test failed: " << e.what() << std::endl;
         return -1;
     }
@@ -54,15 +53,13 @@ int test_filter()
     return 0;
 }
 
-int test_fft()
-{
+int test_fft() {
     auto ori_data = utils::ReadData("KunmingSSJY.txt", 6, 3e4);
     auto data_1d =
         std::vector<double>(ori_data.begin(), ori_data.begin() + 3e4);
     matrix::matrixd ori_matrix(3e4, 6, std::span<const double>(ori_data));
 
-    try
-    {
+    try {
 
         // test r2c fft
         auto fft_result = signal::fft(data_1d);
@@ -93,9 +90,7 @@ int test_fft()
                                 res_vec,
                                 fft_matrix_result.cols(),
                                 fft_matrix_result.rows());
-    }
-    catch (const std::exception &e)
-    {
+    } catch (const std::exception &e) {
         std::cerr << "FFT test failed: " << e.what() << std::endl;
         return -1;
     }
@@ -104,15 +99,13 @@ int test_fft()
     return 0;
 }
 
-int test_psd()
-{
+int test_psd() {
     auto ori_data = utils::ReadData("KunmingSSJY.txt", 6, 3e4);
     auto data_1d =
         std::vector<double>(ori_data.begin(), ori_data.begin() + 3e4);
     auto data_2d =
         std::vector<double>(ori_data.begin() + 3e4, ori_data.begin() + 6e4);
-    try
-    {
+    try {
         // test psd
         auto psd_1d = signal::psd_welch(data_1d);
         utils::WriteData(
@@ -121,8 +114,7 @@ int test_psd()
         // test cpsd
         auto cpsd_2d = signal::cpsd_welch(data_1d, data_2d);
         auto cpsd_2d_mag = std::vector<double>(cpsd_2d.size());
-        for (size_t i = 0; i < cpsd_2d.size(); i++)
-        {
+        for (size_t i = 0; i < cpsd_2d.size(); i++) {
             cpsd_2d_mag[i] = std::abs(cpsd_2d[i]);
         }
         // utils::WriteComplexData(
@@ -131,9 +123,7 @@ int test_psd()
                          cpsd_2d_mag,
                          1,
                          cpsd_2d_mag.size());
-    }
-    catch (const std::exception &e)
-    {
+    } catch (const std::exception &e) {
         std::cerr << "PSD test failed: " << e.what() << std::endl;
         return -1;
     }
@@ -142,21 +132,17 @@ int test_psd()
     return 0;
 }
 
-int test_detrend()
-{
+int test_detrend() {
 
     auto ori_data = utils::ReadData("err_data.txt", 1, 3e4);
     auto detrended = signal::detrend(ori_data, 2);
 
-    try
-    {
+    try {
         utils::WriteData("test_result/signal/detrended_data.txt",
                          detrended,
                          1,
                          detrended.size());
-    }
-    catch (const std::exception &e)
-    {
+    } catch (const std::exception &e) {
         std::cerr << "Detrend test failed: " << e.what() << std::endl;
         return -1;
     }
@@ -165,8 +151,7 @@ int test_detrend()
     return 0;
 }
 
-int main()
-{
+int main() {
     return test_filter() + test_fft() + test_psd();
     return test_detrend();
 }

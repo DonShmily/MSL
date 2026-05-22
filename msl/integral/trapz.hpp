@@ -22,8 +22,7 @@
 
 #include "matrix/real_matrix_base.hpp"
 
-namespace msl::integral
-{
+namespace msl::integral {
 
 // ============================================================================
 // Total Integral (Trapezoidal Rule)
@@ -36,17 +35,14 @@ namespace msl::integral
  * @param dx Spacing
  * @return Total integral value
  */
-inline double trapz(std::span<const double> y, double dx)
-{
-    if (y.size() < 2)
-    {
+inline double trapz(std::span<const double> y, double dx) {
+    if (y.size() < 2) {
         throw std::invalid_argument(
             "Trapz: need at least 2 points for integration");
     }
 
     double sum = 0.5 * (y.front() + y.back());
-    for (size_t i = 1; i < y.size() - 1; ++i)
-    {
+    for (size_t i = 1; i < y.size() - 1; ++i) {
         sum += y[i];
     }
 
@@ -60,21 +56,17 @@ inline double trapz(std::span<const double> y, double dx)
  * @param y Function values at x points
  * @return Total integral value
  */
-inline double trapz(std::span<const double> x, std::span<const double> y)
-{
-    if (x.size() != y.size())
-    {
+inline double trapz(std::span<const double> x, std::span<const double> y) {
+    if (x.size() != y.size()) {
         throw std::invalid_argument("Trapz: x and y must have same size");
     }
-    if (x.size() < 2)
-    {
+    if (x.size() < 2) {
         throw std::invalid_argument(
             "Trapz: need at least 2 points for integration");
     }
 
     double sum = 0.0;
-    for (size_t i = 1; i < y.size(); ++i)
-    {
+    for (size_t i = 1; i < y.size(); ++i) {
         sum += 0.5 * (y[i] + y[i - 1]) * (x[i] - x[i - 1]);
     }
 
@@ -91,25 +83,21 @@ inline double trapz(std::span<const double> x, std::span<const double> y)
  * @param dx Spacing
  * @return Total integral value
  */
-inline void
-trapz(const matrix::real_matrix_base &mat, std::span<double> result, double dx)
-{
-    if (mat.rows() < 2)
-    {
+inline void trapz(const matrix::real_matrix_base &mat,
+                  std::span<double> result,
+                  double dx) {
+    if (mat.rows() < 2) {
         throw std::invalid_argument(
             "Trapz: need at least 2 rows for integration");
     }
-    if (result.size() != mat.cols())
-    {
+    if (result.size() != mat.cols()) {
         throw std::invalid_argument(
             "Trapz: result span must have same size as number of columns");
     }
 
-    for (size_t j = 0; j < mat.cols(); ++j)
-    {
+    for (size_t j = 0; j < mat.cols(); ++j) {
         double sum = 0.5 * (mat(0, j) + mat(mat.rows() - 1, j));
-        for (size_t i = 1; i < mat.rows() - 1; ++i)
-        {
+        for (size_t i = 1; i < mat.rows() - 1; ++i) {
             sum += mat(i, j);
         }
         result[j] = sum * dx;
@@ -126,8 +114,8 @@ trapz(const matrix::real_matrix_base &mat, std::span<double> result, double dx)
  * @param dx Spacing between rows
  * @return Vector of integral values for each column
  */
-inline std::vector<double> trapz(const matrix::real_matrix_base &mat, double dx)
-{
+inline std::vector<double> trapz(const matrix::real_matrix_base &mat,
+                                 double dx) {
     std::vector<double> result(mat.cols());
     trapz(mat, result, dx);
     return result;

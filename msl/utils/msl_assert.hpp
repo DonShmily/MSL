@@ -21,12 +21,15 @@
 #include <fstream>
 #include <iostream>
 
-namespace msl
-{
-inline void handle_assert(const char *expr, const char *msg, const char *file, int line, const char *func)
-{
-    std::string text = std::string("[MSL Assert] ") + msg + "\n" + "  Expr: " + expr + "\n" + "  Location: " + file +
-                       ":" + std::to_string(line) + " (" + func + ")\n";
+namespace msl {
+inline void handle_assert(const char *expr,
+                          const char *msg,
+                          const char *file,
+                          int line,
+                          const char *func) {
+    std::string text = std::string("[MSL Assert] ") + msg + "\n"
+                       + "  Expr: " + expr + "\n" + "  Location: " + file + ":"
+                       + std::to_string(line) + " (" + func + ")\n";
 
     // --- 打印到标准错误流 ---
     std::cerr << text;
@@ -34,8 +37,7 @@ inline void handle_assert(const char *expr, const char *msg, const char *file, i
     // --- 同时写入日志文件 ---
     // TODO: 可以改成更灵活的日志系统
     std::ofstream log("msl_error.log", std::ios::app);
-    if (log.is_open())
-    {
+    if (log.is_open()) {
         log << text;
     }
 

@@ -18,8 +18,7 @@
 
 #include <vector>
 
-namespace msl::signal
-{
+namespace msl::signal {
 
 // ============================================================================
 // Filter specifications
@@ -33,8 +32,7 @@ namespace msl::signal
  * - bandpass: Pass frequencies between low and high cutoff, attenuate outside
  * - bandstop: Attenuate frequencies between low and high cutoff, pass outside
  */
-enum class FilterType
-{
+enum class FilterType {
     lowpass,  // Low-pass filter
     highpass, // High-pass filter
     bandpass, // Band-pass filter
@@ -49,8 +47,7 @@ enum class FilterType
  * - chebyshev2: Monotonic passband, equiripple stopband (future)
  * - elliptic: Equiripple in both bands (future)
  */
-enum class FilterMethod
-{
+enum class FilterMethod {
     butterworth, // Maximally flat passband
     chebyshev1,  // Equiripple passband, monotonic stopband (future)
     chebyshev2,  // Monotonic passband, equiripple stopband (future)
@@ -66,8 +63,7 @@ enum class FilterMethod
  *
  * Where a[0] is typically normalized to 1.0
  */
-struct FilterCoefficients
-{
+struct FilterCoefficients {
     // Numerator coefficients (b[0] corresponds to z^0 term, b[1] to z^-1, etc.)
     std::vector<double> b{};
     // Denominator coefficients (a[0] = 1.0, a[1] corresponds to z^-1 term,etc.)
@@ -75,12 +71,10 @@ struct FilterCoefficients
 
     FilterCoefficients() = default;
     FilterCoefficients(std::vector<double> num, std::vector<double> den)
-        : b(std::move(num)), a(std::move(den))
-    {}
+        : b(std::move(num)), a(std::move(den)) {}
 
     // Get filter order (max of numerator and denominator order)
-    [[nodiscard]] size_t order() const
-    {
+    [[nodiscard]] size_t order() const {
         return std::max(a.size(), b.size()) - 1;
     }
 };

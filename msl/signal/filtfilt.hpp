@@ -28,15 +28,13 @@
 #include "matrix/real_matrix_base.hpp"
 #include "matrix/real_matrix_owned.hpp"
 
-namespace msl::signal
-{
+namespace msl::signal {
 
 // ============================================================================
 // Forward-backward filtering (zero-phase)
 // ============================================================================
 
-namespace internal
-{
+namespace internal {
 /**
  * @brief Compute initial conditions for filtfilt
  *
@@ -46,13 +44,12 @@ namespace internal
  * @param coeffs Filter coefficients
  * @return Initial conditions for filtfilt
  */
-inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
-{
+inline std::vector<double>
+compute_filtfilt_zi(const FilterCoefficients &coeffs) {
     size_t nfilt = std::max(coeffs.a.size(), coeffs.b.size());
     size_t n = nfilt - 1;
 
-    if (n == 0)
-    {
+    if (n == 0) {
         return {};
     }
 
@@ -69,8 +66,7 @@ inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
     // rows = [0:n-1, 1:n-1, 0:n-2]
     for (size_t i = 0; i < n; ++i)
         rows.push_back(i);
-    if (n > 1)
-    {
+    if (n > 1) {
         for (size_t i = 1; i < n; ++i)
             rows.push_back(i);
         for (size_t i = 0; i < n - 1; ++i)
@@ -80,8 +76,7 @@ inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
     // cols = [0, 0, ..., 0, 1:n-1, 1:n-1]
     for (size_t i = 0; i < n; ++i)
         cols.push_back(0);
-    if (n > 1)
-    {
+    if (n > 1) {
         for (size_t i = 1; i < n; ++i)
             cols.push_back(i);
         for (size_t i = 1; i < n; ++i)
@@ -90,12 +85,10 @@ inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
 
     // data = [1+a[1], a[2:n], ones(1,n-1), -ones(1,n-1)]
     data.push_back(1.0 + a[1]);
-    for (size_t i = 2; i < nfilt; ++i)
-    {
+    for (size_t i = 2; i < nfilt; ++i) {
         data.push_back(a[i]);
     }
-    if (n > 1)
-    {
+    if (n > 1) {
         for (size_t i = 0; i < n - 1; ++i)
             data.push_back(1.0);
         for (size_t i = 0; i < n - 1; ++i)
@@ -104,15 +97,13 @@ inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
 
     //  Build full matrix
     matrix::matrixd sp(n, n);
-    for (size_t k = 0; k < rows.size(); ++k)
-    {
+    for (size_t k = 0; k < rows.size(); ++k) {
         sp(rows[k], cols[k]) += data[k];
     }
 
     // Compute right-hand side vector: b[1:] - b[0] * a[1:]
     std::vector<double> rhs(n);
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         rhs[i] = b[i + 1] - b[0] * a[i + 1];
     }
 
@@ -138,10 +129,8 @@ inline std::vector<double> compute_filtfilt_zi(const FilterCoefficients &coeffs)
  */
 inline std::vector<double> filter_with_zi(std::span<const double> signal,
                                           const FilterCoefficients &coeffs,
-                                          std::vector<double> zi)
-{
-    if (coeffs.a.empty())
-    {
+                                          std::vector<double> zi) {
+    if (coeffs.a.empty()) {
         throw std::invalid_argument(
             "Filtfilt: feedback filter coefficients are empty");
     }
@@ -151,14 +140,12 @@ inline std::vector<double> filter_with_zi(std::span<const double> signal,
     std::vector<double> b = coeffs.b;
 
     double a0 = a[0];
-    if (a0 == 0.0)
-    {
+    if (a0 == 0.0) {
         throw std::invalid_argument(
             "Filtfilt: first feedback coefficient must be non-zero");
     }
 
-    if (a0 != 1.0)
-    {
+    if (a0 != 1.0) {
         for (auto &val : a)
             val /= a0;
         for (auto &val : b)
@@ -175,13 +162,10 @@ inline std::vector<double> filter_with_zi(std::span<const double> signal,
     std::vector<double> output(input_size);
 
     // Filtering implementation
-    for (size_t i = 0; i < input_size; ++i)
-    {
+    for (size_t i = 0; i < input_size; ++i) {
         size_t order = filter_order - 1;
-        while (order > 0)
-        {
-            if (i >= order)
-            {
+        while (order > 0) {
+            if (i >= order) {
                 zi[order - 1] = b[order] * signal[i - order]
                                 - a[order] * output[i - order] + zi[order];
             }
@@ -213,10 +197,8 @@ inline std::vector<double> filter_with_zi(std::span<const double> signal,
  */
 inline void filtfilt(std::span<const double> signal,
                      std::span<double> result,
-                     const FilterCoefficients &coeffs)
-{
-    if (signal.size() != result.size())
-    {
+                     const FilterCoefficients &coeffs) {
+    if (signal.size() != result.size()) {
         throw std::invalid_argument(
             "FiltFilt: input and output spans must have the same size");
     }
@@ -226,8 +208,7 @@ inline void filtfilt(std::span<const double> signal,
         static_cast<int>(std::max(coeffs.b.size(), coeffs.a.size()));
     const int nfact = 3 * (nfilt - 1);
 
-    if (len <= nfact)
-    {
+    if (len <= nfact) {
         throw std::invalid_argument("Filtfilt: input data too short! Must have "
                                     "length > 3 * filter_order");
     }
@@ -237,15 +218,13 @@ inline void filtfilt(std::span<const double> signal,
 
     //  Left padding: 2*signal[0] - signal[nfact:1:-1]
     std::vector<double> leftpad;
-    for (int i = nfact; i >= 1; --i)
-    {
+    for (int i = nfact; i >= 1; --i) {
         leftpad.push_back(2.0 * signal[0] - signal[i]);
     }
 
     //  Right padding: 2*signal[end] - signal[end-2:end-nfact-1:-1]
     std::vector<double> rightpad;
-    for (int i = len - 2; i >= len - nfact - 1; --i)
-    {
+    for (int i = len - 2; i >= len - nfact - 1; --i) {
         rightpad.push_back(2.0 * signal[len - 1] - signal[i]);
     }
 
@@ -259,8 +238,7 @@ inline void filtfilt(std::span<const double> signal,
     // Forward filtering
     std::vector<double> zi = zi_base;
     double y0 = signal1[0];
-    for (auto &z : zi)
-    {
+    for (auto &z : zi) {
         z *= y0;
     }
     auto signal2 = internal::filter_with_zi(signal1, coeffs, zi);
@@ -271,15 +249,13 @@ inline void filtfilt(std::span<const double> signal,
     // Backward filtering
     zi = zi_base;
     y0 = signal2[0];
-    for (auto &z : zi)
-    {
+    for (auto &z : zi) {
         z *= y0;
     }
     signal1 = internal::filter_with_zi(signal2, coeffs, zi);
 
     // Reverse back
-    for (int i = signal1.size() - nfact - 1; i >= nfact; --i)
-    {
+    for (int i = signal1.size() - nfact - 1; i >= nfact; --i) {
         result[signal1.size() - nfact - 1 - i] = signal1[i];
     }
 }
@@ -295,8 +271,7 @@ inline void filtfilt(std::span<const double> signal,
  * @return Filtered signal
  */
 inline std::vector<double> filtfilt(std::span<const double> signal,
-                                    const FilterCoefficients &coeffs)
-{
+                                    const FilterCoefficients &coeffs) {
     // Reverse back
     std::vector<double> result(signal.size());
     filtfilt(signal, result, coeffs);
@@ -314,17 +289,14 @@ inline std::vector<double> filtfilt(std::span<const double> signal,
  * @return Filtered matrix
  */
 inline matrix::matrixd filtfilt_columns(const matrix::real_matrix_base &signals,
-                                        const FilterCoefficients &coeffs)
-{
+                                        const FilterCoefficients &coeffs) {
     matrix::matrixd output(signals.rows(), signals.cols());
 
-    for (size_t j = 0; j < signals.cols(); ++j)
-    {
+    for (size_t j = 0; j < signals.cols(); ++j) {
         auto col_span = signals.column(j);
         auto filtered = filtfilt(col_span, coeffs);
 
-        for (size_t i = 0; i < signals.rows(); ++i)
-        {
+        for (size_t i = 0; i < signals.rows(); ++i) {
             output(i, j) = filtered[i];
         }
     }

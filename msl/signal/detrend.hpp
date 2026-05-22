@@ -24,8 +24,7 @@
 #include "matrix/real_matrix_base.hpp"
 #include "polynomial/polynomial.hpp"
 
-namespace msl::signal
-{
+namespace msl::signal {
 /**
  * @brief Detrend data by removing polynomial trend of degree n
  *
@@ -35,26 +34,21 @@ namespace msl::signal
  * linear trend, etc.)
  */
 inline void
-detrend(std::span<const double> data, std::span<double> result, std::size_t n)
-{
-    if (data.size() != result.size())
-    {
+detrend(std::span<const double> data, std::span<double> result, std::size_t n) {
+    if (data.size() != result.size()) {
         throw std::invalid_argument(
             "Detrend: data and result must have same size");
     }
 
-    if (data.size() <= n)
-    {
+    if (data.size() <= n) {
         throw std::invalid_argument("Detrend: data size must be greater than "
                                     "polynomial degree for detrending");
     }
 
-    if (n == 0)
-    {
+    if (n == 0) {
         auto mean_val = std::accumulate(data.begin(), data.end(), 0.0)
                         / static_cast<double>(data.size());
-        for (std::size_t i = 0; i < data.size(); ++i)
-        {
+        for (std::size_t i = 0; i < data.size(); ++i) {
             result[i] = data[i] - mean_val;
         }
     }
@@ -66,8 +60,7 @@ detrend(std::span<const double> data, std::span<double> result, std::size_t n)
     // Fit polynomial to data
     msl::polynomial::Polynomial poly(x, data, n);
     // Subtract trend
-    for (std::size_t i = 0; i < data.size(); ++i)
-    {
+    for (std::size_t i = 0; i < data.size(); ++i) {
         result[i] = data[i] - poly(x[i]);
     }
 }
@@ -81,8 +74,7 @@ detrend(std::span<const double> data, std::span<double> result, std::size_t n)
  * @return std::vector<double> Detrended data
  */
 inline std::vector<double> detrend(std::span<const double> data,
-                                   std::size_t n = 1)
-{
+                                   std::size_t n = 1) {
     std::vector<double> detrended(data.size());
     detrend(data, detrended, n);
     return detrended;
@@ -100,26 +92,21 @@ inline std::vector<double> detrend(std::span<const double> data,
 inline void detrend(std::span<const double> x,
                     std::span<const double> data,
                     std::span<double> result,
-                    std::size_t n = 1)
-{
-    if (x.size() != data.size() || x.size() != result.size())
-    {
+                    std::size_t n = 1) {
+    if (x.size() != data.size() || x.size() != result.size()) {
         throw std::invalid_argument(
             "Detrend: x, data, and result must have same size");
     }
 
-    if (data.size() <= n)
-    {
+    if (data.size() <= n) {
         throw std::invalid_argument("Detrend: data size must be greater than "
                                     "polynomial degree for detrending");
     }
 
-    if (n == 0)
-    {
+    if (n == 0) {
         auto mean_val = std::accumulate(data.begin(), data.end(), 0.0)
                         / static_cast<double>(data.size());
-        for (std::size_t i = 0; i < data.size(); ++i)
-        {
+        for (std::size_t i = 0; i < data.size(); ++i) {
             result[i] = data[i] - mean_val;
         }
         return;
@@ -129,8 +116,7 @@ inline void detrend(std::span<const double> x,
     msl::polynomial::Polynomial poly(x, data, n);
 
     // Subtract trend
-    for (std::size_t i = 0; i < data.size(); ++i)
-    {
+    for (std::size_t i = 0; i < data.size(); ++i) {
         result[i] = data[i] - poly(x[i]);
     }
 }
@@ -146,8 +132,7 @@ inline void detrend(std::span<const double> x,
  */
 inline std::vector<double> detrend(std::span<const double> x,
                                    std::span<const double> data,
-                                   std::size_t n = 1)
-{
+                                   std::size_t n = 1) {
     std::vector<double> detrended(data.size());
     detrend(x, data, detrended, n);
     return detrended;
@@ -162,11 +147,9 @@ inline std::vector<double> detrend(std::span<const double> x,
  * @return matrix::matrixd Detrended data
  */
 inline matrix::matrixd detrend(const matrix::real_matrix_base &data,
-                               std::size_t n = 1)
-{
+                               std::size_t n = 1) {
     matrix::matrixd detrended(data.rows(), data.cols());
-    for (std::size_t col = 0; col < data.cols(); ++col)
-    {
+    for (std::size_t col = 0; col < data.cols(); ++col) {
         // Extract column data
         auto col_data = data.column(col);
 
