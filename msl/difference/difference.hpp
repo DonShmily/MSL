@@ -86,7 +86,7 @@ inline matrix::matrixd diff(const matrix::real_matrix_base &mat, int axis = 0) {
 
         matrix::matrixd result(mat.rows() - 1, mat.cols());
         for (size_t j = 0; j < mat.cols(); ++j) {
-            for (size_t i = 0; i < result.rows() - 1; ++i) {
+            for (size_t i = 0; i < result.rows(); ++i) {
                 result(i, j) = mat(i + 1, j) - mat(i, j);
             }
         }
@@ -100,7 +100,7 @@ inline matrix::matrixd diff(const matrix::real_matrix_base &mat, int axis = 0) {
 
         matrix::matrixd result(mat.rows(), mat.cols() - 1);
         for (size_t i = 0; i < mat.rows(); ++i) {
-            for (size_t j = 0; j < result.cols() - 1; ++j) {
+            for (size_t j = 0; j < result.cols(); ++j) {
                 result(i, j) = mat(i, j + 1) - mat(i, j);
             }
         }

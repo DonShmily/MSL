@@ -1,157 +1,124 @@
+#include <cmath>
+#include <complex>
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 
 #include "matrix.hpp"
 #include "signal.hpp"
-#include "signal/detrend.hpp"
-#include "signal/filter_design.hpp"
-#include "signal/fourier_domain_filter.hpp"
-#include "utils/data_io.hpp"
+#include "signal/filter.hpp"
 
 using namespace msl;
 
-int test_filter() {
-    auto ori_data = utils::ReadData("KunmingSSJY.txt", 6, 3e4);
-    auto data_1d =
-        std::vector<double>(ori_data.begin(), ori_data.begin() + 3e4);
-    matrix::matrixd ori_matrix(3e4, 6, std::span<const double>(ori_data));
-    try {
-        double fs = 50;
-        double low = 0.1 / (fs / 2);
-        double high = 10.0 / (fs / 2);
-        // test fourier domain bandpass filter
-        auto fft_filter = signal::FourierDomainFilter(
-            low, high, signal::FilterType::bandpass);
-        auto fft_filt = fft_filter.apply(data_1d);
-        utils::WriteData(
-            "test_result/signal/signal_fft_bandpass.txt", fft_filt, 1, 3e4);
+static int g_failures = 0;
+static int g_total = 0;
 
-        // test butterworth bandpass filter
-        auto butter_filt = signal::butterworth_bandpass(data_1d, 4, low, high);
-        utils::WriteData("test_result/signal/signal_butterworth_bandpass.txt",
-                         butter_filt,
-                         1,
-                         3e4);
+#define EXPECT_TRUE(cond)                                                      \
+    do {                                                                       \
+        ++g_total;                                                             \
+        if (!(cond)) {                                                         \
+            ++g_failures;                                                      \
+            std::cerr << "[FAIL] " << __FILE__ << ":" << __LINE__ << " - "     \
+                      << #cond << "\n";                                        \
+        }                                                                      \
+    } while (0)
 
-        // test matrix input with butterworth filter
-        auto butter = signal::ButterworthFilter(4, low, high);
-        matrix::matrixd butter_matrix_filt =
-            signal::filtfilt_columns(ori_matrix, butter.coefficients());
-        utils::WriteData(
-            "test_result/signal/signal_butterworth_bandpass_matrix.txt",
-            std::vector<double>(butter_matrix_filt.data(),
-                                butter_matrix_filt.data()
-                                    + butter_matrix_filt.size()),
-            butter_matrix_filt.cols(),
-            butter_matrix_filt.rows());
-    } catch (const std::exception &e) {
-        std::cerr << "Signal test failed: " << e.what() << std::endl;
-        return -1;
-    }
+#define EXPECT_EQ(a, b) EXPECT_TRUE((a) == (b))
 
-    std::cout << "Signal test completed successfully." << std::endl;
-    return 0;
-}
+#define EXPECT_NEAR(a, b, eps)                                                 \
+    do {                                                                       \
+        ++g_total;                                                             \
+        if (std::fabs((a) - (b)) > (eps)) {                                    \
+            ++g_failures;                                                      \
+            std::cerr << "[FAIL] " << __FILE__ << ":" << __LINE__ << " - "     \
+                      << #a << " ~= " << #b << " (got: " << (a) << " vs "      \
+                      << (b) << ")\n";                                         \
+        }                                                                      \
+    } while (0)
+
+#define EXPECT_CPLX_NEAR(a, b, eps)                                            \
+    do {                                                                       \
+        const auto actual = (a);                                                \
+        const auto expected = (b);                                              \
+        EXPECT_NEAR(actual.real(), expected.real(), eps);                       \
+        EXPECT_NEAR(actual.imag(), expected.imag(), eps);                       \
+    } while (0)
 
 int test_fft() {
-    auto ori_data = utils::ReadData("KunmingSSJY.txt", 6, 3e4);
-    auto data_1d =
-        std::vector<double>(ori_data.begin(), ori_data.begin() + 3e4);
-    matrix::matrixd ori_matrix(3e4, 6, std::span<const double>(ori_data));
+    std::vector<double> x{1.0, 2.0, 3.0, 4.0};
+    auto X = signal::fft(x);
+    EXPECT_EQ(X.size(), 4);
+    EXPECT_CPLX_NEAR(X[0], std::complex<double>(10.0, 0.0), 1e-12);
+    EXPECT_CPLX_NEAR(X[1], std::complex<double>(-2.0, 2.0), 1e-12);
+    EXPECT_CPLX_NEAR(X[2], std::complex<double>(-2.0, 0.0), 1e-12);
+    EXPECT_CPLX_NEAR(X[3], std::complex<double>(-2.0, -2.0), 1e-12);
 
-    try {
-
-        // test r2c fft
-        auto fft_result = signal::fft(data_1d);
-        utils::WriteComplexData(
-            "test_result/signal/fft_result.txt", fft_result, 1, 3e4);
-
-        // test c2c fft
-        auto fft_result_c2c = signal::fft(fft_result);
-        utils::WriteComplexData(
-            "test_result/signal/fft_result_c2c.txt", fft_result_c2c, 1, 3e4);
-
-        // test c2r ifft
-        auto ifft_result = signal::ifft_real(fft_result, 3e4);
-        utils::WriteData(
-            "test_result/signal/ifft_result.txt", ifft_result, 1, 3e4);
-
-        // test c2c ifft
-        auto ifft_result_c2c = signal::ifft(fft_result_c2c, 3e4);
-        utils::WriteComplexData(
-            "test_result/signal/ifft_result_c2c.txt", ifft_result_c2c, 1, 3e4);
-
-        // test matrix fft
-        auto fft_matrix_result = signal::fft_columns(ori_matrix);
-        auto res_vec = std::vector<std::complex<double>>(
-            fft_matrix_result.data(),
-            fft_matrix_result.data() + fft_matrix_result.size());
-        utils::WriteComplexData("test_result/signal/fft_matrix_result.txt",
-                                res_vec,
-                                fft_matrix_result.cols(),
-                                fft_matrix_result.rows());
-    } catch (const std::exception &e) {
-        std::cerr << "FFT test failed: " << e.what() << std::endl;
-        return -1;
+    auto restored = signal::ifft_real(X);
+    EXPECT_EQ(restored.size(), x.size());
+    for (size_t i = 0; i < x.size(); ++i) {
+        EXPECT_NEAR(restored[i], x[i], 1e-12);
     }
 
-    std::cout << "FFT test completed successfully." << std::endl;
+    auto freqs = signal::fft_frequencies(4, 8.0);
+    EXPECT_NEAR(freqs[0], 0.0, 1e-12);
+    EXPECT_NEAR(freqs[1], 2.0, 1e-12);
+    EXPECT_NEAR(freqs[2], 4.0, 1e-12);
+    EXPECT_NEAR(freqs[3], 6.0, 1e-12);
+
+    auto mag = signal::magnitude_spectrum(X);
+    EXPECT_NEAR(mag[0], 10.0, 1e-12);
+    EXPECT_NEAR(mag[1], std::sqrt(8.0), 1e-12);
+
     return 0;
 }
 
-int test_psd() {
-    auto ori_data = utils::ReadData("KunmingSSJY.txt", 6, 3e4);
-    auto data_1d =
-        std::vector<double>(ori_data.begin(), ori_data.begin() + 3e4);
-    auto data_2d =
-        std::vector<double>(ori_data.begin() + 3e4, ori_data.begin() + 6e4);
-    try {
-        // test psd
-        auto psd_1d = signal::psd_welch(data_1d);
-        utils::WriteData(
-            "test_result/signal/psd_1d.txt", psd_1d, 1, psd_1d.size());
-
-        // test cpsd
-        auto cpsd_2d = signal::cpsd_welch(data_1d, data_2d);
-        auto cpsd_2d_mag = std::vector<double>(cpsd_2d.size());
-        for (size_t i = 0; i < cpsd_2d.size(); i++) {
-            cpsd_2d_mag[i] = std::abs(cpsd_2d[i]);
-        }
-        // utils::WriteComplexData(
-        // "test_result/signal/cpsd_2d.txt", cpsd_2d, 1, cpsd_2d.size());
-        utils::WriteData("test_result/signal/cpsd_2d_mag.txt",
-                         cpsd_2d_mag,
-                         1,
-                         cpsd_2d_mag.size());
-    } catch (const std::exception &e) {
-        std::cerr << "PSD test failed: " << e.what() << std::endl;
-        return -1;
+int test_windows_and_filter() {
+    auto hann = signal::hann_window(5);
+    std::vector<double> hann_expected{0.0, 0.5, 1.0, 0.5, 0.0};
+    for (size_t i = 0; i < hann.size(); ++i) {
+        EXPECT_NEAR(hann[i], hann_expected[i], 1e-12);
     }
 
-    std::cout << "PSD test completed successfully." << std::endl;
-    return 0;
-}
-
-int test_detrend() {
-
-    auto ori_data = utils::ReadData("err_data.txt", 1, 3e4);
-    auto detrended = signal::detrend(ori_data, 2);
-
-    try {
-        utils::WriteData("test_result/signal/detrended_data.txt",
-                         detrended,
-                         1,
-                         detrended.size());
-    } catch (const std::exception &e) {
-        std::cerr << "Detrend test failed: " << e.what() << std::endl;
-        return -1;
+    auto hamming = signal::hamming_window(5);
+    std::vector<double> hamming_expected{0.08, 0.54, 1.0, 0.54, 0.08};
+    for (size_t i = 0; i < hamming.size(); ++i) {
+        EXPECT_NEAR(hamming[i], hamming_expected[i], 1e-12);
     }
 
-    std::cout << "Detrend test completed successfully." << std::endl;
+    std::vector<double> input{1.0, 2.0, 4.0, 8.0};
+    signal::FilterCoefficients coeffs({0.5, 0.5}, {1.0});
+    auto filtered = signal::filter(input, coeffs);
+    std::vector<double> expected{0.5, 1.5, 3.0, 6.0};
+    for (size_t i = 0; i < filtered.size(); ++i) {
+        EXPECT_NEAR(filtered[i], expected[i], 1e-12);
+    }
+
+    matrix::matrixd mat(4, 2);
+    for (size_t i = 0; i < mat.rows(); ++i) {
+        mat(i, 0) = input[i];
+        mat(i, 1) = 2.0 * input[i];
+    }
+    auto filtered_cols = signal::filter_columns(mat, coeffs);
+    EXPECT_EQ(filtered_cols.rows(), 4);
+    EXPECT_EQ(filtered_cols.cols(), 2);
+    EXPECT_NEAR(filtered_cols(3, 0), 6.0, 1e-12);
+    EXPECT_NEAR(filtered_cols(3, 1), 12.0, 1e-12);
+
+    bool threw = false;
+    try {
+        signal::FilterCoefficients bad({1.0}, {2.0});
+        (void)signal::filter(input, bad);
+    } catch (const std::invalid_argument &) {
+        threw = true;
+    }
+    EXPECT_TRUE(threw);
+
     return 0;
 }
 
 int main() {
-    return test_filter() + test_fft() + test_psd();
-    return test_detrend();
+    int result = test_fft() + test_windows_and_filter();
+    std::cout << "Total checks: " << g_total << ", failures: " << g_failures
+              << "\n";
+    return result + (g_failures == 0 ? 0 : 1);
 }

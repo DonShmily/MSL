@@ -1,111 +1,90 @@
+#include <cmath>
+#include <iostream>
+#include <stdexcept>
 #include <vector>
 
 #include "interp.hpp"
-#include "matrix.hpp"
-#include "utils/data_io.hpp"
 
 using namespace msl;
 
-int test_interp() {
-    auto ori_data =
-        utils::ReadData("test_result/interp/test_interp_data.txt", 4, 11);
-    auto data_x = std::vector<double>(ori_data.begin(), ori_data.begin() + 11);
-    auto data_y1 =
-        std::vector<double>(ori_data.begin() + 11, ori_data.begin() + 22);
-    auto data_y2 =
-        std::vector<double>(ori_data.begin() + 22, ori_data.begin() + 33);
-    auto data_y3 =
-        std::vector<double>(ori_data.begin() + 33, ori_data.begin() + 44);
-    std::vector<double> new_x = {
-        -1, 0, 0.5, 2, 2.2, 5, 5.6, 8, 8.7, 9.1, 10, 11.5};
+static int g_failures = 0;
+static int g_total = 0;
 
-    try {
-        // test linear interp
-        auto lin_interp_y1 = interp::interp1_linear(data_x, data_y1, new_x);
-        auto lin_interp_y2 = interp::interp1_linear(data_x, data_y2, new_x);
-        auto lin_interp_y3 = interp::interp1_linear(data_x, data_y3, new_x);
-        std::vector<double> lin_interp_all(4 * new_x.size());
-        std::copy(new_x.begin(), new_x.end(), lin_interp_all.begin());
-        std::copy(lin_interp_y1.begin(),
-                  lin_interp_y1.end(),
-                  lin_interp_all.begin() + new_x.size());
-        std::copy(lin_interp_y2.begin(),
-                  lin_interp_y2.end(),
-                  lin_interp_all.begin() + 2 * new_x.size());
-        std::copy(lin_interp_y3.begin(),
-                  lin_interp_y3.end(),
-                  lin_interp_all.begin() + 3 * new_x.size());
-        utils::WriteData("test_result/interp/linear_interp_all.txt",
-                         lin_interp_all,
-                         4,
-                         new_x.size());
+#define EXPECT_TRUE(cond)                                                      \
+    do {                                                                       \
+        ++g_total;                                                             \
+        if (!(cond)) {                                                         \
+            ++g_failures;                                                      \
+            std::cerr << "[FAIL] " << __FILE__ << ":" << __LINE__ << " - "     \
+                      << #cond << "\n";                                        \
+        }                                                                      \
+    } while (0)
 
-        // test spline interp
-        auto spline_interp_y1 = interp::interp1_cubic(data_x, data_y1, new_x);
-        auto spline_interp_y2 = interp::interp1_cubic(data_x, data_y2, new_x);
-        auto spline_interp_y3 = interp::interp1_cubic(data_x, data_y3, new_x);
-        std::vector<double> spline_interp_all(4 * new_x.size());
-        std::copy(new_x.begin(), new_x.end(), spline_interp_all.begin());
-        std::copy(spline_interp_y1.begin(),
-                  spline_interp_y1.end(),
-                  spline_interp_all.begin() + new_x.size());
-        std::copy(spline_interp_y2.begin(),
-                  spline_interp_y2.end(),
-                  spline_interp_all.begin() + 2 * new_x.size());
-        std::copy(spline_interp_y3.begin(),
-                  spline_interp_y3.end(),
-                  spline_interp_all.begin() + 3 * new_x.size());
-        utils::WriteData("test_result/interp/spline_interp_all.txt",
-                         spline_interp_all,
-                         4,
-                         new_x.size());
+#define EXPECT_EQ(a, b) EXPECT_TRUE((a) == (b))
 
-        // test akima interp
-        auto akima_interp_y1 = interp::interp1_akima(data_x, data_y1, new_x);
-        auto akima_interp_y2 = interp::interp1_akima(data_x, data_y2, new_x);
-        auto akima_interp_y3 = interp::interp1_akima(data_x, data_y3, new_x);
-        std::vector<double> akima_interp_all(4 * new_x.size());
-        std::copy(new_x.begin(), new_x.end(), akima_interp_all.begin());
-        std::copy(akima_interp_y1.begin(),
-                  akima_interp_y1.end(),
-                  akima_interp_all.begin() + new_x.size());
-        std::copy(akima_interp_y2.begin(),
-                  akima_interp_y2.end(),
-                  akima_interp_all.begin() + 2 * new_x.size());
-        std::copy(akima_interp_y3.begin(),
-                  akima_interp_y3.end(),
-                  akima_interp_all.begin() + 3 * new_x.size());
-        utils::WriteData("test_result/interp/akima_interp_all.txt",
-                         akima_interp_all,
-                         4,
-                         new_x.size());
+#define EXPECT_NEAR(a, b, eps)                                                 \
+    do {                                                                       \
+        ++g_total;                                                             \
+        if (std::fabs((a) - (b)) > (eps)) {                                    \
+            ++g_failures;                                                      \
+            std::cerr << "[FAIL] " << __FILE__ << ":" << __LINE__ << " - "     \
+                      << #a << " ~= " << #b << " (got: " << (a) << " vs "      \
+                      << (b) << ")\n";                                         \
+        }                                                                      \
+    } while (0)
 
-        // test pchip interp
-        auto pchip_interp_y1 = interp::interp1_pchip(data_x, data_y1, new_x);
-        auto pchip_interp_y2 = interp::interp1_pchip(data_x, data_y2, new_x);
-        auto pchip_interp_y3 = interp::interp1_pchip(data_x, data_y3, new_x);
-        std::vector<double> pchip_interp_all(4 * new_x.size());
-        std::copy(new_x.begin(), new_x.end(), pchip_interp_all.begin());
-        std::copy(pchip_interp_y1.begin(),
-                  pchip_interp_y1.end(),
-                  pchip_interp_all.begin() + new_x.size());
-        std::copy(pchip_interp_y2.begin(),
-                  pchip_interp_y2.end(),
-                  pchip_interp_all.begin() + 2 * new_x.size());
-        std::copy(pchip_interp_y3.begin(),
-                  pchip_interp_y3.end(),
-                  pchip_interp_all.begin() + 3 * new_x.size());
-        utils::WriteData("test_result/interp/pchip_interp_all.txt",
-                         pchip_interp_all,
-                         4,
-                         new_x.size());
-    } catch (const std::exception &e) {
-        std::cerr << "Interp test failed: " << e.what() << std::endl;
-        return -1;
+static void expect_vector_near(const std::vector<double> &actual,
+                               const std::vector<double> &expected,
+                               double eps) {
+    EXPECT_EQ(actual.size(), expected.size());
+    for (size_t i = 0; i < actual.size() && i < expected.size(); ++i) {
+        EXPECT_NEAR(actual[i], expected[i], eps);
     }
+}
 
-    std::cout << "Interp test completed successfully." << std::endl;
-    return 0;
+int test_interp() {
+    std::vector<double> x{0.0, 1.0, 2.0, 3.0};
+    std::vector<double> y{1.0, 3.0, 5.0, 7.0};
+    std::vector<double> xq{-1.0, 0.5, 1.5, 3.0, 4.0};
+    std::vector<double> linear_expected{-1.0, 2.0, 4.0, 7.0, 9.0};
+
+    expect_vector_near(interp::interp1_linear(x, y, xq),
+                       linear_expected,
+                       1e-12);
+    expect_vector_near(interp::interp1_cubic(x, y, xq),
+                       linear_expected,
+                       1e-10);
+    expect_vector_near(interp::interp1_pchip(x, y, xq),
+                       linear_expected,
+                       1e-12);
+    expect_vector_near(interp::interp1_akima(x, y, xq),
+                       linear_expected,
+                       1e-12);
+
+    std::vector<double> near_xq{0.25, 1.4, 2.6};
+    std::vector<double> near_expected{1.0, 3.0, 7.0};
+    expect_vector_near(interp::interp1_near(x, y, near_xq),
+                       near_expected,
+                       1e-12);
+
+    std::vector<double> out(xq.size());
+    interp::interp1_linear(x, y, xq, out);
+    expect_vector_near(out, linear_expected, 1e-12);
+
+    bool threw = false;
+    try {
+        (void)interp::interp1_linear(
+            std::vector<double>{0.0, 0.0},
+            std::vector<double>{1.0, 2.0},
+            std::vector<double>{0.5});
+    } catch (const std::invalid_argument &) {
+        threw = true;
+    }
+    EXPECT_TRUE(threw);
+
+    std::cout << "Total checks: " << g_total << ", failures: " << g_failures
+              << "\n";
+    return g_failures == 0 ? 0 : 1;
 }
 
 int main() { return test_interp(); }

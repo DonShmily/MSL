@@ -45,14 +45,18 @@ public:
      *
      * @param coeffs Coefficients in ascending power order
      */
-    Polynomial(const std::vector<double> &coeffs) : coeffs_(coeffs) {}
+    Polynomial(const std::span<const double> &coeffs) {
+        set_coefficients(coeffs);
+    }
+
     /**
      * @brief Fit polynomial to y values using implicit x = [0, 1, 2, ...].
      *
      * @param y Sample values
      * @param n Polynomial degree
      */
-    Polynomial(std::span<const double> y, std::size_t n = 0) {
+    [[deprecated("Alias for Polynomial(std::span<const double>)")]]
+    Polynomial(std::span<const double> y, std::size_t n) {
         std::vector<double> x(y.size());
         std::iota(x.begin(), x.end(), 0.0);
         fit(x, y, n);

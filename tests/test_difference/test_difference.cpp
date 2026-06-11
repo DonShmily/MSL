@@ -1,82 +1,102 @@
+#include <cmath>
+#include <iostream>
+#include <stdexcept>
 #include <vector>
 
 #include "difference.hpp"
 #include "matrix.hpp"
-#include "utils/data_io.hpp"
-
 
 using namespace msl;
+
+static int g_failures = 0;
+static int g_total = 0;
+
+#define EXPECT_TRUE(cond)                                                      \
+    do {                                                                       \
+        ++g_total;                                                             \
+        if (!(cond)) {                                                         \
+            ++g_failures;                                                      \
+            std::cerr << "[FAIL] " << __FILE__ << ":" << __LINE__ << " - "     \
+                      << #cond << "\n";                                        \
+        }                                                                      \
+    } while (0)
+
+#define EXPECT_EQ(a, b) EXPECT_TRUE((a) == (b))
+
+#define EXPECT_NEAR(a, b, eps)                                                 \
+    do {                                                                       \
+        ++g_total;                                                             \
+        if (std::fabs((a) - (b)) > (eps)) {                                    \
+            ++g_failures;                                                      \
+            std::cerr << "[FAIL] " << __FILE__ << ":" << __LINE__ << " - "     \
+                      << #a << " ~= " << #b << " (got: " << (a) << " vs "      \
+                      << (b) << ")\n";                                         \
+        }                                                                      \
+    } while (0)
+
 int test_difference() {
-    auto ori_data = utils::ReadData("KunmingSSJY.txt", 6, 3e4);
-    auto data_1d =
-        std::vector<double>(ori_data.begin(), ori_data.begin() + 3e4);
-    matrix::matrixd ori_matrix(3e4, 6, std::span<const double>(ori_data));
-    try {
-        // 1d differentiation
-        auto diff_1d = difference::diff(data_1d);
-        utils::WriteData(
-            "test_result/difference/diff_1d.txt", diff_1d, 1, diff_1d.size());
+    std::vector<double> y{1.0, 4.0, 9.0, 16.0};
+    auto d = difference::diff(y);
+    EXPECT_EQ(d.size(), 3);
+    EXPECT_NEAR(d[0], 3.0, 1e-12);
+    EXPECT_NEAR(d[1], 5.0, 1e-12);
+    EXPECT_NEAR(d[2], 7.0, 1e-12);
 
-        // 2d differentiation along rows
-        auto diff_2d_row = difference::diff(ori_matrix, 0);
-        auto diff_2d_row_vec = std::vector<double>(
-            diff_2d_row.data(), diff_2d_row.data() + diff_2d_row.size());
-        utils::WriteData("test_result/difference/diff_2d_row.txt",
-                         diff_2d_row_vec,
-                         diff_2d_row.cols(),
-                         diff_2d_row.rows());
+    auto fg = difference::forward_gradient(y, 0.5);
+    EXPECT_EQ(fg.size(), 3);
+    EXPECT_NEAR(fg[0], 6.0, 1e-12);
+    EXPECT_NEAR(fg[1], 10.0, 1e-12);
+    EXPECT_NEAR(fg[2], 14.0, 1e-12);
 
-        // 2d differentiation along columns
-        auto diff_2d_col = difference::diff(ori_matrix, 1);
-        auto diff_2d_col_vec = std::vector<double>(
-            diff_2d_col.data(), diff_2d_col.data() + diff_2d_col.size());
-        utils::WriteData("test_result/difference/diff_2d_col.txt",
-                         diff_2d_col_vec,
-                         diff_2d_col.cols(),
-                         diff_2d_col.rows());
+    auto cg = difference::central_gradient(y, 1.0);
+    EXPECT_EQ(cg.size(), y.size());
+    EXPECT_NEAR(cg[0], 3.0, 1e-12);
+    EXPECT_NEAR(cg[1], 4.0, 1e-12);
+    EXPECT_NEAR(cg[2], 6.0, 1e-12);
+    EXPECT_NEAR(cg[3], 7.0, 1e-12);
 
-        // 1d central gradient
-        auto cent_grad_1d = difference::central_gradient(data_1d, 1.0);
-        utils::WriteData("test_result/difference/cent_grad_1d.txt",
-                         cent_grad_1d,
-                         1,
-                         cent_grad_1d.size());
-
-        // 2d central gradient along rows
-        auto cent_grad_2d_row =
-            difference::central_gradient(ori_matrix, 1.0, 0);
-        auto cent_grad_2d_row_vec = std::vector<double>(
-            cent_grad_2d_row.data(),
-            cent_grad_2d_row.data() + cent_grad_2d_row.size());
-        utils::WriteData("test_result/difference/cent_grad_2d_row.txt",
-                         cent_grad_2d_row_vec,
-                         cent_grad_2d_row.cols(),
-                         cent_grad_2d_row.rows());
-
-        // 2d central gradient
-        auto cent_grad_2d_col = difference::central_gradient2d(ori_matrix, 1.0);
-        auto cent_grad_2d_col_vec1 = std::vector<double>(
-            cent_grad_2d_col.first.data(),
-            cent_grad_2d_col.first.data() + cent_grad_2d_col.first.size());
-        utils::WriteData("test_result/difference/cent_grad_2d_col_x.txt",
-                         cent_grad_2d_col_vec1,
-                         cent_grad_2d_col.first.cols(),
-                         cent_grad_2d_col.first.rows());
-        auto cent_grad_2d_col_vec2 = std::vector<double>(
-            cent_grad_2d_col.second.data(),
-            cent_grad_2d_col.second.data() + cent_grad_2d_col.second.size());
-        utils::WriteData("test_result/difference/cent_grad_2d_col_y.txt",
-                         cent_grad_2d_col_vec2,
-                         cent_grad_2d_col.second.cols(),
-                         cent_grad_2d_col.second.rows());
-    } catch (const std::exception &e) {
-        std::cerr << "Differentiation test failed: " << e.what() << std::endl;
-        return -1;
+    matrix::matrixd mat(3, 3);
+    for (size_t i = 0; i < mat.rows(); ++i) {
+        for (size_t j = 0; j < mat.cols(); ++j) {
+            mat(i, j) = 10.0 * static_cast<double>(i)
+                        + static_cast<double>(j);
+        }
     }
 
-    std::cout << "Differentiation test completed successfully." << std::endl;
-    return 0;
-}
+    auto row_diff = difference::diff(mat, 0);
+    EXPECT_EQ(row_diff.rows(), 2);
+    EXPECT_EQ(row_diff.cols(), 3);
+    for (size_t i = 0; i < row_diff.rows(); ++i) {
+        for (size_t j = 0; j < row_diff.cols(); ++j) {
+            EXPECT_NEAR(row_diff(i, j), 10.0, 1e-12);
+        }
+    }
 
+    auto col_diff = difference::diff(mat, 1);
+    EXPECT_EQ(col_diff.rows(), 3);
+    EXPECT_EQ(col_diff.cols(), 2);
+    for (size_t i = 0; i < col_diff.rows(); ++i) {
+        for (size_t j = 0; j < col_diff.cols(); ++j) {
+            EXPECT_NEAR(col_diff(i, j), 1.0, 1e-12);
+        }
+    }
+
+    auto lap = difference::laplacian(mat);
+    EXPECT_EQ(lap.rows(), 3);
+    EXPECT_EQ(lap.cols(), 3);
+    EXPECT_NEAR(lap(1, 1), 0.0, 1e-12);
+
+    bool threw = false;
+    try {
+        (void)difference::diff(std::vector<double>{1.0});
+    } catch (const std::invalid_argument &) {
+        threw = true;
+    }
+    EXPECT_TRUE(threw);
+
+    std::cout << "Total checks: " << g_total << ", failures: " << g_failures
+              << "\n";
+    return g_failures == 0 ? 0 : 1;
+}
 
 int main() { return test_difference(); }

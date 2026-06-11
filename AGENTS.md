@@ -18,6 +18,7 @@ xmake run test_matrix        # or test_signal, test_difference, test_integral, t
 
 - No test framework — custom macros: `TEST_CASE`, `EXPECT_TRUE`, `EXPECT_EQ`, `EXPECT_NEAR`, `EXPECT_CPLX_NEAR`.
 - Tests write output to `test_result/<module>/` (gitignored).
+- Prefer deterministic unit assertions over output-file-only checks. Legacy signal/interp/integral/difference tests may read sample files, but new coverage should use small in-memory fixtures where practical.
 
 ## Structure
 

@@ -80,6 +80,8 @@ public:
                 } else {
                     return y_[i + 1];
                 }
+            default:
+                return y_[i];
         }
     }
 
