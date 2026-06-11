@@ -58,7 +58,7 @@ detrend(std::span<const double> data, std::span<double> result, std::size_t n) {
     std::iota(x.begin(), x.end(), 0.0);
 
     // Fit polynomial to data
-    msl::polynomial::Polynomial poly(x, data, n);
+    auto poly = msl::polynomial::Polynomial::from_fit(x, data, n);
     // Subtract trend
     for (std::size_t i = 0; i < data.size(); ++i) {
         result[i] = data[i] - poly(x[i]);
@@ -113,7 +113,7 @@ inline void detrend(std::span<const double> x,
     }
 
     // Fit polynomial to data
-    msl::polynomial::Polynomial poly(x, data, n);
+    auto poly = msl::polynomial::Polynomial::from_fit(x, data, n);
 
     // Subtract trend
     for (std::size_t i = 0; i < data.size(); ++i) {

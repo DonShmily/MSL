@@ -50,29 +50,37 @@ public:
     }
 
     /**
-     * @brief Fit polynomial to y values using implicit x = [0, 1, 2, ...].
+     * @brief Create polynomial by fitting to y values using implicit
+     * x = [0, 1, 2, ...].
      *
      * @param y Sample values
      * @param n Polynomial degree
+     * @return Fitted Polynomial
      */
-    [[deprecated("Alias for Polynomial(std::span<const double>)")]]
-    Polynomial(std::span<const double> y, std::size_t n) {
+    [[nodiscard]] static Polynomial
+    from_fit(std::span<const double> y, std::size_t n) {
         std::vector<double> x(y.size());
         std::iota(x.begin(), x.end(), 0.0);
-        fit(x, y, n);
+        Polynomial poly;
+        poly.fit(x, y, n);
+        return poly;
     }
 
     /**
-     * @brief Fit polynomial to data points.
+     * @brief Create polynomial by fitting to data points.
      *
      * @param x Independent variable samples
      * @param y Dependent variable samples
      * @param n Polynomial degree
+     * @return Fitted Polynomial
      */
-    Polynomial(std::span<const double> x,
-               std::span<const double> y,
-               std::size_t n = 0) {
-        fit(x, y, n);
+    [[nodiscard]] static Polynomial
+    from_fit(std::span<const double> x,
+             std::span<const double> y,
+             std::size_t n = 0) {
+        Polynomial poly;
+        poly.fit(x, y, n);
+        return poly;
     }
 
     /**
@@ -260,7 +268,7 @@ private:
 inline std::vector<double> polyfit(std::span<const double> x,
                                    std::span<const double> y,
                                    std::size_t n = 0) {
-    return Polynomial(x, y, n).coefficients();
+    return Polynomial::from_fit(x, y, n).coefficients();
 }
 
 /**
@@ -280,7 +288,7 @@ inline void polyfit(std::span<const double> x,
             "polyfit: result span size must equal n + 1");
     }
 
-    auto coeffs = Polynomial(x, y, n).coefficients();
+    auto coeffs = Polynomial::from_fit(x, y, n).coefficients();
     std::copy(coeffs.begin(), coeffs.end(), result.begin());
 }
 

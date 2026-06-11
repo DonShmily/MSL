@@ -54,55 +54,75 @@ public:
     ButterworthFilter() = default;
 
     /**
-     * @brief Construct lowpass/highpass filter
+     * @brief Create a lowpass Butterworth filter.
      *
      * @param order Filter order (must be positive)
-     * @param fc Cutoff frequency (normalized: 0 < fc < 1, where 1 = Nyquist
-     * frequency)
-     * @param type Filter type (lowpass or highpass)
-     *
-     * @throws std::invalid_argument if parameters are invalid
+     * @param fc Cutoff frequency (normalized: 0 < fc < 1)
+     * @return ButterworthFilter with computed coefficients
      */
-    ButterworthFilter(int order,
-                      double fc,
-                      FilterType type = FilterType::lowpass)
-        : order_(order), type_(type) {
-        if (type == FilterType::lowpass) {
-            fc_low_ = fc;
-            fc_high_ = 0.0;
-        } else if (type == FilterType::highpass) {
-            fc_low_ = 0.0;
-            fc_high_ = fc;
-        } else {
-            throw std::invalid_argument(
-                "Butterworth: single frequency constructor only for "
-                "lowpass/highpass");
-        }
-
-        design();
+    [[nodiscard]] static ButterworthFilter lowpass(int order, double fc) {
+        ButterworthFilter filter;
+        filter.order_ = order;
+        filter.type_ = FilterType::lowpass;
+        filter.fc_low_ = fc;
+        filter.fc_high_ = 0.0;
+        filter.design();
+        return filter;
     }
 
     /**
-     * @brief Construct bandpass/bandstop filter
+     * @brief Create a highpass Butterworth filter.
+     *
+     * @param order Filter order (must be positive)
+     * @param fc Cutoff frequency (normalized: 0 < fc < 1)
+     * @return ButterworthFilter with computed coefficients
+     */
+    [[nodiscard]] static ButterworthFilter highpass(int order, double fc) {
+        ButterworthFilter filter;
+        filter.order_ = order;
+        filter.type_ = FilterType::highpass;
+        filter.fc_low_ = 0.0;
+        filter.fc_high_ = fc;
+        filter.design();
+        return filter;
+    }
+
+    /**
+     * @brief Create a bandpass Butterworth filter.
      *
      * @param order Filter order (must be positive)
      * @param fc_low Low cutoff frequency (normalized)
      * @param fc_high High cutoff frequency (normalized)
-     * @param type Filter type (bandpass or bandstop)
-     *
-     * @throws std::invalid_argument if parameters are invalid
+     * @return ButterworthFilter with computed coefficients
      */
-    ButterworthFilter(int order,
-                      double fc_low,
-                      double fc_high,
-                      FilterType type = FilterType::bandpass)
-        : order_(order), fc_low_(fc_low), fc_high_(fc_high), type_(type) {
-        if (type != FilterType::bandpass && type != FilterType::bandstop) {
-            throw std::invalid_argument(
-                "Butterworth: two-frequency constructor only for "
-                "bandpass/bandstop");
-        }
-        design();
+    [[nodiscard]] static ButterworthFilter
+    bandpass(int order, double fc_low, double fc_high) {
+        ButterworthFilter filter;
+        filter.order_ = order;
+        filter.fc_low_ = fc_low;
+        filter.fc_high_ = fc_high;
+        filter.type_ = FilterType::bandpass;
+        filter.design();
+        return filter;
+    }
+
+    /**
+     * @brief Create a bandstop Butterworth filter.
+     *
+     * @param order Filter order (must be positive)
+     * @param fc_low Low cutoff frequency (normalized)
+     * @param fc_high High cutoff frequency (normalized)
+     * @return ButterworthFilter with computed coefficients
+     */
+    [[nodiscard]] static ButterworthFilter
+    bandstop(int order, double fc_low, double fc_high) {
+        ButterworthFilter filter;
+        filter.order_ = order;
+        filter.fc_low_ = fc_low;
+        filter.fc_high_ = fc_high;
+        filter.type_ = FilterType::bandstop;
+        filter.design();
+        return filter;
     }
 
     /**
@@ -557,7 +577,7 @@ private:
  * @return Filter coefficients
  */
 inline FilterCoefficients butterworth_lowpass_design(int order, double fc) {
-    return ButterworthFilter(order, fc, FilterType::lowpass).coefficients();
+    return ButterworthFilter::lowpass(order, fc).coefficients();
 }
 
 /**
@@ -568,7 +588,7 @@ inline FilterCoefficients butterworth_lowpass_design(int order, double fc) {
  * @return Filter coefficients
  */
 inline FilterCoefficients butterworth_highpass_design(int order, double fc) {
-    return ButterworthFilter(order, fc, FilterType::highpass).coefficients();
+    return ButterworthFilter::highpass(order, fc).coefficients();
 }
 
 /**
@@ -581,7 +601,7 @@ inline FilterCoefficients butterworth_highpass_design(int order, double fc) {
  */
 inline FilterCoefficients
 butterworth_bandpass_design(int order, double fc_low, double fc_high) {
-    return ButterworthFilter(order, fc_low, fc_high, FilterType::bandpass)
+    return ButterworthFilter::bandpass(order, fc_low, fc_high)
         .coefficients();
 }
 
@@ -595,7 +615,7 @@ butterworth_bandpass_design(int order, double fc_low, double fc_high) {
  */
 inline FilterCoefficients
 butterworth_bandstop_design(int order, double fc_low, double fc_high) {
-    return ButterworthFilter(order, fc_low, fc_high, FilterType::bandstop)
+    return ButterworthFilter::bandstop(order, fc_low, fc_high)
         .coefficients();
 }
 

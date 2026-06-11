@@ -35,8 +35,18 @@ class Polynomial : public InterpolatorBase {
 public:
     Polynomial() = default;
 
-    Polynomial(std::span<const double> x, std::span<const double> y) {
-        set_data(x, y);
+    /**
+     * @brief Create polynomial interpolator from data points.
+     *
+     * @param x Independent variable samples (strictly increasing)
+     * @param y Dependent variable samples
+     * @return Polynomial interpolator
+     */
+    [[nodiscard]] static Polynomial
+    from_data(std::span<const double> x, std::span<const double> y) {
+        Polynomial interp;
+        interp.set_data(x, y);
+        return interp;
     }
 
     /**
@@ -146,7 +156,7 @@ inline void interp1_polynomial(std::span<const double> x,
             "interp1_polynomial: x_new and result spans must have same size");
     }
 
-    Polynomial interp(x, y);
+    auto interp = Polynomial::from_data(x, y);
     interp(x_new, result);
 }
 
@@ -156,7 +166,7 @@ inline void interp1_polynomial(std::span<const double> x,
 inline std::vector<double> interp1_polynomial(std::span<const double> x,
                                               std::span<const double> y,
                                               std::span<const double> x_new) {
-    return Polynomial(x, y)(x_new);
+    return Polynomial::from_data(x, y)(x_new);
 }
 
 } // namespace msl::interp

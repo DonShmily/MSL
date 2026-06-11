@@ -33,11 +33,22 @@ class PchipSpline : public InterpolatorBase {
 public:
     PchipSpline() = default;
 
-    PchipSpline(std::span<const double> x,
-                std::span<const double> y,
-                ExtrapolationMode extrap_mode = ExtrapolationMode::Polynomial) {
-        extrap_mode_ = extrap_mode;
-        set_data(x, y);
+    /**
+     * @brief Create PCHIP interpolator from data points.
+     *
+     * @param x Independent variable samples (strictly increasing)
+     * @param y Dependent variable samples
+     * @param extrap_mode Extrapolation mode
+     * @return PchipSpline interpolator
+     */
+    [[nodiscard]] static PchipSpline
+    from_data(std::span<const double> x,
+              std::span<const double> y,
+              ExtrapolationMode extrap_mode = ExtrapolationMode::Polynomial) {
+        PchipSpline spline;
+        spline.extrap_mode_ = extrap_mode;
+        spline.set_data(x, y);
+        return spline;
     }
 
     /**
@@ -164,14 +175,14 @@ inline void interp1_pchip(std::span<const double> x,
         throw std::invalid_argument(
             "interp1_pchip: x_new and result spans must have same size");
     }
-    PchipSpline pchip(x, y);
+    auto pchip = PchipSpline::from_data(x, y);
     pchip(x_new, result);
 }
 
 inline std::vector<double> interp1_pchip(std::span<const double> x,
                                          std::span<const double> y,
                                          std::span<const double> x_new) {
-    PchipSpline interp(x, y);
+    auto interp = PchipSpline::from_data(x, y);
     return interp(x_new);
 }
 

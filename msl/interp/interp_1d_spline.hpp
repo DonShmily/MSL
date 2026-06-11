@@ -36,11 +36,22 @@ public:
 
     CubicSpline() = default;
 
-    CubicSpline(std::span<const double> x,
-                std::span<const double> y,
-                BoundaryCondition bc_type = BoundaryCondition::NotAKnot) {
-        bc_type_ = bc_type;
-        set_data(x, y);
+    /**
+     * @brief Create cubic spline interpolator from data points.
+     *
+     * @param x Independent variable samples (strictly increasing)
+     * @param y Dependent variable samples
+     * @param bc_type Boundary condition type
+     * @return CubicSpline interpolator
+     */
+    [[nodiscard]] static CubicSpline
+    from_data(std::span<const double> x,
+              std::span<const double> y,
+              BoundaryCondition bc_type = BoundaryCondition::NotAKnot) {
+        CubicSpline spline;
+        spline.bc_type_ = bc_type;
+        spline.set_data(x, y);
+        return spline;
     }
 
     /**
@@ -310,7 +321,7 @@ inline void interp1_cubic(std::span<const double> x,
             "interp1_cubic: x_new and result spans must have same size");
     }
 
-    CubicSpline spline(x, y);
+    auto spline = CubicSpline::from_data(x, y);
     spline(x_new, result);
 }
 
@@ -325,7 +336,7 @@ inline void interp1_cubic(std::span<const double> x,
 inline std::vector<double> interp1_cubic(std::span<const double> x,
                                          std::span<const double> y,
                                          std::span<const double> x_new) {
-    return CubicSpline(x, y)(x_new);
+    return CubicSpline::from_data(x, y)(x_new);
 }
 
 } // namespace msl::interp

@@ -33,11 +33,22 @@ public:
 
     Near() = default;
 
-    Near(std::span<const double> x,
-         std::span<const double> y,
-         NearType type = NearType::Nearest) {
-        set_data(x, y);
-        near_type_ = type;
+    /**
+     * @brief Create nearest-neighbor interpolator from data points.
+     *
+     * @param x Independent variable samples (strictly increasing)
+     * @param y Dependent variable samples
+     * @param type Near neighbor selection type
+     * @return Near interpolator
+     */
+    [[nodiscard]] static Near
+    from_data(std::span<const double> x,
+              std::span<const double> y,
+              NearType type = NearType::Nearest) {
+        Near interp;
+        interp.set_data(x, y);
+        interp.near_type_ = type;
+        return interp;
     }
 
     /**
@@ -107,7 +118,7 @@ inline void interp1_near(std::span<const double> x,
             "interp1_near: x_new and result spans must have same size");
     }
 
-    Near interp(x, y);
+    auto interp = Near::from_data(x, y);
     interp(x_new, result);
 }
 
@@ -122,7 +133,7 @@ inline void interp1_near(std::span<const double> x,
 inline std::vector<double> interp1_near(std::span<const double> x,
                                         std::span<const double> y,
                                         std::span<const double> x_new) {
-    return Near(x, y)(x_new);
+    return Near::from_data(x, y)(x_new);
 }
 
 } // namespace msl::interp

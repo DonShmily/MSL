@@ -29,8 +29,18 @@ class Linear : public InterpolatorBase {
 public:
     Linear() = default;
 
-    Linear(std::span<const double> x, std::span<const double> y) {
-        set_data(x, y);
+    /**
+     * @brief Create linear interpolator from data points.
+     *
+     * @param x Independent variable samples (strictly increasing)
+     * @param y Dependent variable samples
+     * @return Linear interpolator
+     */
+    [[nodiscard]] static Linear
+    from_data(std::span<const double> x, std::span<const double> y) {
+        Linear interp;
+        interp.set_data(x, y);
+        return interp;
     }
 
     /**
@@ -89,7 +99,7 @@ inline void interp1_linear(std::span<const double> x,
             "interp1_linear: x_new and result spans must have same size");
     }
 
-    Linear interp(x, y);
+    auto interp = Linear::from_data(x, y);
     interp(x_new, result);
 }
 
@@ -104,7 +114,7 @@ inline void interp1_linear(std::span<const double> x,
 inline std::vector<double> interp1_linear(std::span<const double> x,
                                           std::span<const double> y,
                                           std::span<const double> x_new) {
-    return Linear(x, y)(x_new);
+    return Linear::from_data(x, y)(x_new);
 }
 
 } // namespace msl::interp

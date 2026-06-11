@@ -69,7 +69,7 @@ int test_polynomial() {
     EXPECT_NEAR(coeffs_out[1], -2.0, 1e-10);
     EXPECT_NEAR(coeffs_out[2], 0.5, 1e-10);
 
-    polynomial::Polynomial constant_fit(y, 0);
+    auto constant_fit = polynomial::Polynomial::from_fit(y, 0);
     EXPECT_EQ(constant_fit.degree(), 0);
 
     bool threw = false;

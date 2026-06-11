@@ -24,11 +24,22 @@ class AkimaSpline : public InterpolatorBase {
 public:
     AkimaSpline() = default;
 
-    AkimaSpline(std::span<const double> x,
-                std::span<const double> y,
-                bool modified_akima = true) {
-        modified_akima_ = modified_akima;
-        set_data(x, y);
+    /**
+     * @brief Create Akima spline interpolator from data points.
+     *
+     * @param x Independent variable samples (strictly increasing)
+     * @param y Dependent variable samples
+     * @param modified_akima Use modified Akima weights (MATLAB makima)
+     * @return AkimaSpline interpolator
+     */
+    [[nodiscard]] static AkimaSpline
+    from_data(std::span<const double> x,
+              std::span<const double> y,
+              bool modified_akima = true) {
+        AkimaSpline spline;
+        spline.modified_akima_ = modified_akima;
+        spline.set_data(x, y);
+        return spline;
     }
 
     /**
@@ -156,14 +167,14 @@ inline void interp1_akima(std::span<const double> x,
             "interp1_akima: x_new and result spans must have same size");
     }
 
-    AkimaSpline spline(x, y);
+    auto spline = AkimaSpline::from_data(x, y);
     spline(x_new, result);
 }
 
 inline std::vector<double> interp1_akima(std::span<const double> x,
                                          std::span<const double> y,
                                          std::span<const double> x_new) {
-    return AkimaSpline(x, y)(x_new);
+    return AkimaSpline::from_data(x, y)(x_new);
 }
 
 } // namespace msl::interp

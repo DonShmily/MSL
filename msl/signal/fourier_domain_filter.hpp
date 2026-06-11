@@ -72,28 +72,95 @@ public:
     FourierDomainFilter() = default;
 
     /**
-     * @brief Construct Fourier domain filter
+     * @brief Create a lowpass Fourier-domain filter.
      *
-     * @param fc_low Low cutoff frequency (normalized: 0 < fc < 1, where 1 =
-     * Nyquist frequency)
-     * @param fc_high High cutoff frequency (normalized: 0 < fc < 1, where 1 =
-     * Nyquist frequency)
-     * @param type Filter type (lowpass/highpass/bandpass/bandstop)
+     * @param fc_high Cutoff frequency (normalized: 0 < fc < 1)
      * @param window_type Window function type
      * @param transition_band Transition band width normalized of Nyquist
-     * @throws std::invalid_argument if parameters are invalid
+     * @return FourierDomainFilter with computed window function
      */
-    FourierDomainFilter(double fc_low,
-                        double fc_high,
-                        FilterType type = FilterType::bandpass,
-                        WindowType window_type = WindowType::rectangular,
-                        double transition_band = 0.0)
-        : fc_low_(fc_low),
-          fc_high_(fc_high),
-          type_(type),
-          window_type_(window_type),
-          transition_band_(transition_band) {
-        design();
+    [[nodiscard]] static FourierDomainFilter
+    lowpass(double fc_high,
+            WindowType window_type = WindowType::rectangular,
+            double transition_band = 0.0) {
+        FourierDomainFilter filter;
+        filter.fc_low_ = 0.0;
+        filter.fc_high_ = fc_high;
+        filter.type_ = FilterType::lowpass;
+        filter.window_type_ = window_type;
+        filter.transition_band_ = transition_band;
+        filter.design();
+        return filter;
+    }
+
+    /**
+     * @brief Create a highpass Fourier-domain filter.
+     *
+     * @param fc_low Cutoff frequency (normalized: 0 < fc < 1)
+     * @param window_type Window function type
+     * @param transition_band Transition band width normalized of Nyquist
+     * @return FourierDomainFilter with computed window function
+     */
+    [[nodiscard]] static FourierDomainFilter
+    highpass(double fc_low,
+             WindowType window_type = WindowType::rectangular,
+             double transition_band = 0.0) {
+        FourierDomainFilter filter;
+        filter.fc_low_ = fc_low;
+        filter.fc_high_ = 1.0;
+        filter.type_ = FilterType::highpass;
+        filter.window_type_ = window_type;
+        filter.transition_band_ = transition_band;
+        filter.design();
+        return filter;
+    }
+
+    /**
+     * @brief Create a bandpass Fourier-domain filter.
+     *
+     * @param fc_low Low cutoff frequency (normalized: 0 < fc < 1)
+     * @param fc_high High cutoff frequency (normalized: 0 < fc < 1)
+     * @param window_type Window function type
+     * @param transition_band Transition band width normalized of Nyquist
+     * @return FourierDomainFilter with computed window function
+     */
+    [[nodiscard]] static FourierDomainFilter
+    bandpass(double fc_low,
+             double fc_high,
+             WindowType window_type = WindowType::rectangular,
+             double transition_band = 0.0) {
+        FourierDomainFilter filter;
+        filter.fc_low_ = fc_low;
+        filter.fc_high_ = fc_high;
+        filter.type_ = FilterType::bandpass;
+        filter.window_type_ = window_type;
+        filter.transition_band_ = transition_band;
+        filter.design();
+        return filter;
+    }
+
+    /**
+     * @brief Create a bandstop Fourier-domain filter.
+     *
+     * @param fc_low Low cutoff frequency (normalized: 0 < fc < 1)
+     * @param fc_high High cutoff frequency (normalized: 0 < fc < 1)
+     * @param window_type Window function type
+     * @param transition_band Transition band width normalized of Nyquist
+     * @return FourierDomainFilter with computed window function
+     */
+    [[nodiscard]] static FourierDomainFilter
+    bandstop(double fc_low,
+             double fc_high,
+             WindowType window_type = WindowType::rectangular,
+             double transition_band = 0.0) {
+        FourierDomainFilter filter;
+        filter.fc_low_ = fc_low;
+        filter.fc_high_ = fc_high;
+        filter.type_ = FilterType::bandstop;
+        filter.window_type_ = window_type;
+        filter.transition_band_ = transition_band;
+        filter.design();
+        return filter;
     }
 
     /**
@@ -410,8 +477,8 @@ inline void fourier_bandpass(std::span<const double> signal,
                              FourierDomainFilter::WindowType window_type =
                                  FourierDomainFilter::WindowType::rectangular,
                              double transition_band = 0.0) {
-    FourierDomainFilter filter(
-        fc_low, fc_high, FilterType::bandpass, window_type, transition_band);
+    auto filter =
+        FourierDomainFilter::bandpass(fc_low, fc_high, window_type, transition_band);
     filter.apply(signal, result);
 }
 
@@ -432,8 +499,8 @@ fourier_bandpass(std::span<const double> signal,
                  FourierDomainFilter::WindowType window_type =
                      FourierDomainFilter::WindowType::rectangular,
                  double transition_band = 0.0) {
-    FourierDomainFilter filter(
-        fc_low, fc_high, FilterType::bandpass, window_type, transition_band);
+    auto filter =
+        FourierDomainFilter::bandpass(fc_low, fc_high, window_type, transition_band);
     return filter.apply(signal);
 }
 
@@ -454,8 +521,8 @@ inline void fourier_bandstop(std::span<const double> signal,
                              FourierDomainFilter::WindowType window_type =
                                  FourierDomainFilter::WindowType::rectangular,
                              double transition_band = 0.0) {
-    FourierDomainFilter filter(
-        fc_low, fc_high, FilterType::bandstop, window_type, transition_band);
+    auto filter =
+        FourierDomainFilter::bandstop(fc_low, fc_high, window_type, transition_band);
     filter.apply(signal, result);
 }
 
@@ -476,8 +543,8 @@ fourier_bandstop(std::span<const double> signal,
                  FourierDomainFilter::WindowType window_type =
                      FourierDomainFilter::WindowType::rectangular,
                  double transition_band = 0.0) {
-    FourierDomainFilter filter(
-        fc_low, fc_high, FilterType::bandstop, window_type, transition_band);
+    auto filter =
+        FourierDomainFilter::bandstop(fc_low, fc_high, window_type, transition_band);
     return filter.apply(signal);
 }
 
@@ -496,8 +563,8 @@ inline void fourier_lowpass(std::span<const double> signal,
                             FourierDomainFilter::WindowType window_type =
                                 FourierDomainFilter::WindowType::rectangular,
                             double transition_band = 0.0) {
-    FourierDomainFilter filter(
-        0.0, fc_high, FilterType::lowpass, window_type, transition_band);
+    auto filter =
+        FourierDomainFilter::lowpass(fc_high, window_type, transition_band);
     filter.apply(signal, result);
 }
 
@@ -516,8 +583,8 @@ fourier_lowpass(std::span<const double> signal,
                 FourierDomainFilter::WindowType window_type =
                     FourierDomainFilter::WindowType::rectangular,
                 double transition_band = 0.0) {
-    FourierDomainFilter filter(
-        0.0, fc_high, FilterType::lowpass, window_type, transition_band);
+    auto filter =
+        FourierDomainFilter::lowpass(fc_high, window_type, transition_band);
     return filter.apply(signal);
 }
 
@@ -536,8 +603,8 @@ inline void fourier_highpass(std::span<const double> signal,
                              FourierDomainFilter::WindowType window_type =
                                  FourierDomainFilter::WindowType::rectangular,
                              double transition_band = 0.0) {
-    FourierDomainFilter filter(
-        fc_low, 1.0, FilterType::highpass, window_type, transition_band);
+    auto filter =
+        FourierDomainFilter::highpass(fc_low, window_type, transition_band);
     filter.apply(signal, result);
 }
 
@@ -556,8 +623,8 @@ fourier_highpass(std::span<const double> signal,
                  FourierDomainFilter::WindowType window_type =
                      FourierDomainFilter::WindowType::rectangular,
                  double transition_band = 0.0) {
-    FourierDomainFilter filter(
-        fc_low, 1.0, FilterType::highpass, window_type, transition_band);
+    auto filter =
+        FourierDomainFilter::highpass(fc_low, window_type, transition_band);
     return filter.apply(signal);
 }
 
