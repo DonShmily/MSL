@@ -1,6 +1,7 @@
 add_includedirs("$(projectdir)/msl")
 
 includes("test_difference")
+includes("test_equation")
 includes("test_integral")
 includes("test_interp")
 includes("test_matrix")

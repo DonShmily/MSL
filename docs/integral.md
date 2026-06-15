@@ -2,7 +2,7 @@
 
 **Namespace**: `msl::integral`  
 **Aggregator**: `msl/integral.hpp`  
-**Files**: 5 headers in `msl/integral/`
+**Files**: algorithm headers in `msl/integral/`
 
 ## Overview
 
@@ -22,6 +22,12 @@ double I = msl::integral::trapz(x, y);
 // Matrix: integrate each column (uniform spacing)
 auto integrals = msl::integral::trapz(mat, dx);  // returns vector<double>
 msl::integral::trapz(mat, result, dx);           // zero-copy output
+
+// Matrix: integrate each column (non-uniform spacing)
+auto integrals = msl::integral::trapz(x, mat);
+
+// Function
+double I = msl::integral::trapz(f, a, b, intervals);
 ```
 
 ## Cumulative Trapz
@@ -50,12 +56,20 @@ Higher accuracy than trapezoidal for smooth functions.
 // If even number of points, uses trapezoidal for last segment
 double I = msl::integral::simpson(y, dx);
 
+// Non-uniform spacing
+double I = msl::integral::simpson(x, y);
+
+// Function
+double I = msl::integral::simpson(f, a, b, intervals);
+
 // Cumulative Simpson
 auto cum = msl::integral::cumsimpson(y, dx);
 msl::integral::cumsimpson(y, cum, dx);  // zero-copy
+auto cum = msl::integral::cumsimpson(x, y);
 
 // Matrix: integrate each column
 auto integrals = msl::integral::simpson(mat, dx);
+auto integrals = msl::integral::simpson(x, mat);
 ```
 
 Cumulative Simpson uses Simpson's rule for even-indexed points and linear interpolation for odd-indexed points.
@@ -68,8 +82,15 @@ Richardson extrapolation on the trapezoidal rule for high-precision integration.
 // Vector: y must have 2^k + 1 points
 double I = msl::integral::romberg(y, dx, tol);  // tol default: 1e-10
 
+// Uniformly spaced x/y samples
+double I = msl::integral::romberg(x, y, tol);
+
+// Function
+double I = msl::integral::romberg(f, a, b, tol, max_iter);
+
 // Matrix: integrate each column
 auto integrals = msl::integral::romberg(mat, dx, tol);
+auto integrals = msl::integral::romberg(x, mat, tol);
 ```
 
 | Parameter | Default | Description |
@@ -81,15 +102,20 @@ auto integrals = msl::integral::romberg(mat, dx, tol);
 Adaptive recursive Simpson's rule for arbitrary functions.
 
 ```cpp
+double I = msl::integral::adaptive_simpson(f, a, b, tol, max_depth);
 double I = msl::integral::quad(f, a, b, tol, max_depth);
 ```
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `f` | — | Function to integrate (`std::function<double(double)>`) |
+| `f` | — | Callable compatible with `double(double)` |
 | `a` | — | Lower limit |
 | `b` | — | Upper limit (must be > a) |
 | `tol` | `1e-8` | Tolerance |
 | `max_depth` | `50` | Maximum recursion depth |
 
 The function recursively subdivides the interval until the error estimate `|S_acb - S_ab| / 15 < tol`. Tolerance is halved at each recursion level.
+
+`adaptive_simpson_quadrature.hpp` and `cumtrapz.hpp` are compatibility headers.
+New code should include `adaptive_simpson.hpp` and `trapz.hpp` directly when
+including algorithm-specific headers.

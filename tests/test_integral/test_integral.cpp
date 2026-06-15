@@ -35,6 +35,8 @@ static int g_total = 0;
     } while (0)
 
 int test_integral() {
+    const double pi = std::acos(-1.0);
+
     std::vector<double> y{0.0, 1.0, 4.0, 9.0};
     auto ct = integral::cumtrapz(y, 1.0);
     EXPECT_EQ(ct.size(), y.size());
@@ -58,6 +60,35 @@ int test_integral() {
     EXPECT_NEAR(cs[0], 0.0, 1e-12);
     EXPECT_NEAR(cs[2], 8.0 / 3.0, 1e-12);
 
+    std::vector<double> x_parabola{0.0, 0.5, 2.0};
+    std::vector<double> y_parabola{0.0, 0.25, 4.0};
+    EXPECT_NEAR(integral::simpson(x_parabola, y_parabola), 8.0 / 3.0, 1e-12);
+    auto cs_nonuniform = integral::cumsimpson(x_parabola, y_parabola);
+    EXPECT_EQ(cs_nonuniform.size(), y_parabola.size());
+    EXPECT_NEAR(cs_nonuniform[2], 8.0 / 3.0, 1e-12);
+
+    EXPECT_NEAR(
+        integral::trapz([](double x) { return x; }, 0.0, 1.0, 16), 0.5, 1e-12);
+    EXPECT_NEAR(integral::simpson([](double x) { return x * x; }, 0.0, 2.0, 16),
+                8.0 / 3.0,
+                1e-12);
+
+    std::vector<double> romberg_x{0.0, 1.0, 2.0, 3.0, 4.0};
+    std::vector<double> romberg_y{0.0, 1.0, 4.0, 9.0, 16.0};
+    EXPECT_NEAR(integral::romberg(romberg_y, 1.0), 64.0 / 3.0, 1e-12);
+    EXPECT_NEAR(integral::romberg(romberg_x, romberg_y), 64.0 / 3.0, 1e-12);
+    EXPECT_NEAR(
+        integral::romberg([](double x) { return std::sin(x); }, 0.0, pi, 1e-12),
+        2.0,
+        1e-10);
+    EXPECT_NEAR(integral::adaptive_simpson(
+                    [](double x) { return std::sin(x); }, 0.0, pi, 1e-12),
+                2.0,
+                1e-10);
+    EXPECT_NEAR(integral::quad([](double x) { return x * x; }, 0.0, 2.0),
+                8.0 / 3.0,
+                1e-8);
+
     matrix::matrixd mat(4, 2);
     for (size_t i = 0; i < mat.rows(); ++i) {
         mat(i, 0) = static_cast<double>(i);
@@ -67,6 +98,11 @@ int test_integral() {
     EXPECT_EQ(col_trapz.size(), 2);
     EXPECT_NEAR(col_trapz[0], 4.5, 1e-12);
     EXPECT_NEAR(col_trapz[1], 9.0, 1e-12);
+
+    auto col_trapz_nonuniform = integral::trapz(x, mat);
+    EXPECT_EQ(col_trapz_nonuniform.size(), 2);
+    EXPECT_NEAR(col_trapz_nonuniform[0], 5.0, 1e-12);
+    EXPECT_NEAR(col_trapz_nonuniform[1], 10.0, 1e-12);
 
     auto mat_cum = integral::cumtrapz(mat, 1.0);
     EXPECT_EQ(mat_cum.rows(), 4);
