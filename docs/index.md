@@ -2,7 +2,7 @@
 
 ## Overview
 
-MSL is a **C++20 header-only** numerical computing library inspired by MATLAB and NumPy/SciPy. It provides a comprehensive set of tools for matrix operations, signal processing, numerical differentiation, integration, interpolation, and polynomial fitting — all without external runtime dependencies beyond Eigen3.
+MSL is a **C++20 header-only** numerical computing library inspired by MATLAB and NumPy/SciPy. It provides a comprehensive set of tools for matrix operations, signal processing, numerical differentiation, integration, interpolation, polynomial fitting, scalar nonlinear equations, and ODE initial value problems — all without external runtime dependencies beyond Eigen3.
 
 ### Design Philosophy
 
@@ -19,8 +19,10 @@ MSL is a **C++20 header-only** numerical computing library inspired by MATLAB an
 | [matrix](matrix.md) | `msl::matrix` | `msl/matrix.hpp` | Real/complex matrices, views, linear algebra, decompositions |
 | [signal](signal.md) | `msl::signal` | `msl/signal.hpp` | FFT, filter design, Butterworth IIR, zero-phase filtering, PSD, window functions |
 | [difference](difference.md) | `msl::difference` | `msl/difference.hpp` | Diff, gradient, Laplacian, divergence, curl, Savitzky-Golay |
+| [equation](equation.md) | `msl::equation` | `msl/equation.hpp` | One-dimensional nonlinear equation solvers |
 | [integral](integral.md) | `msl::integral` | `msl/integral.hpp` | Trapezoidal, Simpson, Romberg, adaptive quadrature |
 | [interp](interp.md) | `msl::interp` | `msl/interp.hpp` | 1D interpolation (linear, spline, Akima, PCHIP, nearest, polynomial) |
+| [ode](ode.md) | `msl::ode` | `msl/ode.hpp` | Fixed-step and adaptive ODE initial value solvers |
 | [polynomial](polynomial.md) | `msl::polynomial` | `msl/polynomial.hpp` | Polynomial class, least-squares fitting, evaluation |
 | [utils](utils.md) | `msl::utils` | — | File I/O, assert handler |
 
@@ -31,6 +33,8 @@ MSL is a **C++20 header-only** numerical computing library inspired by MATLAB an
 #include "msl/difference.hpp"
 #include "msl/integral.hpp"
 #include "msl/interp.hpp"
+#include "msl/equation.hpp"
+#include "msl/ode.hpp"
 #include "msl/signal/fft.hpp"
 #include "msl/signal/filter.hpp"
 #include "msl/signal/filtfilt.hpp"
@@ -64,6 +68,15 @@ auto coeffs = msl::polynomial::polyfit(
     std::vector{0.0, 1.0, 2.0, 3.0},
     std::vector{0.0, 1.0, 4.0, 9.0}, 2);
 // coeffs ≈ [0, 0, 1] → f(x) = x^2
+
+// Scalar nonlinear equation
+double root = msl::equation::brent_root(
+    [](double x) { return x * x - 2.0; }, 0.0, 2.0);
+
+// ODE initial value problem: y' = y, y(0) = 1
+auto y1 = msl::ode::rk4_final(
+    [](double, const msl::ode::state& y) { return msl::ode::state{y[0]}; },
+    std::vector<double>{1.0}, 0.0, 1.0, 0.01);
 ```
 
 ## Dependency

@@ -1,4 +1,7 @@
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -34,6 +37,22 @@ static int g_total = 0;
         }                                                                      \
     } while (0)
 
+std::filesystem::path project_root() {
+    auto path = std::filesystem::current_path();
+    while (!path.empty()) {
+        if (std::filesystem::exists(path / "msl")
+            && std::filesystem::exists(path / "tests")) {
+            return path;
+        }
+        auto parent = path.parent_path();
+        if (parent == path) {
+            break;
+        }
+        path = parent;
+    }
+    return std::filesystem::current_path();
+}
+
 int test_difference() {
     std::vector<double> y{1.0, 4.0, 9.0, 16.0};
     auto d = difference::diff(y);
@@ -58,8 +77,7 @@ int test_difference() {
     matrix::matrixd mat(3, 3);
     for (size_t i = 0; i < mat.rows(); ++i) {
         for (size_t j = 0; j < mat.cols(); ++j) {
-            mat(i, j) = 10.0 * static_cast<double>(i)
-                        + static_cast<double>(j);
+            mat(i, j) = 10.0 * static_cast<double>(i) + static_cast<double>(j);
         }
     }
 
@@ -93,6 +111,43 @@ int test_difference() {
         threw = true;
     }
     EXPECT_TRUE(threw);
+
+    auto compare_dir =
+        project_root() / "test_result" / "difference" / "matlab_compare";
+    std::filesystem::create_directories(compare_dir);
+
+    std::ofstream vec_file(compare_dir / "difference_vector.txt");
+    vec_file << std::setprecision(17);
+    for (size_t i = 0; i < y.size(); ++i) {
+        vec_file << y[i] << " " << (i < d.size() ? d[i] : 0.0) << " " << cg[i]
+                 << "\n";
+    }
+
+    std::ofstream mat_file(compare_dir / "difference_matrix.txt");
+    mat_file << std::setprecision(17);
+    for (size_t i = 0; i < mat.rows(); ++i) {
+        for (size_t j = 0; j < mat.cols(); ++j) {
+            mat_file << mat(i, j) << (j + 1 == mat.cols() ? '\n' : ' ');
+        }
+    }
+
+    std::ofstream row_file(compare_dir / "difference_row_diff.txt");
+    row_file << std::setprecision(17);
+    for (size_t i = 0; i < row_diff.rows(); ++i) {
+        for (size_t j = 0; j < row_diff.cols(); ++j) {
+            row_file << row_diff(i, j)
+                     << (j + 1 == row_diff.cols() ? '\n' : ' ');
+        }
+    }
+
+    std::ofstream col_file(compare_dir / "difference_col_diff.txt");
+    col_file << std::setprecision(17);
+    for (size_t i = 0; i < col_diff.rows(); ++i) {
+        for (size_t j = 0; j < col_diff.cols(); ++j) {
+            col_file << col_diff(i, j)
+                     << (j + 1 == col_diff.cols() ? '\n' : ' ');
+        }
+    }
 
     std::cout << "Total checks: " << g_total << ", failures: " << g_failures
               << "\n";

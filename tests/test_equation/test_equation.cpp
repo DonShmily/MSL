@@ -1,4 +1,7 @@
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 
@@ -31,6 +34,22 @@ static int g_total = 0;
                       << (b) << ")\n";                                         \
         }                                                                      \
     } while (0)
+
+std::filesystem::path project_root() {
+    auto path = std::filesystem::current_path();
+    while (!path.empty()) {
+        if (std::filesystem::exists(path / "msl")
+            && std::filesystem::exists(path / "tests")) {
+            return path;
+        }
+        auto parent = path.parent_path();
+        if (parent == path) {
+            break;
+        }
+        path = parent;
+    }
+    return std::filesystem::current_path();
+}
 
 int test_equation() {
     auto square_minus_two = [](double x) { return x * x - 2.0; };
@@ -174,6 +193,24 @@ int test_equation() {
         threw = true;
     }
     EXPECT_TRUE(threw);
+
+    auto compare_dir =
+        project_root() / "test_result" / "equation" / "matlab_compare";
+    std::filesystem::create_directories(compare_dir);
+    std::ofstream roots_file(compare_dir / "equation_roots.txt");
+    roots_file << std::setprecision(17);
+    roots_file << bisection_result.root << " " << bisection_result.residual
+               << " " << bisection_result.iterations << "\n";
+    roots_file << brent_result.root << " " << brent_result.residual << " "
+               << brent_result.iterations << "\n";
+    roots_file << newton_result.root << " " << newton_result.residual << " "
+               << newton_result.iterations << "\n";
+    roots_file << secant_result.root << " " << secant_result.residual << " "
+               << secant_result.iterations << "\n";
+    roots_file << falsi_result.root << " " << falsi_result.residual << " "
+               << falsi_result.iterations << "\n";
+    roots_file << fixed_point.root << " " << fixed_point.residual << " "
+               << fixed_point.iterations << "\n";
 
     std::cout << "Total checks: " << g_total << ", failures: " << g_failures
               << "\n";

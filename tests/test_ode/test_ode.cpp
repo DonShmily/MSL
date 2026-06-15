@@ -1,4 +1,7 @@
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
@@ -33,6 +36,22 @@ static int g_total = 0;
                       << (b) << ")\n";                                         \
         }                                                                      \
     } while (0)
+
+std::filesystem::path project_root() {
+    auto path = std::filesystem::current_path();
+    while (!path.empty()) {
+        if (std::filesystem::exists(path / "msl")
+            && std::filesystem::exists(path / "tests")) {
+            return path;
+        }
+        auto parent = path.parent_path();
+        if (parent == path) {
+            break;
+        }
+        path = parent;
+    }
+    return std::filesystem::current_path();
+}
 
 int test_ode() {
     auto exponential = [](double, const ode::state &y) {
@@ -143,6 +162,26 @@ int test_ode() {
         eval_threw = true;
     }
     EXPECT_TRUE(eval_threw);
+
+    auto compare_dir =
+        project_root() / "test_result" / "ode" / "matlab_compare";
+    std::filesystem::create_directories(compare_dir);
+    std::ofstream exp_file(compare_dir / "ode_exp_eval.txt");
+    exp_file << std::setprecision(17);
+    for (size_t i = 0; i < t_eval.size(); ++i) {
+        exp_file << t_eval[i] << " " << euler_eval.y[i][0] << " "
+                 << heun_eval.y[i][0] << " " << rk4_eval.y[i][0] << " "
+                 << ode45_eval.y[i][0] << "\n";
+    }
+
+    std::vector<double> osc_eval_t{0.0, std::acos(-1.0) / 2.0, std::acos(-1.0)};
+    auto osc_eval = ode::rk4_eval(oscillator, osc0, osc_eval_t, 0.01);
+    std::ofstream osc_file(compare_dir / "ode_oscillator_rk4.txt");
+    osc_file << std::setprecision(17);
+    for (size_t i = 0; i < osc_eval.t.size(); ++i) {
+        osc_file << osc_eval.t[i] << " " << osc_eval.y[i][0] << " "
+                 << osc_eval.y[i][1] << "\n";
+    }
 
     std::cout << "Total checks: " << g_total << ", failures: " << g_failures
               << "\n";

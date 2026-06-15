@@ -1,4 +1,7 @@
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -33,6 +36,22 @@ static int g_total = 0;
                       << (b) << ")\n";                                         \
         }                                                                      \
     } while (0)
+
+std::filesystem::path project_root() {
+    auto path = std::filesystem::current_path();
+    while (!path.empty()) {
+        if (std::filesystem::exists(path / "msl")
+            && std::filesystem::exists(path / "tests")) {
+            return path;
+        }
+        auto parent = path.parent_path();
+        if (parent == path) {
+            break;
+        }
+        path = parent;
+    }
+    return std::filesystem::current_path();
+}
 
 int test_polynomial() {
     polynomial::Polynomial direct(std::vector<double>{1.0, 2.0, 3.0});
@@ -80,6 +99,22 @@ int test_polynomial() {
         threw = true;
     }
     EXPECT_TRUE(threw);
+
+    auto compare_dir =
+        project_root() / "test_result" / "polynomial" / "matlab_compare";
+    std::filesystem::create_directories(compare_dir);
+
+    std::ofstream coeff_file(compare_dir / "polynomial_coefficients.txt");
+    coeff_file << std::setprecision(17);
+    for (double c : coeffs) {
+        coeff_file << c << "\n";
+    }
+
+    std::ofstream values_file(compare_dir / "polynomial_values.txt");
+    values_file << std::setprecision(17);
+    for (size_t i = 0; i < query.size(); ++i) {
+        values_file << query[i] << " " << values[i] << " " << out[i] << "\n";
+    }
 
     std::cout << "Total checks: " << g_total << ", failures: " << g_failures
               << "\n";

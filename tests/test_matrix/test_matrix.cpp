@@ -1,6 +1,9 @@
 // tests/test_matrix_all.cpp
 #include <cmath>
 #include <complex>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <vector>
 
@@ -76,6 +79,31 @@ static bool approx_equal_double_vector(const std::vector<double> &a,
         if (std::fabs(a[i] - b[i]) > eps)
             return false;
     return true;
+}
+
+std::filesystem::path project_root() {
+    auto path = std::filesystem::current_path();
+    while (!path.empty()) {
+        if (std::filesystem::exists(path / "msl")
+            && std::filesystem::exists(path / "tests")) {
+            return path;
+        }
+        auto parent = path.parent_path();
+        if (parent == path) {
+            break;
+        }
+        path = parent;
+    }
+    return std::filesystem::current_path();
+}
+
+void write_matrix(std::ofstream &file, const matrix::matrixd &mat) {
+    file << std::setprecision(17);
+    for (size_t i = 0; i < mat.rows(); ++i) {
+        for (size_t j = 0; j < mat.cols(); ++j) {
+            file << mat(i, j) << (j + 1 == mat.cols() ? '\n' : ' ');
+        }
+    }
 }
 
 int test_base_op() {
@@ -426,6 +454,45 @@ int test_decompositions() {
 int main() {
     int res1 = test_base_op();
     int res2 = test_decompositions();
+
+    auto compare_dir =
+        project_root() / "test_result" / "matrix" / "matlab_compare";
+    std::filesystem::create_directories(compare_dir);
+
+    matrix::matrixd A(2, 3);
+    matrix::matrixd B(3, 2);
+    for (size_t i = 0; i < A.rows(); ++i) {
+        for (size_t j = 0; j < A.cols(); ++j) {
+            A(i, j) = static_cast<double>(1 + i + 2 * j);
+        }
+    }
+    for (size_t i = 0; i < B.rows(); ++i) {
+        for (size_t j = 0; j < B.cols(); ++j) {
+            B(i, j) = static_cast<double>(1 + 3 * i + j);
+        }
+    }
+    auto product = A * B;
+
+    std::ofstream a_file(compare_dir / "matrix_A.txt");
+    write_matrix(a_file, A);
+    std::ofstream b_file(compare_dir / "matrix_B.txt");
+    write_matrix(b_file, B);
+    std::ofstream product_file(compare_dir / "matrix_product.txt");
+    write_matrix(product_file, product);
+
+    matrix::matrixd svd_input(3, 2);
+    svd_input(0, 0) = 3.0;
+    svd_input(1, 0) = 2.0;
+    svd_input(2, 0) = 1.0;
+    svd_input(0, 1) = 4.0;
+    svd_input(1, 1) = 5.0;
+    svd_input(2, 1) = 6.0;
+    auto svd = matrix::svd(svd_input);
+    auto reconstructed = (svd[0] * svd[1]) * svd[2];
+    std::ofstream svd_input_file(compare_dir / "matrix_svd_input.txt");
+    write_matrix(svd_input_file, svd_input);
+    std::ofstream svd_file(compare_dir / "matrix_svd_reconstruction.txt");
+    write_matrix(svd_file, reconstructed);
 
     std::cout << "Test results: base operations = " << res1
               << ", decompositions = " << res2 << "\n";

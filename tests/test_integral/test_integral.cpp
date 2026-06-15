@@ -1,4 +1,7 @@
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -33,6 +36,22 @@ static int g_total = 0;
                       << (b) << ")\n";                                         \
         }                                                                      \
     } while (0)
+
+std::filesystem::path project_root() {
+    auto path = std::filesystem::current_path();
+    while (!path.empty()) {
+        if (std::filesystem::exists(path / "msl")
+            && std::filesystem::exists(path / "tests")) {
+            return path;
+        }
+        auto parent = path.parent_path();
+        if (parent == path) {
+            break;
+        }
+        path = parent;
+    }
+    return std::filesystem::current_path();
+}
 
 int test_integral() {
     const double pi = std::acos(-1.0);
@@ -117,6 +136,28 @@ int test_integral() {
         threw = true;
     }
     EXPECT_TRUE(threw);
+
+    auto compare_dir =
+        project_root() / "test_result" / "integral" / "matlab_compare";
+    std::filesystem::create_directories(compare_dir);
+
+    std::ofstream summary_file(compare_dir / "integral_summary.txt");
+    summary_file << std::setprecision(17);
+    summary_file << integral::trapz(y, 1.0) << "\n";
+    summary_file << integral::trapz(x, y) << "\n";
+    summary_file << integral::simpson(parabola, 1.0) << "\n";
+    summary_file << integral::simpson(x_parabola, y_parabola) << "\n";
+    summary_file << integral::romberg(romberg_y, 1.0) << "\n";
+    summary_file << integral::adaptive_simpson(
+        [](double x) { return std::sin(x); }, 0.0, pi, 1e-12)
+                 << "\n";
+
+    std::ofstream cumulative_file(compare_dir / "integral_cumulative.txt");
+    cumulative_file << std::setprecision(17);
+    for (size_t i = 0; i < y.size(); ++i) {
+        cumulative_file << x[i] << " " << y[i] << " " << ct[i] << " "
+                        << ct_nonuniform[i] << "\n";
+    }
 
     std::cout << "Total checks: " << g_total << ", failures: " << g_failures
               << "\n";

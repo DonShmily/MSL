@@ -18,9 +18,11 @@ xmake
 xmake run test_matrix
 xmake run test_signal
 xmake run test_difference
+xmake run test_equation
 xmake run test_integral
 xmake run test_interp
 xmake run test_polynomial
+xmake run test_ode
 ```
 
 - Linux requires `libeigen3-dev` system package
@@ -57,6 +59,34 @@ xmake run test_matrix
 ```
 
 Tests write output to `test_result/<module>/` (gitignored). The test `main()` function returns the count of failed tests (0 = all passed).
+
+### MATLAB Cross-Validation
+
+Some tests also generate MATLAB comparison data under
+`test_result/<module>/matlab_compare/`. Run the C++ test first, then run the
+corresponding MATLAB script:
+
+```sh
+xmake run test_equation
+matlab -batch "run('matlab/validation/equation/validate_equation.m')"
+
+xmake run test_ode
+matlab -batch "run('matlab/validation/ode/validate_ode.m')"
+```
+
+New MATLAB validation scripts should be placed under
+`matlab/validation/<module>/` rather than the legacy flat `matlab/` folder.
+
+Current validation scripts cover:
+
+- `difference`
+- `equation`
+- `integral`
+- `interp`
+- `matrix`
+- `ode`
+- `polynomial`
+- `signal`
 
 ### Test Structure
 
@@ -118,7 +148,8 @@ msl/
 │   ├── xmake.lua        # Tests include
 │   ├── test_<module>/   # Per-module tests
 │   └── test_<module>.cpp
-├── matlab/               # MATLAB validation scripts
+├── matlab/               # MATLAB scripts
+│   └── validation/       # MATLAB cross-validation scripts
 ├── resource/             # MATLAB coefficient generation
 ├── docs/                 # Module documentation
 └── licenses/             # MPL 2.0 license text

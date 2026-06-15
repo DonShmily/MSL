@@ -1,5 +1,8 @@
 #include <cmath>
 #include <complex>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -38,11 +41,27 @@ static int g_total = 0;
 
 #define EXPECT_CPLX_NEAR(a, b, eps)                                            \
     do {                                                                       \
-        const auto actual = (a);                                                \
-        const auto expected = (b);                                              \
-        EXPECT_NEAR(actual.real(), expected.real(), eps);                       \
-        EXPECT_NEAR(actual.imag(), expected.imag(), eps);                       \
+        const auto actual = (a);                                               \
+        const auto expected = (b);                                             \
+        EXPECT_NEAR(actual.real(), expected.real(), eps);                      \
+        EXPECT_NEAR(actual.imag(), expected.imag(), eps);                      \
     } while (0)
+
+std::filesystem::path project_root() {
+    auto path = std::filesystem::current_path();
+    while (!path.empty()) {
+        if (std::filesystem::exists(path / "msl")
+            && std::filesystem::exists(path / "tests")) {
+            return path;
+        }
+        auto parent = path.parent_path();
+        if (parent == path) {
+            break;
+        }
+        path = parent;
+    }
+    return std::filesystem::current_path();
+}
 
 int test_fft() {
     std::vector<double> x{1.0, 2.0, 3.0, 4.0};
@@ -118,6 +137,38 @@ int test_windows_and_filter() {
 
 int main() {
     int result = test_fft() + test_windows_and_filter();
+
+    auto compare_dir =
+        project_root() / "test_result" / "signal" / "matlab_compare";
+    std::filesystem::create_directories(compare_dir);
+
+    std::vector<double> x{1.0, 2.0, 3.0, 4.0};
+    auto X = signal::fft(x);
+    auto restored = signal::ifft_real(X);
+    auto hann = signal::hann_window(5);
+    auto hamming = signal::hamming_window(5);
+    signal::FilterCoefficients coeffs({0.5, 0.5}, {1.0});
+    auto filtered = signal::filter(x, coeffs);
+
+    std::ofstream fft_file(compare_dir / "signal_fft.txt");
+    fft_file << std::setprecision(17);
+    for (size_t i = 0; i < X.size(); ++i) {
+        fft_file << x[i] << " " << X[i].real() << " " << X[i].imag() << " "
+                 << restored[i] << "\n";
+    }
+
+    std::ofstream window_file(compare_dir / "signal_windows.txt");
+    window_file << std::setprecision(17);
+    for (size_t i = 0; i < hann.size(); ++i) {
+        window_file << hann[i] << " " << hamming[i] << "\n";
+    }
+
+    std::ofstream filter_file(compare_dir / "signal_filter.txt");
+    filter_file << std::setprecision(17);
+    for (size_t i = 0; i < filtered.size(); ++i) {
+        filter_file << x[i] << " " << filtered[i] << "\n";
+    }
+
     std::cout << "Total checks: " << g_total << ", failures: " << g_failures
               << "\n";
     return result + (g_failures == 0 ? 0 : 1);
