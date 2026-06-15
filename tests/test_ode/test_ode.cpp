@@ -76,6 +76,26 @@ int test_ode() {
     EXPECT_NEAR(rk4_eval.final_time(), 1.0, 1e-12);
     EXPECT_NEAR(rk4_eval.final_state()[0], std::exp(1.0), 3e-6);
 
+    ode::ode_options adaptive_options;
+    adaptive_options.rtol = 1e-8;
+    adaptive_options.atol = 1e-10;
+    auto ode45_result = ode::ode45(exponential, y0, 0.0, 1.0, adaptive_options);
+    EXPECT_TRUE(ode45_result.success());
+    EXPECT_NEAR(ode45_result.final_time(), 1.0, 1e-12);
+    EXPECT_NEAR(ode45_result.final_state()[0], std::exp(1.0), 1e-7);
+    EXPECT_TRUE(ode45_result.steps > 0);
+
+    auto ode45_final =
+        ode::ode45_final(exponential, y0, 0.0, 1.0, adaptive_options);
+    EXPECT_NEAR(ode45_final[0], std::exp(1.0), 1e-7);
+
+    auto ode45_eval =
+        ode::ode45_eval(exponential, y0, t_eval, adaptive_options);
+    EXPECT_TRUE(ode45_eval.success());
+    EXPECT_EQ(ode45_eval.t.size(), t_eval.size());
+    EXPECT_NEAR(ode45_eval.t[1], 0.25, 1e-12);
+    EXPECT_NEAR(ode45_eval.final_state()[0], std::exp(1.0), 1e-7);
+
     auto oscillator = [](double, const ode::state &y) {
         return ode::state{y[1], -y[0]};
     };

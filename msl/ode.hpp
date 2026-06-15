@@ -1,5 +1,6 @@
 #include "ode/euler.hpp"
 #include "ode/heun.hpp"
+#include "ode/ode45.hpp"
 #include "ode/ode_options.hpp"
 #include "ode/ode_result.hpp"
 #include "ode/rk4.hpp"

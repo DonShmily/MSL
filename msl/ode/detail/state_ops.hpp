@@ -17,6 +17,7 @@
 #include <functional>
 #include <span>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 #include "../ode_result.hpp"
@@ -50,7 +51,9 @@ inline state to_state(std::span<const double> y) {
 inline void require_same_size(std::span<const double> lhs,
                               std::span<const double> rhs) {
     if (lhs.size() != rhs.size()) {
-        throw std::invalid_argument("ODE: state sizes must match");
+        throw std::invalid_argument(
+            "ODE: state sizes must match (lhs=" + std::to_string(lhs.size())
+            + ", rhs=" + std::to_string(rhs.size()) + ")");
     }
 }
 
@@ -65,7 +68,11 @@ inline state eval_rhs(Func &f, double t, const state &y) {
 }
 
 inline state add_scaled(const state &y, const state &dy, double scale) {
-    require_same_size(y, dy);
+    if (y.size() != dy.size()) {
+        throw std::invalid_argument(
+            "ODE: add_scaled size mismatch (y=" + std::to_string(y.size())
+            + ", dy=" + std::to_string(dy.size()) + ")");
+    }
     state result(y.size());
     for (size_t i = 0; i < y.size(); ++i) {
         result[i] = y[i] + scale * dy[i];
@@ -78,8 +85,12 @@ inline state add_scaled(const state &y,
                         double a1,
                         const state &k2,
                         double a2) {
-    require_same_size(y, k1);
-    require_same_size(y, k2);
+    if (y.size() != k1.size() || y.size() != k2.size()) {
+        throw std::invalid_argument(
+            "ODE: add_scaled size mismatch (y=" + std::to_string(y.size())
+            + ", k1=" + std::to_string(k1.size())
+            + ", k2=" + std::to_string(k2.size()) + ")");
+    }
     state result(y.size());
     for (size_t i = 0; i < y.size(); ++i) {
         result[i] = y[i] + a1 * k1[i] + a2 * k2[i];
