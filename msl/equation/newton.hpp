@@ -92,6 +92,29 @@ inline root_result newton(Func &&f,
     return {x, fx, max_iter, root_status::max_iterations};
 }
 
+/**
+ * @brief Convenience wrapper for Newton's method that returns only the root.
+ *
+ * @throws std::runtime_error if the algorithm does not converge.
+ */
+template <typename Func, typename Deriv>
+    requires std::is_invocable_r_v<double, Func, double>
+             && std::is_invocable_r_v<double, Deriv, double>
+inline double newton_root(Func &&f,
+                          Deriv &&df,
+                          double x0,
+                          double tol = 1e-12,
+                          size_t max_iter = 50,
+                          double derivative_tol = 1e-14) {
+    return newton(std::forward<Func>(f),
+                  std::forward<Deriv>(df),
+                  x0,
+                  tol,
+                  max_iter,
+                  derivative_tol)
+        .value();
+}
+
 } // namespace msl::equation
 
 #endif // MSL_NEWTON_HPP

@@ -100,6 +100,21 @@ inline root_result regula_falsi(Func &&f,
     return {x, fx, max_iter, root_status::max_iterations};
 }
 
+/**
+ * @brief Convenience wrapper for false-position that returns only the root.
+ *
+ * @throws std::runtime_error if the algorithm does not converge.
+ */
+template <typename Func>
+    requires std::is_invocable_r_v<double, Func, double>
+inline double regula_falsi_root(Func &&f,
+                                double a,
+                                double b,
+                                double tol = 1e-12,
+                                size_t max_iter = 100) {
+    return regula_falsi(std::forward<Func>(f), a, b, tol, max_iter).value();
+}
+
 } // namespace msl::equation
 
 #endif // MSL_REGULA_FALSI_HPP

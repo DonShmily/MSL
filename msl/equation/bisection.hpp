@@ -100,6 +100,21 @@ inline root_result bisection(Func &&f,
     return {mid, fm, max_iter, root_status::max_iterations};
 }
 
+/**
+ * @brief Convenience wrapper for bisection that returns only the root.
+ *
+ * @throws std::runtime_error if the algorithm does not converge.
+ */
+template <typename Func>
+    requires std::is_invocable_r_v<double, Func, double>
+inline double bisection_root(Func &&f,
+                             double a,
+                             double b,
+                             double tol = 1e-12,
+                             size_t max_iter = 100) {
+    return bisection(std::forward<Func>(f), a, b, tol, max_iter).value();
+}
+
 } // namespace msl::equation
 
 #endif // MSL_BISECTION_HPP

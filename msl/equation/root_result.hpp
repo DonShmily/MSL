@@ -13,6 +13,7 @@
 #define MSL_ROOT_RESULT_HPP
 
 #include <cstddef>
+#include <stdexcept>
 
 namespace msl::equation {
 
@@ -44,9 +45,19 @@ struct root_result {
         return converged();
     }
 
-    [[nodiscard]] double &operator=(const root_result &rhs) {
-        return this->root = rhs.root;
+    /**
+     * @brief Return the root if the algorithm converged.
+     *
+     * @throws std::runtime_error if the algorithm did not converge.
+     */
+    [[nodiscard]] double value() const {
+        if (!converged()) {
+            throw std::runtime_error("Root result did not converge");
+        }
+        return root;
     }
+
+    [[nodiscard]] explicit operator double() const { return value(); }
 };
 } // namespace msl::equation
 

@@ -89,6 +89,21 @@ inline root_result secant(Func &&f,
     return {x1, f1, max_iter, root_status::max_iterations};
 }
 
+/**
+ * @brief Convenience wrapper for the secant method that returns only the root.
+ *
+ * @throws std::runtime_error if the algorithm does not converge.
+ */
+template <typename Func>
+    requires std::is_invocable_r_v<double, Func, double>
+inline double secant_root(Func &&f,
+                          double x0,
+                          double x1,
+                          double tol = 1e-12,
+                          size_t max_iter = 100) {
+    return secant(std::forward<Func>(f), x0, x1, tol, max_iter).value();
+}
+
 } // namespace msl::equation
 
 #endif // MSL_SECANT_HPP

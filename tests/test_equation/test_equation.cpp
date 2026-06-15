@@ -43,20 +43,35 @@ int test_equation() {
     EXPECT_EQ(bisection_result.status, equation::root_status::converged);
     EXPECT_NEAR(bisection_result.root, sqrt2, 1e-10);
     EXPECT_NEAR(bisection_result.residual, 0.0, 1e-10);
+    EXPECT_NEAR(bisection_result.value(), sqrt2, 1e-10);
+    EXPECT_NEAR(static_cast<double>(bisection_result), sqrt2, 1e-10);
+
+    double bisection_root =
+        equation::bisection_root(square_minus_two, 0.0, 2.0, 1e-12);
+    EXPECT_NEAR(bisection_root, sqrt2, 1e-10);
 
     auto newton_result =
         equation::newton(square_minus_two, square_minus_two_deriv, 1.0, 1e-12);
     EXPECT_TRUE(newton_result.converged());
     EXPECT_NEAR(newton_result.root, sqrt2, 1e-12);
+    EXPECT_NEAR(equation::newton_root(
+                    square_minus_two, square_minus_two_deriv, 1.0, 1e-12),
+                sqrt2,
+                1e-12);
 
     auto secant_result = equation::secant(square_minus_two, 1.0, 2.0, 1e-12);
     EXPECT_TRUE(secant_result.converged());
     EXPECT_NEAR(secant_result.root, sqrt2, 1e-10);
+    EXPECT_NEAR(
+        equation::secant_root(square_minus_two, 1.0, 2.0, 1e-12), sqrt2, 1e-10);
 
     auto falsi_result =
         equation::regula_falsi(square_minus_two, 0.0, 2.0, 1e-12);
     EXPECT_TRUE(falsi_result.converged());
     EXPECT_NEAR(falsi_result.root, sqrt2, 1e-10);
+    EXPECT_NEAR(equation::regula_falsi_root(square_minus_two, 0.0, 2.0, 1e-12),
+                sqrt2,
+                1e-10);
 
     auto fixed_point = equation::bisection(
         [](double x) { return std::cos(x) - x; }, 0.0, 1.0, 1e-12);
@@ -66,6 +81,13 @@ int test_equation() {
     auto invalid_interval =
         equation::bisection([](double x) { return x * x + 1.0; }, -1.0, 1.0);
     EXPECT_EQ(invalid_interval.status, equation::root_status::invalid_interval);
+    bool value_threw = false;
+    try {
+        (void)invalid_interval.value();
+    } catch (const std::runtime_error &) {
+        value_threw = true;
+    }
+    EXPECT_TRUE(value_threw);
 
     auto zero_derivative = equation::newton(
         [](double x) { return x * x + 1.0; }, [](double) { return 0.0; }, 1.0);
