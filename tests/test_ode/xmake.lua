@@ -1,0 +1,3 @@
+target("test_ode")
+    set_kind("binary")
+    add_files("./*.cpp")

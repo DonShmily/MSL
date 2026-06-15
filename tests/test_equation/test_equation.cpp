@@ -50,6 +50,31 @@ int test_equation() {
         equation::bisection_root(square_minus_two, 0.0, 2.0, 1e-12);
     EXPECT_NEAR(bisection_root, sqrt2, 1e-10);
 
+    equation::root_options options;
+    options.tol = 1e-12;
+    options.max_iter = 100;
+    options.derivative_tol = 1e-14;
+
+    auto bisection_options =
+        equation::bisection(square_minus_two, 0.0, 2.0, options);
+    EXPECT_TRUE(bisection_options.converged());
+    EXPECT_NEAR(bisection_options.root, sqrt2, 1e-10);
+    EXPECT_NEAR(equation::bisection_root(square_minus_two, 0.0, 2.0, options),
+                sqrt2,
+                1e-10);
+
+    auto brent_result = equation::brent(square_minus_two, 0.0, 2.0, 1e-12);
+    EXPECT_TRUE(brent_result.converged());
+    EXPECT_NEAR(brent_result.root, sqrt2, 1e-12);
+    EXPECT_NEAR(
+        equation::brent_root(square_minus_two, 0.0, 2.0, 1e-12), sqrt2, 1e-12);
+    EXPECT_NEAR(equation::brent(square_minus_two, 0.0, 2.0, options).root,
+                sqrt2,
+                1e-12);
+    EXPECT_NEAR(equation::brent_root(square_minus_two, 0.0, 2.0, options),
+                sqrt2,
+                1e-12);
+
     auto newton_result =
         equation::newton(square_minus_two, square_minus_two_deriv, 1.0, 1e-12);
     EXPECT_TRUE(newton_result.converged());
@@ -58,12 +83,27 @@ int test_equation() {
                     square_minus_two, square_minus_two_deriv, 1.0, 1e-12),
                 sqrt2,
                 1e-12);
+    EXPECT_NEAR(
+        equation::newton(square_minus_two, square_minus_two_deriv, 1.0, options)
+            .root,
+        sqrt2,
+        1e-12);
+    EXPECT_NEAR(equation::newton_root(
+                    square_minus_two, square_minus_two_deriv, 1.0, options),
+                sqrt2,
+                1e-12);
 
     auto secant_result = equation::secant(square_minus_two, 1.0, 2.0, 1e-12);
     EXPECT_TRUE(secant_result.converged());
     EXPECT_NEAR(secant_result.root, sqrt2, 1e-10);
     EXPECT_NEAR(
         equation::secant_root(square_minus_two, 1.0, 2.0, 1e-12), sqrt2, 1e-10);
+    EXPECT_NEAR(equation::secant(square_minus_two, 1.0, 2.0, options).root,
+                sqrt2,
+                1e-10);
+    EXPECT_NEAR(equation::secant_root(square_minus_two, 1.0, 2.0, options),
+                sqrt2,
+                1e-10);
 
     auto falsi_result =
         equation::regula_falsi(square_minus_two, 0.0, 2.0, 1e-12);
@@ -72,6 +112,14 @@ int test_equation() {
     EXPECT_NEAR(equation::regula_falsi_root(square_minus_two, 0.0, 2.0, 1e-12),
                 sqrt2,
                 1e-10);
+    EXPECT_NEAR(
+        equation::regula_falsi(square_minus_two, 0.0, 2.0, options).root,
+        sqrt2,
+        1e-10);
+    EXPECT_NEAR(
+        equation::regula_falsi_root(square_minus_two, 0.0, 2.0, options),
+        sqrt2,
+        1e-10);
 
     auto fixed_point = equation::bisection(
         [](double x) { return std::cos(x) - x; }, 0.0, 1.0, 1e-12);
@@ -81,6 +129,10 @@ int test_equation() {
     auto invalid_interval =
         equation::bisection([](double x) { return x * x + 1.0; }, -1.0, 1.0);
     EXPECT_EQ(invalid_interval.status, equation::root_status::invalid_interval);
+    auto brent_invalid_interval =
+        equation::brent([](double x) { return x * x + 1.0; }, -1.0, 1.0);
+    EXPECT_EQ(brent_invalid_interval.status,
+              equation::root_status::invalid_interval);
     bool value_threw = false;
     try {
         (void)invalid_interval.value();
@@ -96,6 +148,24 @@ int test_equation() {
     auto max_iterations =
         equation::secant(square_minus_two, 1.0, 2.0, 1e-16, 1);
     EXPECT_EQ(max_iterations.status, equation::root_status::max_iterations);
+
+    equation::root_options limited;
+    limited.max_iter = 1;
+    auto max_iterations_options =
+        equation::secant(square_minus_two, 1.0, 2.0, limited);
+    EXPECT_EQ(max_iterations_options.status,
+              equation::root_status::max_iterations);
+    auto brent_max_iterations =
+        equation::brent(square_minus_two, 0.0, 2.0, limited);
+    EXPECT_EQ(brent_max_iterations.status,
+              equation::root_status::max_iterations);
+
+    equation::root_options derivative_limited;
+    derivative_limited.derivative_tol = 10.0;
+    auto zero_derivative_options = equation::newton(
+        square_minus_two, square_minus_two_deriv, 1.0, derivative_limited);
+    EXPECT_EQ(zero_derivative_options.status,
+              equation::root_status::zero_derivative);
 
     bool threw = false;
     try {

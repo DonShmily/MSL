@@ -1,5 +1,7 @@
 #include "equation/bisection.hpp"
+#include "equation/brent.hpp"
 #include "equation/newton.hpp"
 #include "equation/regula_falsi.hpp"
+#include "equation/root_options.hpp"
 #include "equation/root_result.hpp"
 #include "equation/secant.hpp"

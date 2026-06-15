@@ -21,6 +21,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "root_options.hpp"
 #include "root_result.hpp"
 
 namespace msl::equation {
@@ -101,6 +102,23 @@ inline root_result regula_falsi(Func &&f,
 }
 
 /**
+ * @brief Find a root with false-position using root_options.
+ *
+ * @param f Function whose root is sought
+ * @param a Lower interval endpoint
+ * @param b Upper interval endpoint
+ * @param options Root-finding options
+ * @return Root-finding result
+ */
+template <typename Func>
+    requires std::is_invocable_r_v<double, Func, double>
+inline root_result
+regula_falsi(Func &&f, double a, double b, const root_options &options) {
+    return regula_falsi(
+        std::forward<Func>(f), a, b, options.tol, options.max_iter);
+}
+
+/**
  * @brief Convenience wrapper for false-position that returns only the root.
  *
  * @throws std::runtime_error if the algorithm does not converge.
@@ -113,6 +131,18 @@ inline double regula_falsi_root(Func &&f,
                                 double tol = 1e-12,
                                 size_t max_iter = 100) {
     return regula_falsi(std::forward<Func>(f), a, b, tol, max_iter).value();
+}
+
+/**
+ * @brief Convenience wrapper for false-position with root_options.
+ *
+ * @throws std::runtime_error if the algorithm does not converge.
+ */
+template <typename Func>
+    requires std::is_invocable_r_v<double, Func, double>
+inline double
+regula_falsi_root(Func &&f, double a, double b, const root_options &options) {
+    return regula_falsi(std::forward<Func>(f), a, b, options).value();
 }
 
 } // namespace msl::equation

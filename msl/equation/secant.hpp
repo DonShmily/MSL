@@ -20,6 +20,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "root_options.hpp"
 #include "root_result.hpp"
 
 namespace msl::equation {
@@ -90,6 +91,22 @@ inline root_result secant(Func &&f,
 }
 
 /**
+ * @brief Find a root with the secant method using root_options.
+ *
+ * @param f Function whose root is sought
+ * @param x0 First initial value
+ * @param x1 Second initial value
+ * @param options Root-finding options
+ * @return Root-finding result
+ */
+template <typename Func>
+    requires std::is_invocable_r_v<double, Func, double>
+inline root_result
+secant(Func &&f, double x0, double x1, const root_options &options) {
+    return secant(std::forward<Func>(f), x0, x1, options.tol, options.max_iter);
+}
+
+/**
  * @brief Convenience wrapper for the secant method that returns only the root.
  *
  * @throws std::runtime_error if the algorithm does not converge.
@@ -102,6 +119,18 @@ inline double secant_root(Func &&f,
                           double tol = 1e-12,
                           size_t max_iter = 100) {
     return secant(std::forward<Func>(f), x0, x1, tol, max_iter).value();
+}
+
+/**
+ * @brief Convenience wrapper for the secant method with root_options.
+ *
+ * @throws std::runtime_error if the algorithm does not converge.
+ */
+template <typename Func>
+    requires std::is_invocable_r_v<double, Func, double>
+inline double
+secant_root(Func &&f, double x0, double x1, const root_options &options) {
+    return secant(std::forward<Func>(f), x0, x1, options).value();
 }
 
 } // namespace msl::equation

@@ -20,6 +20,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "root_options.hpp"
 #include "root_result.hpp"
 
 namespace msl::equation {
@@ -93,6 +94,28 @@ inline root_result newton(Func &&f,
 }
 
 /**
+ * @brief Find a root with Newton's method using root_options.
+ *
+ * @param f Function whose root is sought
+ * @param df Derivative of f
+ * @param x0 Initial guess
+ * @param options Root-finding options
+ * @return Root-finding result
+ */
+template <typename Func, typename Deriv>
+    requires std::is_invocable_r_v<double, Func, double>
+             && std::is_invocable_r_v<double, Deriv, double>
+inline root_result
+newton(Func &&f, Deriv &&df, double x0, const root_options &options) {
+    return newton(std::forward<Func>(f),
+                  std::forward<Deriv>(df),
+                  x0,
+                  options.tol,
+                  options.max_iter,
+                  options.derivative_tol);
+}
+
+/**
  * @brief Convenience wrapper for Newton's method that returns only the root.
  *
  * @throws std::runtime_error if the algorithm does not converge.
@@ -112,6 +135,20 @@ inline double newton_root(Func &&f,
                   tol,
                   max_iter,
                   derivative_tol)
+        .value();
+}
+
+/**
+ * @brief Convenience wrapper for Newton's method with root_options.
+ *
+ * @throws std::runtime_error if the algorithm does not converge.
+ */
+template <typename Func, typename Deriv>
+    requires std::is_invocable_r_v<double, Func, double>
+             && std::is_invocable_r_v<double, Deriv, double>
+inline double
+newton_root(Func &&f, Deriv &&df, double x0, const root_options &options) {
+    return newton(std::forward<Func>(f), std::forward<Deriv>(df), x0, options)
         .value();
 }
 
