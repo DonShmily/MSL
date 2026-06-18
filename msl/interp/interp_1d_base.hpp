@@ -27,7 +27,14 @@ namespace msl::interp {
 /**
  * @brief Interpolation methods
  */
-enum class InterpolationMethod { Nearest, Linear, Spline, Akima, Polynomial };
+enum class InterpolationMethod {
+    Nearest,
+    Linear,
+    Pchip,
+    Cubic,
+    Akima,
+    Polynomial
+};
 
 /**
  * @brief Extrapolation methods
