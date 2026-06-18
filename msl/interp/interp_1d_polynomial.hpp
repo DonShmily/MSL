@@ -13,8 +13,8 @@
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
-#ifndef MSL_POLYNOMIAL_INTERPOLATOR_HPP
-#define MSL_POLYNOMIAL_INTERPOLATOR_HPP
+#ifndef MSL_INTERP_1D_POLYNOMIAL_HPP
+#define MSL_INTERP_1D_POLYNOMIAL_HPP
 
 #include <span>
 #include <vector>
@@ -42,8 +42,8 @@ public:
      * @param y Dependent variable samples
      * @return Polynomial interpolator
      */
-    [[nodiscard]] static Polynomial
-    from_data(std::span<const double> x, std::span<const double> y) {
+    [[nodiscard]] static Polynomial from_data(std::span<const double> x,
+                                              std::span<const double> y) {
         Polynomial interp;
         interp.set_data(x, y);
         return interp;
@@ -171,4 +171,4 @@ inline std::vector<double> interp1_polynomial(std::span<const double> x,
 
 } // namespace msl::interp
 
-#endif // MSL_POLYNOMIAL_INTERPOLATOR_HPP
+#endif // MSL_INTERP_1D_POLYNOMIAL_HPP

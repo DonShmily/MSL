@@ -13,8 +13,8 @@
 ** Modified By: Dong Feiyue (FeiyueDong@outlook.com)
 */
 
-#ifndef MSL_INTERP_1D_SPLINE
-#define MSL_INTERP_1D_SPLINE
+#ifndef MSL_INTERP_1D_CUBIC
+#define MSL_INTERP_1D_CUBIC
 
 #include "interp_1d_base.hpp"
 
@@ -341,4 +341,4 @@ inline std::vector<double> interp1_cubic(std::span<const double> x,
 
 } // namespace msl::interp
 
-#endif // MSL_INTERP_1D_SPLINE
+#endif // MSL_INTERP_1D_CUBIC
