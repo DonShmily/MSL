@@ -28,13 +28,13 @@ if is_plat("windows") then
 end
 
 if is_plat("mingw") then
-    set_targetdir("$(projectdir)/out/mingw",{ bindir = "bin", libdir = "lib" })
+    set_targetdir("$(projectdir)/build/mingw",{ bindir = "bin", libdir = "lib" })
 elseif is_plat("windows") then
-    set_targetdir("$(projectdir)/out/windows",{ bindir = "bin", libdir = "lib" })
+    set_targetdir("$(projectdir)/build/windows",{ bindir = "bin", libdir = "lib" })
 elseif is_plat("linux") then
-    set_targetdir("$(projectdir)/out/linux",{ bindir = "bin", libdir = "lib" })
+    set_targetdir("$(projectdir)/build/linux",{ bindir = "bin", libdir = "lib" })
 elseif is_plat("macosx") then
-    set_targetdir("$(projectdir)/out/macosx",{ bindir = "bin", libdir = "lib" })
+    set_targetdir("$(projectdir)/build/macosx",{ bindir = "bin", libdir = "lib" })
 end
 
 if is_plat("linux", "macosx", "mingw") then
