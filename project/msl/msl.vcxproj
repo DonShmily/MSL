@@ -18,19 +18,11 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\msl\interp\interp_1d_akima.hpp" />
-    <ClInclude Include="..\..\msl\interp\interp_1d_base.hpp" />
-    <ClInclude Include="..\..\msl\interp\interp_1d_linear.hpp" />
-    <ClInclude Include="..\..\msl\interp\interp_1d_pchip.hpp" />
-    <ClInclude Include="..\..\msl\interp\interp_1d_polynomial.hpp" />
-    <ClInclude Include="..\..\msl\interp\interp_1d_spline.hpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{ea08ac0e-8a8a-4d55-b75c-cbecd54aa389}</ProjectGuid>
-    <RootNamespace>interp</RootNamespace>
+    <ProjectGuid>{8dcf6c43-1691-40e7-b0d4-7274a7fe0029}</ProjectGuid>
+    <RootNamespace>msl</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -90,6 +82,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -105,6 +100,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -113,12 +111,14 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\..\..\msl;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -129,13 +129,74 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\..\..\msl;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\msl\difference.hpp" />
+    <ClInclude Include="..\..\src\msl\difference\difference.hpp" />
+    <ClInclude Include="..\..\src\msl\equation.hpp" />
+    <ClInclude Include="..\..\src\msl\equation\bisection.hpp" />
+    <ClInclude Include="..\..\src\msl\equation\brent.hpp" />
+    <ClInclude Include="..\..\src\msl\equation\newton.hpp" />
+    <ClInclude Include="..\..\src\msl\equation\regula_falsi.hpp" />
+    <ClInclude Include="..\..\src\msl\equation\root_options.hpp" />
+    <ClInclude Include="..\..\src\msl\equation\root_result.hpp" />
+    <ClInclude Include="..\..\src\msl\equation\secant.hpp" />
+    <ClInclude Include="..\..\src\msl\integral.hpp" />
+    <ClInclude Include="..\..\src\msl\integral\adaptive_simpson.hpp" />
+    <ClInclude Include="..\..\src\msl\integral\romberg.hpp" />
+    <ClInclude Include="..\..\src\msl\integral\simpson.hpp" />
+    <ClInclude Include="..\..\src\msl\integral\trapz.hpp" />
+    <ClInclude Include="..\..\src\msl\interp.hpp" />
+    <ClInclude Include="..\..\src\msl\interp\interp_1d_akima.hpp" />
+    <ClInclude Include="..\..\src\msl\interp\interp_1d_base.hpp" />
+    <ClInclude Include="..\..\src\msl\interp\interp_1d_cubic.hpp" />
+    <ClInclude Include="..\..\src\msl\interp\interp_1d_linear.hpp" />
+    <ClInclude Include="..\..\src\msl\interp\interp_1d_near.hpp" />
+    <ClInclude Include="..\..\src\msl\interp\interp_1d_pchip.hpp" />
+    <ClInclude Include="..\..\src\msl\interp\interp_1d_polynomial.hpp" />
+    <ClInclude Include="..\..\src\msl\matrix.hpp" />
+    <ClInclude Include="..\..\src\msl\matrix\complex_matrix_base.hpp" />
+    <ClInclude Include="..\..\src\msl\matrix\complex_matrix_owned.hpp" />
+    <ClInclude Include="..\..\src\msl\matrix\complex_matrix_view.hpp" />
+    <ClInclude Include="..\..\src\msl\matrix\eigen_interface.hpp" />
+    <ClInclude Include="..\..\src\msl\matrix\martrix_decompose.hpp" />
+    <ClInclude Include="..\..\src\msl\matrix\matrix_conversion.hpp" />
+    <ClInclude Include="..\..\src\msl\matrix\matrix_operation.hpp" />
+    <ClInclude Include="..\..\src\msl\matrix\real_matrix_base.hpp" />
+    <ClInclude Include="..\..\src\msl\matrix\real_matrix_owned.hpp" />
+    <ClInclude Include="..\..\src\msl\matrix\real_matrix_view.hpp" />
+    <ClInclude Include="..\..\src\msl\ode.hpp" />
+    <ClInclude Include="..\..\src\msl\ode\detail\fixed_step.hpp" />
+    <ClInclude Include="..\..\src\msl\ode\detail\state_ops.hpp" />
+    <ClInclude Include="..\..\src\msl\ode\euler.hpp" />
+    <ClInclude Include="..\..\src\msl\ode\heun.hpp" />
+    <ClInclude Include="..\..\src\msl\ode\ode45.hpp" />
+    <ClInclude Include="..\..\src\msl\ode\ode_options.hpp" />
+    <ClInclude Include="..\..\src\msl\ode\ode_result.hpp" />
+    <ClInclude Include="..\..\src\msl\ode\rk4.hpp" />
+    <ClInclude Include="..\..\src\msl\polynomial.hpp" />
+    <ClInclude Include="..\..\src\msl\polynomial\polynomial.hpp" />
+    <ClInclude Include="..\..\src\msl\signal.hpp" />
+    <ClInclude Include="..\..\src\msl\signal\butterworth_filter.hpp" />
+    <ClInclude Include="..\..\src\msl\signal\detrend.hpp" />
+    <ClInclude Include="..\..\src\msl\signal\fft.hpp" />
+    <ClInclude Include="..\..\src\msl\signal\filter.hpp" />
+    <ClInclude Include="..\..\src\msl\signal\filter_design.hpp" />
+    <ClInclude Include="..\..\src\msl\signal\filtfilt.hpp" />
+    <ClInclude Include="..\..\src\msl\signal\fourier_domain_filter.hpp" />
+    <ClInclude Include="..\..\src\msl\signal\power_spectral_density.hpp" />
+    <ClInclude Include="..\..\src\msl\signal\window.hpp" />
+    <ClInclude Include="..\..\src\msl\utils\data_io.hpp" />
+    <ClInclude Include="..\..\src\msl\utils\msl_assert.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

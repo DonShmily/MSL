@@ -41,4 +41,4 @@ if is_plat("linux", "macosx", "mingw") then
     add_cxflags("-fPIC")
 end
 
-includes("tests")
+includes("src/tests")
